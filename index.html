@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chamba — Profesionales del hogar</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-deeper: #085041;
+      --green-light: #E1F5EE;
+      --green-mid: #5DCAA5;
+      --bg: #ffffff;
+      --bg-secondary: #f7f8f6;
+      --text: #1a1a1a;
+      --text-secondary: #666;
+      --border: rgba(0,0,0,0.1);
+      --border-hover: rgba(0,0,0,0.2);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg);
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+      min-height: 600px;
+    }
+
+    /* HEADER */
+    .header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
+    .logo span { color: var(--green); }
+    .tagline { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px; color: var(--text-secondary); cursor: pointer;
+      margin-bottom: 12px; background: none; border: none;
+    }
+    .back-btn:hover { color: var(--text); }
+
+    /* SCREENS */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* HOME */
+    .hero { padding: 24px 24px 16px; }
+    .hero h1 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+    .hero p { font-size: 14px; color: var(--text-secondary); margin-top: 6px; line-height: 1.6; }
+
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--text-secondary);
+      padding: 0 24px; margin: 16px 0 10px;
+    }
+
+    .services-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; padding: 0 24px;
+    }
+    .service-card {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 14px; cursor: pointer;
+      transition: all 0.15s; text-align: left;
+    }
+    .service-card:hover { border-color: var(--green); background: var(--green-light); }
+    .service-icon { font-size: 26px; margin-bottom: 8px; }
+    .service-name { font-size: 14px; font-weight: 600; }
+    .service-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    .ai-banner {
+      margin: 20px 24px 24px;
+      background: var(--green-light); border: 1px solid var(--green-mid);
+      border-radius: var(--radius); padding: 16px; cursor: pointer;
+      display: flex; align-items: center; gap: 14px; transition: border-color 0.15s;
+    }
+    .ai-banner:hover { border-color: var(--green); }
+    .ai-banner-icon { font-size: 28px; flex-shrink: 0; }
+    .ai-banner-title { font-size: 14px; font-weight: 600; color: var(--green-deeper); }
+    .ai-banner-sub { font-size: 12px; color: var(--green-dark); margin-top: 2px; }
+
+    /* FORM */
+    .form-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-group textarea {
+      width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 12px 14px; font-size: 14px; font-family: inherit;
+      color: var(--text); background: var(--bg); resize: none; line-height: 1.5;
+    }
+    .form-group textarea:focus { outline: none; border-color: var(--green); }
+
+    .photo-area {
+      border: 1.5px dashed var(--border-hover); border-radius: var(--radius-sm);
+      padding: 22px; text-align: center; cursor: pointer; transition: all 0.15s;
+    }
+    .photo-area:hover { border-color: var(--green); background: var(--green-light); }
+    .photo-area-icon { font-size: 30px; }
+    .photo-area p { font-size: 13px; color: var(--text-secondary); margin-top: 6px; }
+    .photo-area input { display: none; }
+    .photo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .photo-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+
+    .btn-primary {
+      width: 100%; background: var(--green); color: #fff; border: none;
+      border-radius: var(--radius-sm); padding: 14px; font-size: 15px;
+      font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--green-dark); }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* RESULT */
+    .result-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+    .thinking {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-sm);
+    }
+    .dots { display: flex; gap: 5px; }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+      animation: blink 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink { 0%,100%{opacity:0.2} 50%{opacity:1} }
+    .thinking p { font-size: 14px; color: var(--text-secondary); }
+
+    .result-card {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px;
+    }
+    .result-card.green { background: var(--green-light); border-color: var(--green-mid); }
+    .card-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px;
+    }
+    .result-card.green .card-label { color: var(--green-deeper); }
+    .card-content { font-size: 14px; color: var(--text); line-height: 1.6; }
+    .result-card.green .card-content { color: var(--green-deeper); }
+
+    .pro-name { font-size: 17px; font-weight: 600; }
+    .urgencia-badge {
+      display: inline-block; margin-top: 8px; padding: 3px 10px;
+      border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .urgencia-alta { background: #fdeaea; color: #a32d2d; }
+    .urgencia-media { background: #fef3e2; color: #854f0b; }
+    .urgencia-baja { background: var(--green-light); color: var(--green-deeper); }
+    .price-range { font-size: 24px; font-weight: 700; color: var(--green-dark); }
+    .price-note { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+    .contact-btn {
+      width: 100%; background: var(--green); color: #fff; border: none;
+      border-radius: var(--radius-sm); padding: 15px; font-size: 15px;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.15s;
+    }
+    .contact-btn:hover { background: var(--green-dark); }
+
+    .error-box {
+      background: #fdeaea; border: 1px solid #f09595;
+      border-radius: var(--radius-sm); padding: 14px;
+      font-size: 14px; color: #a32d2d; line-height: 1.5;
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 0; align-items: stretch; }
+      .app { border-radius: 0; min-height: 100vh; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER (siempre visible) -->
+  <div class="header" id="header">
+    <div class="logo">Cham<span>ba</span></div>
+    <div class="tagline">Profesionales del hogar, cuando los necesitás</div>
+  </div>
+
+  <!-- PANTALLA 1: HOME -->
+  <div class="screen active" id="screen-home">
+    <div class="hero">
+      <h1>¿Qué problema necesitás resolver hoy?</h1>
+      <p>Elegí el servicio y la IA te ayuda a diagnosticarlo y presupuestarlo.</p>
+    </div>
+    <div class="section-label">Elegí el servicio</div>
+    <div class="services-grid">
+      <button class="service-card" onclick="selectService('Plomería')">
+        <div class="service-icon">🔧</div>
+        <div class="service-name">Plomería</div>
+        <div class="service-desc">Pérdidas, cañerías, desagotes</div>
+      </button>
+      <button class="service-card" onclick="selectService('Electricidad')">
+        <div class="service-icon">⚡</div>
+        <div class="service-name">Electricidad</div>
+        <div class="service-desc">Instalaciones, cortocircuitos</div>
+      </button>
+      <button class="service-card" onclick="selectService('Gas')">
+        <div class="service-icon">🔥</div>
+        <div class="service-name">Gas</div>
+        <div class="service-desc">Gasistas matriculados</div>
+      </button>
+      <button class="service-card" onclick="selectService('Limpieza')">
+        <div class="service-icon">✨</div>
+        <div class="service-name">Limpieza</div>
+        <div class="service-desc">Servicio de mucama</div>
+      </button>
+      <button class="service-card" onclick="selectService('Pintura')">
+        <div class="service-icon">🎨</div>
+        <div class="service-name">Pintura</div>
+        <div class="service-desc">Interiores y exteriores</div>
+      </button>
+      <button class="service-card" onclick="selectService('Albañilería')">
+        <div class="service-icon">🏗️</div>
+        <div class="service-name">Albañilería</div>
+        <div class="service-desc">Reparaciones y construcción</div>
+      </button>
+    </div>
+    <div class="ai-banner" onclick="selectService('No sé qué necesito')">
+      <div class="ai-banner-icon">🤖</div>
+      <div>
+        <div class="ai-banner-title">¿No sabés qué profesional necesitás?</div>
+        <div class="ai-banner-sub">Subí una foto y la IA te ayuda a diagnosticarlo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: FORMULARIO -->
+  <div class="screen" id="screen-form">
+    <div class="form-body">
+      <button class="back-btn" onclick="goHome()">← Volver</button>
+      <div>
+        <div class="section-label">Servicio seleccionado</div>
+        <div style="font-size:17px; font-weight:600;" id="form-service-label"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Describí el problema</label>
+        <textarea id="problem-desc" rows="4" placeholder="Ej: Tengo una pérdida de agua debajo del fregadero de la cocina, lleva 2 días así..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Fotos del problema <span style="font-weight:400; color:var(--text-secondary)">(recomendado)</span></label>
+        <div class="photo-area" onclick="document.getElementById('photo-input').click()">
+          <div class="photo-area-icon">📷</div>
+          <p>Tocá para agregar fotos</p>
+          <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotos(event)">
+        </div>
+        <div class="photo-preview" id="photo-preview"></div>
+      </div>
+
+      <button class="btn-primary" onclick="analyzeWithAI()">
+        🤖 Analizar con IA
+      </button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 3: RESULTADO -->
+  <div class="screen" id="screen-result">
+    <div class="result-body">
+      <button class="back-btn" onclick="goForm()">← Volver</button>
+
+      <div class="thinking" id="thinking">
+        <div class="dots">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <p>La IA está analizando tu problema...</p>
+      </div>
+
+      <div id="result-content"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ⚠️ Reemplazá esta URL con la de tu backend en Railway
+  const BACKEND_URL = 'https://TU-BACKEND.railway.app';
+
+  let selectedService = '';
+  let photoBase64List = [];
+
+  function setScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function selectService(service) {
+    selectedService = service;
+    document.getElementById('form-service-label').textContent = service;
+    document.getElementById('problem-desc').value = '';
+    document.getElementById('photo-preview').innerHTML = '';
+    photoBase64List = [];
+    setScreen('screen-form');
+  }
+
+  function goHome() { setScreen('screen-home'); }
+  function goForm() { setScreen('screen-form'); }
+
+  function handlePhotos(event) {
+    const files = Array.from(event.target.files);
+    const preview = document.getElementById('photo-preview');
+    preview.innerHTML = '';
+    photoBase64List = [];
+    files.slice(0, 3).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'photo-thumb';
+        preview.appendChild(img);
+        photoBase64List.push(e.target.result.split(',')[1]);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function analyzeWithAI() {
+    const desc = document.getElementById('problem-desc').value.trim();
+    if (!desc && photoBase64List.length === 0) {
+      alert('Por favor describí el problema o subí una foto.');
+      return;
+    }
+
+    setScreen('screen-result');
+    document.getElementById('thinking').style.display = 'flex';
+    document.getElementById('result-content').innerHTML = '';
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/analizar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ servicio: selectedService, descripcion: desc, fotos: photoBase64List })
+      });
+
+      const result = await response.json();
+      if (result.error) throw new Error(result.error);
+      showResult(result);
+    } catch (err) {
+      document.getElementById('thinking').style.display = 'none';
+      document.getElementById('result-content').innerHTML =
+        `<div class="error-box"><strong>Error:</strong> ${err.message || 'No se pudo conectar al servidor. Verificá tu conexión.'}</div>`;
+    }
+  }
+
+  function showResult(r) {
+    document.getElementById('thinking').style.display = 'none';
+    const urgClass = r.urgencia === 'Alta' ? 'urgencia-alta' : r.urgencia === 'Media' ? 'urgencia-media' : 'urgencia-baja';
+
+    document.getElementById('result-content').innerHTML = `
+      <div class="result-card green">
+        <div class="card-label">Profesional recomendado</div>
+        <div class="pro-name">${r.profesional}</div>
+        <span class="urgencia-badge ${urgClass}">Urgencia ${r.urgencia}</span>
+      </div>
+
+      <div class="result-card">
+        <div class="card-label">Diagnóstico</div>
+        <div class="card-content">${r.diagnostico}</div>
+      </div>
+
+      <div class="result-card">
+        <div class="card-label">Costo estimado</div>
+        <div class="price-range">$${Number(r.precio_min).toLocaleString('es-AR')} – $${Number(r.precio_max).toLocaleString('es-AR')}</div>
+        <div class="price-note">Estimación orientativa. El precio final puede variar.</div>
+      </div>
+
+      <div class="result-card">
+        <div class="card-label">Mientras esperás al profesional</div>
+        <div class="card-content">${r.recomendacion}</div>
+      </div>
+
+      ${r.puede_solo ? `
+      <div class="result-card" style="border-color:#5DCAA5; background:#E1F5EE;">
+        <div class="card-label" style="color:#085041;">¿Lo podés resolver vos?</div>
+        <div class="card-content" style="color:#085041;">Es posible que puedas solucionarlo sin un profesional. Si tenés dudas, igual te recomendamos consultar.</div>
+      </div>` : ''}
+
+      <button class="contact-btn" onclick="window.open('https://wa.me/5491100000000?text=Hola! Necesito un ${encodeURIComponent(r.profesional)} para: ${encodeURIComponent(r.diagnostico)}', '_blank')">
+        📲 Contactar a Chamba por WhatsApp
+      </button>
+    `;
+  }
+</script>
+</body>
+</html>
