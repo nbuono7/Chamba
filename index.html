@@ -3,322 +3,570 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chamba — Profesionales del hogar</title>
+  <title>ChamBA — Profesionales del hogar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --green: #1D9E75;
-      --green-dark: #0F6E56;
-      --green-deeper: #085041;
-      --green-light: #E1F5EE;
-      --green-mid: #5DCAA5;
+      --teal: #1D9E75;
+      --teal-dark: #0F6E56;
+      --teal-deeper: #085041;
+      --teal-light: #E1F5EE;
+      --teal-mid: #5DCAA5;
       --bg: #ffffff;
-      --bg-secondary: #f7f8f6;
-      --text: #1a1a1a;
-      --text-secondary: #666;
-      --border: rgba(0,0,0,0.1);
-      --border-hover: rgba(0,0,0,0.2);
-      --radius: 12px;
+      --bg-off: #f9faf9;
+      --bg-dark: #0f1512;
+      --text: #111;
+      --text-mid: #444;
+      --text-soft: #888;
+      --border: rgba(0,0,0,0.08);
+      --radius: 14px;
       --radius-sm: 8px;
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg-secondary);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 24px 16px;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 440px;
+      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
-      border-radius: 20px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      overflow: hidden;
-      min-height: 600px;
+      color: var(--text);
+      line-height: 1.6;
     }
 
-    /* HEADER */
-    .header {
-      padding: 20px 24px 16px;
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%; height: 64px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
-    .logo { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
-    .logo span { color: var(--green); }
-    .tagline { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-    .back-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 14px; color: var(--text-secondary); cursor: pointer;
-      margin-bottom: 12px; background: none; border: none;
+    .nav-logo { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; text-decoration: none; color: var(--text); }
+    .nav-logo span { color: var(--teal); }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.15s; }
+    .nav-links a:hover { color: var(--teal); }
+    .nav-cta {
+      background: var(--teal); color: #fff; border: none;
+      padding: 9px 20px; border-radius: 8px; font-size: 14px;
+      font-weight: 500; cursor: pointer; font-family: inherit;
+      text-decoration: none; transition: background 0.15s;
     }
-    .back-btn:hover { color: var(--text); }
+    .nav-cta:hover { background: var(--teal-dark); }
 
-    /* SCREENS */
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: var(--bg-dark);
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; padding: 120px 5% 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(29,158,117,0.18) 0%, transparent 70%);
+    }
+    .hero-inner { position: relative; max-width: 720px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(29,158,117,0.15); border: 1px solid rgba(29,158,117,0.3);
+      color: var(--teal-mid); border-radius: 20px;
+      padding: 6px 16px; font-size: 13px; font-weight: 500;
+      margin-bottom: 32px;
+    }
+    .hero-badge::before { content: '●'; font-size: 8px; color: var(--teal); }
+    .hero h1 {
+      font-size: clamp(40px, 7vw, 72px);
+      font-weight: 600; line-height: 1.1; letter-spacing: -1.5px;
+      color: #fff; margin-bottom: 24px;
+    }
+    .hero h1 span { color: var(--teal); }
+    .hero p {
+      font-size: clamp(16px, 2vw, 19px);
+      color: rgba(255,255,255,0.55); max-width: 500px;
+      margin: 0 auto 40px; font-weight: 300; line-height: 1.7;
+    }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero-primary {
+      background: var(--teal); color: #fff; border: none;
+      padding: 14px 28px; border-radius: 10px; font-size: 16px;
+      font-weight: 500; cursor: pointer; font-family: inherit;
+      transition: background 0.15s; text-decoration: none;
+    }
+    .btn-hero-primary:hover { background: var(--teal-dark); }
+    .btn-hero-secondary {
+      background: transparent; color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 14px 28px; border-radius: 10px; font-size: 16px;
+      font-weight: 400; cursor: pointer; font-family: inherit;
+      text-decoration: none; transition: all 0.15s;
+    }
+    .btn-hero-secondary:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+
+    /* ── STATS ── */
+    .stats {
+      display: flex; justify-content: center; gap: 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      margin-top: 80px;
+    }
+    .stat { flex: 1; max-width: 200px; padding: 32px 20px; text-align: center; border-right: 1px solid rgba(255,255,255,0.08); }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 32px; font-weight: 600; color: #fff; letter-spacing: -1px; }
+    .stat-label { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+    /* ── SECTION BASE ── */
+    section { padding: 100px 5%; }
+    .section-label {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--teal); margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 42px); font-weight: 600;
+      letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 16px;
+    }
+    .section-sub { font-size: 17px; color: var(--text-mid); max-width: 520px; line-height: 1.7; }
+
+    /* ── SERVICIOS ── */
+    #servicios { background: var(--bg-off); }
+    .servicios-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px; margin-top: 56px;
+    }
+    .servicio-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px 24px;
+      cursor: pointer; transition: all 0.2s; text-align: left;
+    }
+    .servicio-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(29,158,117,0.1); }
+    .servicio-icon { font-size: 32px; margin-bottom: 16px; }
+    .servicio-name { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+    .servicio-desc { font-size: 14px; color: var(--text-soft); line-height: 1.5; }
+
+    /* ── CÓMO FUNCIONA ── */
+    #como-funciona { background: #fff; }
+    .pasos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-top: 56px; }
+    .paso { text-align: center; }
+    .paso-num {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--teal-light); color: var(--teal-deeper);
+      font-size: 18px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .paso-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .paso-desc { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+
+    /* ── IA ── */
+    #ia {
+      background: var(--bg-dark);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+    }
+    #ia .section-title { color: #fff; }
+    #ia .section-sub { color: rgba(255,255,255,0.5); }
+    #ia .section-label { color: var(--teal-mid); }
+    .ia-features { list-style: none; margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
+    .ia-features li {
+      display: flex; align-items: flex-start; gap: 14px;
+      font-size: 15px; color: rgba(255,255,255,0.7);
+    }
+    .ia-features li::before {
+      content: '✓'; flex-shrink: 0;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(29,158,117,0.2); color: var(--teal-mid);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; margin-top: 1px;
+    }
+    .ia-demo {
+      background: #1a231f; border: 1px solid rgba(29,158,117,0.2);
+      border-radius: 16px; padding: 28px; font-size: 14px;
+    }
+    .ia-demo-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-mid); margin-bottom: 20px; }
+    .demo-msg { background: rgba(29,158,117,0.12); border-radius: 10px; padding: 14px; color: rgba(255,255,255,0.8); line-height: 1.5; margin-bottom: 16px; }
+    .demo-result { display: flex; flex-direction: column; gap: 10px; }
+    .demo-chip {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 12px 14px; color: rgba(255,255,255,0.7); font-size: 13px;
+    }
+    .demo-chip strong { color: var(--teal-mid); display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+
+    /* ── APP SECTION ── */
+    #app-section { background: var(--bg-off); }
+    .app-wrapper {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: flex-start; margin-top: 56px;
+    }
+
+    /* FORMULARIO APP */
+    .app-form { background: #fff; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+    .app-form-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+    .app-form-logo { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
+    .app-form-logo span { color: var(--teal); }
+    .app-form-tag { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .app-form-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+
     .screen { display: none; }
     .screen.active { display: block; }
 
-    /* HOME */
-    .hero { padding: 24px 24px 16px; }
-    .hero h1 { font-size: 20px; font-weight: 600; line-height: 1.3; }
-    .hero p { font-size: 14px; color: var(--text-secondary); margin-top: 6px; line-height: 1.6; }
-
-    .section-label {
-      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--text-secondary);
-      padding: 0 24px; margin: 16px 0 10px;
-    }
-
-    .services-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 10px; padding: 0 24px;
-    }
-    .service-card {
-      background: var(--bg-secondary); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 16px 14px; cursor: pointer;
-      transition: all 0.15s; text-align: left;
-    }
-    .service-card:hover { border-color: var(--green); background: var(--green-light); }
-    .service-icon { font-size: 26px; margin-bottom: 8px; }
-    .service-name { font-size: 14px; font-weight: 600; }
-    .service-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-
-    .ai-banner {
-      margin: 20px 24px 24px;
-      background: var(--green-light); border: 1px solid var(--green-mid);
-      border-radius: var(--radius); padding: 16px; cursor: pointer;
-      display: flex; align-items: center; gap: 14px; transition: border-color 0.15s;
-    }
-    .ai-banner:hover { border-color: var(--green); }
-    .ai-banner-icon { font-size: 28px; flex-shrink: 0; }
-    .ai-banner-title { font-size: 14px; font-weight: 600; color: var(--green-deeper); }
-    .ai-banner-sub { font-size: 12px; color: var(--green-dark); margin-top: 2px; }
-
-    /* FORM */
-    .form-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
-    .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 6px; }
     .form-group textarea {
-      width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      width: 100%; border: 1px solid #e5e7eb; border-radius: 10px;
       padding: 12px 14px; font-size: 14px; font-family: inherit;
       color: var(--text); background: var(--bg); resize: none; line-height: 1.5;
+      transition: border-color 0.15s;
     }
-    .form-group textarea:focus { outline: none; border-color: var(--green); }
+    .form-group textarea:focus { outline: none; border-color: var(--teal); }
+
+    .services-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .service-mini-btn {
+      background: var(--bg-off); border: 1px solid #e5e7eb;
+      border-radius: 8px; padding: 10px 12px; cursor: pointer;
+      transition: all 0.15s; text-align: left; font-family: inherit;
+    }
+    .service-mini-btn:hover, .service-mini-btn.selected { border-color: var(--teal); background: var(--teal-light); }
+    .service-mini-btn .s-icon { font-size: 18px; }
+    .service-mini-btn .s-name { font-size: 13px; font-weight: 500; color: var(--text); margin-top: 4px; }
 
     .photo-area {
-      border: 1.5px dashed var(--border-hover); border-radius: var(--radius-sm);
-      padding: 22px; text-align: center; cursor: pointer; transition: all 0.15s;
+      border: 1.5px dashed #d1d5db; border-radius: 10px;
+      padding: 20px; text-align: center; cursor: pointer; transition: all 0.15s;
     }
-    .photo-area:hover { border-color: var(--green); background: var(--green-light); }
-    .photo-area-icon { font-size: 30px; }
-    .photo-area p { font-size: 13px; color: var(--text-secondary); margin-top: 6px; }
+    .photo-area:hover { border-color: var(--teal); background: var(--teal-light); }
+    .photo-area p { font-size: 13px; color: var(--text-soft); margin-top: 4px; }
     .photo-area input { display: none; }
     .photo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .photo-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    .photo-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; }
 
     .btn-primary {
-      width: 100%; background: var(--green); color: #fff; border: none;
-      border-radius: var(--radius-sm); padding: 14px; font-size: 15px;
-      font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s;
+      width: 100%; background: var(--teal); color: #fff; border: none;
+      border-radius: 10px; padding: 13px; font-size: 15px;
+      font-weight: 500; cursor: pointer; font-family: inherit; transition: background 0.15s;
     }
-    .btn-primary:hover { background: var(--green-dark); }
-    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-primary:hover { background: var(--teal-dark); }
+    .back-btn {
+      background: none; border: none; font-size: 13px; color: var(--text-soft);
+      cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 4px; padding: 0;
+    }
+    .back-btn:hover { color: var(--text); }
 
-    /* RESULT */
-    .result-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-
+    /* RESULTADO */
     .thinking {
-      display: flex; align-items: center; gap: 12px;
-      padding: 16px; background: var(--bg-secondary); border-radius: var(--radius-sm);
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px; background: var(--bg-off); border-radius: 10px;
     }
-    .dots { display: flex; gap: 5px; }
-    .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-      animation: blink 1.2s infinite;
-    }
+    .dots { display: flex; gap: 4px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); animation: blink 1.2s infinite; }
     .dot:nth-child(2) { animation-delay: 0.2s; }
     .dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes blink { 0%,100%{opacity:0.2} 50%{opacity:1} }
-    .thinking p { font-size: 14px; color: var(--text-secondary); }
 
-    .result-card {
-      background: var(--bg-secondary); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 16px;
-    }
-    .result-card.green { background: var(--green-light); border-color: var(--green-mid); }
-    .card-label {
-      font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
-      text-transform: uppercase; color: var(--text-secondary); margin-bottom: 8px;
-    }
-    .result-card.green .card-label { color: var(--green-deeper); }
+    .result-card { background: var(--bg-off); border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+    .result-card.green { background: var(--teal-light); border-color: var(--teal-mid); }
+    .card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 6px; }
+    .result-card.green .card-label { color: var(--teal-deeper); }
     .card-content { font-size: 14px; color: var(--text); line-height: 1.6; }
-    .result-card.green .card-content { color: var(--green-deeper); }
-
+    .result-card.green .card-content { color: var(--teal-deeper); }
     .pro-name { font-size: 17px; font-weight: 600; }
-    .urgencia-badge {
-      display: inline-block; margin-top: 8px; padding: 3px 10px;
-      border-radius: 20px; font-size: 12px; font-weight: 600;
-    }
+    .urgencia-badge { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
     .urgencia-alta { background: #fdeaea; color: #a32d2d; }
     .urgencia-media { background: #fef3e2; color: #854f0b; }
-    .urgencia-baja { background: var(--green-light); color: var(--green-deeper); }
-    .price-range { font-size: 24px; font-weight: 700; color: var(--green-dark); }
-    .price-note { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .urgencia-baja { background: var(--teal-light); color: var(--teal-deeper); }
+    .price-range { font-size: 22px; font-weight: 700; color: var(--teal-dark); }
+    .price-note { font-size: 12px; color: var(--text-soft); margin-top: 3px; }
 
     .contact-btn {
-      width: 100%; background: var(--green); color: #fff; border: none;
-      border-radius: var(--radius-sm); padding: 15px; font-size: 15px;
-      font-weight: 600; cursor: pointer; font-family: inherit;
+      width: 100%; background: #25D366; color: #fff; border: none;
+      border-radius: 10px; padding: 13px; font-size: 15px;
+      font-weight: 500; cursor: pointer; font-family: inherit;
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      transition: background 0.15s;
+      transition: background 0.15s; margin-top: 4px;
     }
-    .contact-btn:hover { background: var(--green-dark); }
+    .contact-btn:hover { background: #1ebe5d; }
+    .error-box { background: #fdeaea; border: 1px solid #f09595; border-radius: 10px; padding: 14px; font-size: 14px; color: #a32d2d; line-height: 1.5; }
 
-    .error-box {
-      background: #fdeaea; border: 1px solid #f09595;
-      border-radius: var(--radius-sm); padding: 14px;
-      font-size: 14px; color: #a32d2d; line-height: 1.5;
+    /* RIGHT SIDE INFO */
+    .app-info { display: flex; flex-direction: column; gap: 24px; padding-top: 8px; }
+    .info-card { display: flex; gap: 16px; align-items: flex-start; }
+    .info-icon { font-size: 28px; flex-shrink: 0; }
+    .info-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .info-desc { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg-dark); color: rgba(255,255,255,0.4);
+      text-align: center; padding: 40px 5%;
+      font-size: 13px;
     }
+    footer .footer-logo { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    footer .footer-logo span { color: var(--teal); }
 
-    @media (max-width: 480px) {
-      body { padding: 0; align-items: stretch; }
-      .app { border-radius: 0; min-height: 100vh; box-shadow: none; }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      section { padding: 70px 20px; }
+      #ia { grid-template-columns: 1fr; gap: 40px; }
+      .app-wrapper { grid-template-columns: 1fr; }
+      .stats { flex-wrap: wrap; }
+      .stat { min-width: 140px; }
     }
   </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- HEADER (siempre visible) -->
-  <div class="header" id="header">
-    <div class="logo">Cham<span>ba</span></div>
-    <div class="tagline">Profesionales del hogar, cuando los necesitás</div>
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">Cham<span>BA</span></a>
+  <div class="nav-links">
+    <a href="#servicios">Servicios</a>
+    <a href="#como-funciona">Cómo funciona</a>
+    <a href="#ia">IA</a>
+    <a href="#app-section" class="nav-cta">Pedir servicio</a>
   </div>
+</nav>
 
-  <!-- PANTALLA 1: HOME -->
-  <div class="screen active" id="screen-home">
-    <div class="hero">
-      <h1>¿Qué problema necesitás resolver hoy?</h1>
-      <p>Elegí el servicio y la IA te ayuda a diagnosticarlo y presupuestarlo.</p>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">Profesionales verificados en Buenos Aires</div>
+    <h1>El profesional que necesitás,<br><span>cuando lo necesitás</span></h1>
+    <p>Plomeros, electricistas, gasistas, mucamas y más. Coordinamos todo por vos, con precios claros desde el inicio.</p>
+    <div class="hero-btns">
+      <a href="#app-section" class="btn-hero-primary">Pedir un servicio</a>
+      <a href="#como-funciona" class="btn-hero-secondary">Cómo funciona</a>
     </div>
-    <div class="section-label">Elegí el servicio</div>
-    <div class="services-grid">
-      <button class="service-card" onclick="selectService('Plomería')">
-        <div class="service-icon">🔧</div>
-        <div class="service-name">Plomería</div>
-        <div class="service-desc">Pérdidas, cañerías, desagotes</div>
-      </button>
-      <button class="service-card" onclick="selectService('Electricidad')">
-        <div class="service-icon">⚡</div>
-        <div class="service-name">Electricidad</div>
-        <div class="service-desc">Instalaciones, cortocircuitos</div>
-      </button>
-      <button class="service-card" onclick="selectService('Gas')">
-        <div class="service-icon">🔥</div>
-        <div class="service-name">Gas</div>
-        <div class="service-desc">Gasistas matriculados</div>
-      </button>
-      <button class="service-card" onclick="selectService('Limpieza')">
-        <div class="service-icon">✨</div>
-        <div class="service-name">Limpieza</div>
-        <div class="service-desc">Servicio de mucama</div>
-      </button>
-      <button class="service-card" onclick="selectService('Pintura')">
-        <div class="service-icon">🎨</div>
-        <div class="service-name">Pintura</div>
-        <div class="service-desc">Interiores y exteriores</div>
-      </button>
-      <button class="service-card" onclick="selectService('Albañilería')">
-        <div class="service-icon">🏗️</div>
-        <div class="service-name">Albañilería</div>
-        <div class="service-desc">Reparaciones y construcción</div>
-      </button>
-    </div>
-    <div class="ai-banner" onclick="selectService('No sé qué necesito')">
-      <div class="ai-banner-icon">🤖</div>
-      <div>
-        <div class="ai-banner-title">¿No sabés qué profesional necesitás?</div>
-        <div class="ai-banner-sub">Subí una foto y la IA te ayuda a diagnosticarlo</div>
-      </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num">+20</div><div class="stat-label">Profesionales</div></div>
+      <div class="stat"><div class="stat-num">48h</div><div class="stat-label">Tiempo de respuesta</div></div>
+      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Tipos de servicio</div></div>
+      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Coordinado por nosotros</div></div>
     </div>
   </div>
+</section>
 
-  <!-- PANTALLA 2: FORMULARIO -->
-  <div class="screen" id="screen-form">
-    <div class="form-body">
-      <button class="back-btn" onclick="goHome()">← Volver</button>
-      <div>
-        <div class="section-label">Servicio seleccionado</div>
-        <div style="font-size:17px; font-weight:600;" id="form-service-label"></div>
+<!-- SERVICIOS -->
+<section id="servicios">
+  <div class="section-label">Servicios</div>
+  <h2 class="section-title">Todo lo que necesita tu hogar</h2>
+  <p class="section-sub">Contamos con profesionales matriculados y con experiencia en todas las áreas del hogar.</p>
+  <div class="servicios-grid">
+    <div class="servicio-card" onclick="irAServicio('Plomería')">
+      <div class="servicio-icon">🔧</div>
+      <div class="servicio-name">Plomería</div>
+      <div class="servicio-desc">Pérdidas de agua, cañerías tapadas, desagotes, instalaciones sanitarias.</div>
+    </div>
+    <div class="servicio-card" onclick="irAServicio('Electricidad')">
+      <div class="servicio-icon">⚡</div>
+      <div class="servicio-name">Electricidad</div>
+      <div class="servicio-desc">Instalaciones eléctricas, cortocircuitos, tableros, luces y enchufes.</div>
+    </div>
+    <div class="servicio-card" onclick="irAServicio('Gas')">
+      <div class="servicio-icon">🔥</div>
+      <div class="servicio-name">Gas</div>
+      <div class="servicio-desc">Gasistas matriculados para instalaciones, pérdidas y conexión de artefactos.</div>
+    </div>
+    <div class="servicio-card" onclick="irAServicio('Limpieza')">
+      <div class="servicio-icon">✨</div>
+      <div class="servicio-name">Limpieza</div>
+      <div class="servicio-desc">Servicio de mucama por día, semana o de forma permanente.</div>
+    </div>
+    <div class="servicio-card" onclick="irAServicio('Pintura')">
+      <div class="servicio-icon">🎨</div>
+      <div class="servicio-name">Pintura</div>
+      <div class="servicio-desc">Pintura de interiores y exteriores, paredes, techos y aberturas.</div>
+    </div>
+    <div class="servicio-card" onclick="irAServicio('Albañilería')">
+      <div class="servicio-icon">🏗️</div>
+      <div class="servicio-name">Albañilería</div>
+      <div class="servicio-desc">Reparaciones, reformas, revestimientos y trabajos de construcción en general.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como-funciona">
+  <div class="section-label">Proceso</div>
+  <h2 class="section-title">Simple y sin sorpresas</h2>
+  <p class="section-sub">En pocos pasos tenés al profesional en tu casa y el precio claro antes de empezar.</p>
+  <div class="pasos">
+    <div class="paso">
+      <div class="paso-num">1</div>
+      <div class="paso-title">Describí el problema</div>
+      <div class="paso-desc">Contanos qué necesitás y subí fotos si querés. La IA te ayuda a diagnosticarlo al instante.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">2</div>
+      <div class="paso-title">Te recomendamos</div>
+      <div class="paso-desc">Analizamos tu caso y te decimos qué profesional necesitás y cuánto puede costar.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">3</div>
+      <div class="paso-title">Coordinamos todo</div>
+      <div class="paso-desc">Nosotros hablamos con el profesional, confirmamos el turno y te avisamos.</div>
+    </div>
+    <div class="paso">
+      <div class="paso-num">4</div>
+      <div class="paso-title">Trabajo listo</div>
+      <div class="paso-desc">El profesional va a tu casa, hace el trabajo y pagás de forma segura a través de ChamBA.</div>
+    </div>
+  </div>
+</section>
+
+<!-- IA -->
+<section id="ia">
+  <div>
+    <div class="section-label">Inteligencia Artificial</div>
+    <h2 class="section-title">Diagnosticamos tu problema antes de que llegue el profesional</h2>
+    <p class="section-sub">Subí una foto y nuestra IA analiza el problema, te dice qué profesional necesitás y te da un presupuesto estimado.</p>
+    <ul class="ia-features">
+      <li>Identificá qué profesional necesitás con una foto</li>
+      <li>Presupuesto estimado antes de llamar a nadie</li>
+      <li>Recomendaciones mientras esperás al profesional</li>
+      <li>Reconoce marcas, modelos y tipos de instalaciones</li>
+      <li>Te avisa si podés resolverlo vos mismo</li>
+    </ul>
+  </div>
+  <div class="ia-demo">
+    <div class="ia-demo-label">Ejemplo de diagnóstico</div>
+    <div class="demo-msg">💬 "Tengo una pérdida de agua debajo del fregadero, lleva 2 días así..."</div>
+    <div class="demo-result">
+      <div class="demo-chip"><strong>Profesional recomendado</strong>Plomero matriculado</div>
+      <div class="demo-chip"><strong>Urgencia</strong>Media — no es emergencia inmediata</div>
+      <div class="demo-chip"><strong>Costo estimado</strong>$15.000 – $35.000</div>
+      <div class="demo-chip"><strong>Consejo</strong>Cerrá la llave de paso del fregadero para evitar daños mientras esperás.</div>
+    </div>
+  </div>
+</section>
+
+<!-- APP / FORMULARIO -->
+<section id="app-section">
+  <div class="section-label">Pedí tu servicio</div>
+  <h2 class="section-title">Empezá ahora</h2>
+  <p class="section-sub">Describí tu problema y la IA te ayuda a entender qué necesitás y cuánto puede costar.</p>
+
+  <div class="app-wrapper">
+    <!-- FORMULARIO -->
+    <div class="app-form">
+      <div class="app-form-header">
+        <div class="app-form-logo">Cham<span>BA</span></div>
+        <div class="app-form-tag">Diagnóstico con IA</div>
       </div>
+      <div class="app-form-body">
 
-      <div class="form-group">
-        <label>Describí el problema</label>
-        <textarea id="problem-desc" rows="4" placeholder="Ej: Tengo una pérdida de agua debajo del fregadero de la cocina, lleva 2 días así..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Fotos del problema <span style="font-weight:400; color:var(--text-secondary)">(recomendado)</span></label>
-        <div class="photo-area" onclick="document.getElementById('photo-input').click()">
-          <div class="photo-area-icon">📷</div>
-          <p>Tocá para agregar fotos</p>
-          <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotos(event)">
+        <!-- PANTALLA HOME MINI -->
+        <div class="screen active" id="screen-home">
+          <div class="form-group">
+            <label>¿Qué tipo de servicio necesitás?</label>
+            <div class="services-mini">
+              <button class="service-mini-btn" onclick="selectService('Plomería', this)"><div class="s-icon">🔧</div><div class="s-name">Plomería</div></button>
+              <button class="service-mini-btn" onclick="selectService('Electricidad', this)"><div class="s-icon">⚡</div><div class="s-name">Electricidad</div></button>
+              <button class="service-mini-btn" onclick="selectService('Gas', this)"><div class="s-icon">🔥</div><div class="s-name">Gas</div></button>
+              <button class="service-mini-btn" onclick="selectService('Limpieza', this)"><div class="s-icon">✨</div><div class="s-name">Limpieza</div></button>
+              <button class="service-mini-btn" onclick="selectService('Pintura', this)"><div class="s-icon">🎨</div><div class="s-name">Pintura</div></button>
+              <button class="service-mini-btn" onclick="selectService('Albañilería', this)"><div class="s-icon">🏗️</div><div class="s-name">Albañilería</div></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Describí el problema</label>
+            <textarea id="problem-desc" rows="3" placeholder="Ej: Tengo una pérdida de agua debajo del fregadero..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Fotos del problema <span style="font-weight:400;color:var(--text-soft)">(opcional)</span></label>
+            <div class="photo-area" onclick="document.getElementById('photo-input').click()">
+              <div style="font-size:24px">📷</div>
+              <p>Tocá para agregar fotos</p>
+              <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotos(event)">
+            </div>
+            <div class="photo-preview" id="photo-preview"></div>
+          </div>
+          <button class="btn-primary" onclick="analyzeWithAI()">🤖 Analizar con IA</button>
         </div>
-        <div class="photo-preview" id="photo-preview"></div>
-      </div>
 
-      <button class="btn-primary" onclick="analyzeWithAI()">
-        🤖 Analizar con IA
-      </button>
-    </div>
-  </div>
-
-  <!-- PANTALLA 3: RESULTADO -->
-  <div class="screen" id="screen-result">
-    <div class="result-body">
-      <button class="back-btn" onclick="goForm()">← Volver</button>
-
-      <div class="thinking" id="thinking">
-        <div class="dots">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <!-- PANTALLA RESULTADO -->
+        <div class="screen" id="screen-result">
+          <button class="back-btn" onclick="goHome()" style="margin-bottom:16px">← Volver</button>
+          <div class="thinking" id="thinking">
+            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <span style="font-size:14px;color:var(--text-mid)">Analizando tu problema...</span>
+          </div>
+          <div id="result-content"></div>
         </div>
-        <p>La IA está analizando tu problema...</p>
-      </div>
 
-      <div id="result-content"></div>
+      </div>
+    </div>
+
+    <!-- INFO LATERAL -->
+    <div class="app-info">
+      <div class="info-card">
+        <div class="info-icon">🔒</div>
+        <div>
+          <div class="info-title">Pagos seguros</div>
+          <div class="info-desc">Pagás a través de ChamBA. El profesional recibe su pago solo cuando el trabajo está confirmado.</div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">✅</div>
+        <div>
+          <div class="info-title">Profesionales verificados</div>
+          <div class="info-desc">Todos nuestros profesionales están matriculados y verificados antes de trabajar con nosotros.</div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">📋</div>
+        <div>
+          <div class="info-title">Presupuesto claro</div>
+          <div class="info-desc">Sabés el precio estimado antes de confirmar. Sin sorpresas al final del trabajo.</div>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">💬</div>
+        <div>
+          <div class="info-title">Coordinamos todo</div>
+          <div class="info-desc">Vos describís el problema, nosotros nos encargamos del resto. Sin que hagas nada más.</div>
+        </div>
+      </div>
     </div>
   </div>
+</section>
 
-</div>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Cham<span>BA</span></div>
+  <p>Profesionales del hogar, cuando los necesitás.</p>
+  <p style="margin-top:8px">Buenos Aires, Argentina</p>
+</footer>
 
 <script>
-  // ⚠️ Reemplazá esta URL con la de tu backend en Railway
-  const BACKEND_URL = 'https://chamba-production-0c2d.up.railway.app';
+  const BACKEND_URL = 'https://TU-BACKEND.railway.app';
 
   let selectedService = '';
   let photoBase64List = [];
+
+  function irAServicio(service) {
+    document.getElementById('app-section').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => selectService(service), 500);
+  }
+
+  function selectService(service, btn) {
+    selectedService = service;
+    document.querySelectorAll('.service-mini-btn').forEach(b => b.classList.remove('selected'));
+    if (btn) btn.classList.add('selected');
+  }
+
+  function goHome() {
+    setScreen('screen-home');
+    document.getElementById('result-content').innerHTML = '';
+  }
 
   function setScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
-
-  function selectService(service) {
-    selectedService = service;
-    document.getElementById('form-service-label').textContent = service;
-    document.getElementById('problem-desc').value = '';
-    document.getElementById('photo-preview').innerHTML = '';
-    photoBase64List = [];
-    setScreen('screen-form');
-  }
-
-  function goHome() { setScreen('screen-home'); }
-  function goForm() { setScreen('screen-form'); }
 
   function handlePhotos(event) {
     const files = Array.from(event.target.files);
@@ -340,8 +588,8 @@
 
   async function analyzeWithAI() {
     const desc = document.getElementById('problem-desc').value.trim();
-    if (!desc && photoBase64List.length === 0) {
-      alert('Por favor describí el problema o subí una foto.');
+    if (!selectedService && !desc && photoBase64List.length === 0) {
+      alert('Por favor elegí un servicio o describí el problema.');
       return;
     }
 
@@ -353,54 +601,46 @@
       const response = await fetch(`${BACKEND_URL}/api/analizar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ servicio: selectedService, descripcion: desc, fotos: photoBase64List })
+        body: JSON.stringify({ servicio: selectedService || 'No especificado', descripcion: desc, fotos: photoBase64List })
       });
-
       const result = await response.json();
       if (result.error) throw new Error(result.error);
       showResult(result);
     } catch (err) {
       document.getElementById('thinking').style.display = 'none';
       document.getElementById('result-content').innerHTML =
-        `<div class="error-box"><strong>Error:</strong> ${err.message || 'No se pudo conectar al servidor. Verificá tu conexión.'}</div>`;
+        `<div class="error-box"><strong>Error:</strong> ${err.message || 'No se pudo conectar. Verificá tu conexión.'}</div>`;
     }
   }
 
   function showResult(r) {
     document.getElementById('thinking').style.display = 'none';
     const urgClass = r.urgencia === 'Alta' ? 'urgencia-alta' : r.urgencia === 'Media' ? 'urgencia-media' : 'urgencia-baja';
-
     document.getElementById('result-content').innerHTML = `
       <div class="result-card green">
         <div class="card-label">Profesional recomendado</div>
         <div class="pro-name">${r.profesional}</div>
         <span class="urgencia-badge ${urgClass}">Urgencia ${r.urgencia}</span>
       </div>
-
       <div class="result-card">
         <div class="card-label">Diagnóstico</div>
         <div class="card-content">${r.diagnostico}</div>
       </div>
-
       <div class="result-card">
         <div class="card-label">Costo estimado</div>
         <div class="price-range">$${Number(r.precio_min).toLocaleString('es-AR')} – $${Number(r.precio_max).toLocaleString('es-AR')}</div>
         <div class="price-note">Estimación orientativa. El precio final puede variar.</div>
       </div>
-
       <div class="result-card">
-        <div class="card-label">Mientras esperás al profesional</div>
+        <div class="card-label">Mientras esperás</div>
         <div class="card-content">${r.recomendacion}</div>
       </div>
-
-      ${r.puede_solo ? `
-      <div class="result-card" style="border-color:#5DCAA5; background:#E1F5EE;">
-        <div class="card-label" style="color:#085041;">¿Lo podés resolver vos?</div>
-        <div class="card-content" style="color:#085041;">Es posible que puedas solucionarlo sin un profesional. Si tenés dudas, igual te recomendamos consultar.</div>
+      ${r.puede_solo ? `<div class="result-card" style="border-color:#5DCAA5;background:#E1F5EE;">
+        <div class="card-label" style="color:#085041">¿Lo podés resolver vos?</div>
+        <div class="card-content" style="color:#085041">Puede que puedas solucionarlo sin un profesional. Si tenés dudas, igual te recomendamos consultar.</div>
       </div>` : ''}
-
-      <button class="contact-btn" onclick="window.open('https://wa.me/542915104997?text=Hola! Necesito un ${encodeURIComponent(r.profesional)} para: ${encodeURIComponent(r.diagnostico)}', '_blank')">
-        📲 Contactar a Chamba por WhatsApp
+      <button class="contact-btn" onclick="window.open('https://wa.me/5491100000000?text=Hola!+Necesito+un+${encodeURIComponent(r.profesional)}+para:+${encodeURIComponent(r.diagnostico)}', '_blank')">
+        📲 Contactar a ChamBA por WhatsApp
       </button>
     `;
   }
