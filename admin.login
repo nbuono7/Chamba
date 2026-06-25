@@ -371,7 +371,7 @@
 <script>
 // ── CREDENCIALES (cambialas por las tuyas) ──
 const ADMINS = [
-  { user: 'admin', pass: 'chamba2024' },
+  { user: 'admin', pass: 'chambaproject2024' },
   { user: 'empleado1', pass: 'empleado123' }
 ];
 
