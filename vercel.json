@@ -2,6 +2,9 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/registro", "destination": "/registro.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/panel-cliente", "destination": "/panel-cliente.html" },
+    { "source": "/panel-socio", "destination": "/panel-socio.html" },
     { "source": "/", "destination": "/index.html" }
   ]
 }
