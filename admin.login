@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChamBA — Panel de Administración</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #1D9E75; --teal-dark: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #5DCAA5;
+      --bg: #f4f5f4; --sidebar: #0f1512; --card: #ffffff;
+      --text: #111; --text-mid: #555; --text-soft: #999;
+      --border: #e8eae8; --radius: 12px; --radius-sm: 8px;
+      --red: #e24b4a; --red-light: #fdeaea;
+      --amber: #d97706; --amber-light: #fef3e2;
+      --blue: #2563eb; --blue-light: #eff6ff;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* LOGIN */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--sidebar);
+    }
+    .login-box {
+      background: #1a231f; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 40px; width: 100%; max-width: 380px;
+    }
+    .login-logo { font-size: 26px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    .login-logo span { color: var(--teal); }
+    .login-sub { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 32px; }
+    .login-box label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+    .login-box input {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 11px 14px; font-size: 14px; color: #fff;
+      font-family: inherit; margin-bottom: 16px; transition: border-color 0.15s;
+    }
+    .login-box input:focus { outline: none; border-color: var(--teal); }
+    .login-btn {
+      width: 100%; background: var(--teal); color: #fff; border: none;
+      border-radius: 8px; padding: 12px; font-size: 15px; font-weight: 500;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .login-btn:hover { background: var(--teal-dark); }
+    .login-error { font-size: 13px; color: #f09595; margin-top: 12px; text-align: center; display: none; }
+
+    /* LAYOUT */
+    #app { display: none; min-height: 100vh; }
+    .layout { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px; flex-shrink: 0; background: var(--sidebar);
+      display: flex; flex-direction: column; padding: 0;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+    }
+    .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .sidebar-logo .logo { font-size: 20px; font-weight: 600; color: #fff; }
+    .sidebar-logo .logo span { color: var(--teal); }
+    .sidebar-logo .role { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border-radius: 8px; cursor: pointer; transition: all 0.15s;
+      font-size: 14px; color: rgba(255,255,255,0.5); border: none;
+      background: none; font-family: inherit; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+    .nav-item.active { background: rgba(29,158,117,0.15); color: var(--teal-mid); }
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+    .nav-badge {
+      margin-left: auto; background: var(--red); color: #fff;
+      font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px;
+    }
+    .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .logout-btn {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border-radius: 8px; cursor: pointer; font-size: 14px;
+      color: rgba(255,255,255,0.3); border: none; background: none;
+      font-family: inherit; width: 100%; transition: all 0.15s;
+    }
+    .logout-btn:hover { color: rgba(255,255,255,0.6); }
+
+    /* MAIN */
+    .main { margin-left: 220px; flex: 1; padding: 32px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
+
+    /* METRIC CARDS */
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .metric {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 22px;
+    }
+    .metric-label { font-size: 12px; color: var(--text-soft); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+    .metric-val { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+    .metric-sub { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    .metric.teal .metric-val { color: var(--teal); }
+    .metric.red .metric-val { color: var(--red); }
+    .metric.amber .metric-val { color: var(--amber); }
+
+    /* TABLE CARD */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+    .card-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .card-title { font-size: 15px; font-weight: 600; }
+    .card-actions { display: flex; gap: 8px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); background: #fafafa; }
+    td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafcfa; }
+    .td-primary { color: var(--text); font-weight: 500; }
+
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-green { background: var(--teal-light); color: var(--teal-dark); }
+    .badge-red { background: var(--red-light); color: var(--red); }
+    .badge-amber { background: var(--amber-light); color: var(--amber); }
+    .badge-blue { background: var(--blue-light); color: var(--blue); }
+    .badge-gray { background: #f1f1f1; color: #666; }
+
+    /* BUTTONS */
+    .btn { padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; border: none; transition: all 0.15s; }
+    .btn-teal { background: var(--teal); color: #fff; }
+    .btn-teal:hover { background: var(--teal-dark); }
+    .btn-ghost { background: transparent; color: var(--text-mid); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+    .btn-red { background: var(--red-light); color: var(--red); }
+    .btn-red:hover { background: var(--red); color: #fff; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; padding: 28px;
+      width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto;
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-title { font-size: 17px; font-weight: 600; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-soft); line-height: 1; }
+    .modal-field { margin-bottom: 14px; }
+    .modal-field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-soft); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .modal-field .val { font-size: 15px; color: var(--text); }
+    .modal-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+    /* SEARCH */
+    .search-input {
+      padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 14px; font-family: inherit; color: var(--text); background: #fff;
+      width: 220px;
+    }
+    .search-input:focus { outline: none; border-color: var(--teal); }
+
+    /* FILTER TABS */
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-tab {
+      padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer;
+      border: 1px solid var(--border); background: #fff; color: var(--text-mid);
+      font-family: inherit; transition: all 0.15s;
+    }
+    .filter-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+
+    /* EMPTY STATE */
+    .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 200;
+      background: var(--sidebar); color: #fff; padding: 12px 20px;
+      border-radius: 10px; font-size: 14px; transform: translateY(80px);
+      opacity: 0; transition: all 0.3s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Cham<span>BA</span></div>
+    <div class="login-sub">Panel de administración</div>
+    <label>Usuario</label>
+    <input type="text" id="login-user" placeholder="admin" />
+    <label>Contraseña</label>
+    <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo">Cham<span>BA</span></div>
+        <div class="role">Panel Admin</div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="goTo('dashboard')"><span class="icon">📊</span> Dashboard</button>
+        <button class="nav-item" onclick="goTo('pedidos')"><span class="icon">📋</span> Pedidos <span class="nav-badge" id="badge-pedidos">3</span></button>
+        <button class="nav-item" onclick="goTo('profesionales')"><span class="icon">👷</span> Profesionales <span class="nav-badge" id="badge-pros" style="display:none">0</span></button>
+        <button class="nav-item" onclick="goTo('clientes')"><span class="icon">👥</span> Clientes</button>
+        <button class="nav-item" onclick="goTo('pagos')"><span class="icon">💰</span> Pagos</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()"><span>🚪</span> Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="dash-date"></div>
+        <div class="metrics">
+          <div class="metric teal"><div class="metric-label">Pedidos hoy</div><div class="metric-val" id="m-pedidos">0</div><div class="metric-sub">Total acumulado: <span id="m-pedidos-total">0</span></div></div>
+          <div class="metric"><div class="metric-label">Profesionales</div><div class="metric-val" id="m-pros">0</div><div class="metric-sub">Activos en plataforma</div></div>
+          <div class="metric amber"><div class="metric-label">Pendientes aprobación</div><div class="metric-val" id="m-pendientes">0</div><div class="metric-sub">Profesionales por revisar</div></div>
+          <div class="metric"><div class="metric-label">Comisiones</div><div class="metric-val" id="m-comisiones">$0</div><div class="metric-sub">Este mes</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Pedidos recientes</div><button class="btn btn-ghost btn-sm" onclick="goTo('pedidos')">Ver todos →</button></div>
+          <table>
+            <thead><tr><th>Cliente</th><th>Servicio</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+            <tbody id="dash-pedidos-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Profesionales pendientes de aprobación</div><button class="btn btn-ghost btn-sm" onclick="goTo('profesionales')">Ver todos →</button></div>
+          <table>
+            <thead><tr><th>Nombre</th><th>Especialidad</th><th>Registrado</th><th></th></tr></thead>
+          <tbody id="dash-pros-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PEDIDOS -->
+      <div class="page" id="page-pedidos">
+        <div class="page-title">Pedidos</div>
+        <div class="page-sub">Gestioná y asigná los pedidos de los clientes.</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="filter-tabs">
+              <button class="filter-tab active" onclick="filtrarPedidos('todos', this)">Todos</button>
+              <button class="filter-tab" onclick="filtrarPedidos('nuevo', this)">Nuevos</button>
+              <button class="filter-tab" onclick="filtrarPedidos('en_proceso', this)">En proceso</button>
+              <button class="filter-tab" onclick="filtrarPedidos('completado', this)">Completados</button>
+            </div>
+            <input class="search-input" placeholder="Buscar cliente..." oninput="buscarPedidos(this.value)" />
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Cliente</th><th>Servicio</th><th>Profesional</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+            <tbody id="pedidos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PROFESIONALES -->
+      <div class="page" id="page-profesionales">
+        <div class="page-title">Profesionales</div>
+        <div class="page-sub">Revisá y aprobá los profesionales que quieren unirse a ChamBA.</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="filter-tabs">
+              <button class="filter-tab active" onclick="filtrarPros('todos', this)">Todos</button>
+              <button class="filter-tab" onclick="filtrarPros('pendiente', this)">Pendientes</button>
+              <button class="filter-tab" onclick="filtrarPros('aprobado', this)">Aprobados</button>
+              <button class="filter-tab" onclick="filtrarPros('rechazado', this)">Rechazados</button>
+            </div>
+            <input class="search-input" placeholder="Buscar profesional..." oninput="buscarPros(this.value)" />
+          </div>
+          <table>
+            <thead><tr><th>Nombre</th><th>Especialidad</th><th>DNI</th><th>Estado</th><th>Registrado</th><th></th></tr></thead>
+            <tbody id="pros-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CLIENTES -->
+      <div class="page" id="page-clientes">
+        <div class="page-title">Clientes</div>
+        <div class="page-sub">Listado de clientes registrados en ChamBA.</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" id="clientes-count">0 clientes</div>
+            <input class="search-input" placeholder="Buscar cliente..." oninput="buscarClientes(this.value)" />
+          </div>
+          <table>
+            <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Pedidos</th><th>Registrado</th><th></th></tr></thead>
+            <tbody id="clientes-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PAGOS -->
+      <div class="page" id="page-pagos">
+        <div class="page-title">Pagos y comisiones</div>
+        <div class="page-sub">Seguimiento de ingresos y comisiones de ChamBA.</div>
+        <div class="metrics" style="margin-bottom:20px">
+          <div class="metric teal"><div class="metric-label">Comisiones este mes</div><div class="metric-val" id="p-mes">$0</div></div>
+          <div class="metric"><div class="metric-label">Total histórico</div><div class="metric-val" id="p-total">$0</div></div>
+          <div class="metric amber"><div class="metric-label">Pendiente de cobro</div><div class="metric-val" id="p-pendiente">$0</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Historial de pagos</div></div>
+          <table>
+            <thead><tr><th>Pedido</th><th>Cliente</th><th>Profesional</th><th>Total trabajo</th><th>Comisión ChamBA</th><th>Estado</th></tr></thead>
+            <tbody id="pagos-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL PEDIDO -->
+<div class="modal-overlay" id="modal-pedido">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Detalle del pedido</div>
+      <button class="modal-close" onclick="closeModal('modal-pedido')">×</button>
+    </div>
+    <div id="modal-pedido-content"></div>
+  </div>
+</div>
+
+<!-- MODAL PROFESIONAL -->
+<div class="modal-overlay" id="modal-pro">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Detalle del profesional</div>
+      <button class="modal-close" onclick="closeModal('modal-pro')">×</button>
+    </div>
+    <div id="modal-pro-content"></div>
+  </div>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Detalle del cliente</div>
+      <button class="modal-close" onclick="closeModal('modal-cliente')">×</button>
+    </div>
+    <div id="modal-cliente-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CREDENCIALES (cambialas por las tuyas) ──
+const ADMINS = [
+  { user: 'admin', pass: 'chamba2024' },
+  { user: 'empleado1', pass: 'empleado123' }
+];
+
+// ── DATOS DE EJEMPLO ──
+let pedidos = [
+  { id: 1, cliente: 'Martín López', email: 'martin@gmail.com', tel: '1155443322', servicio: 'Plomería', descripcion: 'Pérdida de agua debajo del fregadero', profesional: 'Jorge Méndez', estado: 'nuevo', fecha: '25/06/2026', monto: 25000, comision: 5000 },
+  { id: 2, cliente: 'Ana García', email: 'ana@gmail.com', tel: '1144332211', servicio: 'Electricidad', descripcion: 'Cortocircuito en el tablero', profesional: null, estado: 'nuevo', fecha: '25/06/2026', monto: 0, comision: 0 },
+  { id: 3, cliente: 'Carlos Ruiz', email: 'carlos@gmail.com', tel: '1133221100', servicio: 'Gas', descripcion: 'Olor a gas en la cocina', profesional: 'Roberto Silva', estado: 'en_proceso', fecha: '24/06/2026', monto: 18000, comision: 3600 },
+  { id: 4, cliente: 'Laura Pérez', email: 'laura@gmail.com', tel: '1122110099', servicio: 'Limpieza', descripcion: 'Limpieza general del departamento', profesional: 'María Fernández', estado: 'completado', fecha: '23/06/2026', monto: 12000, comision: 2400 },
+  { id: 5, cliente: 'Diego Torres', email: 'diego@gmail.com', tel: '1111009988', servicio: 'Pintura', descripcion: 'Pintura de living y cocina', profesional: null, estado: 'nuevo', fecha: '25/06/2026', monto: 0, comision: 0 },
+];
+
+let profesionales = [
+  { id: 1, nombre: 'Jorge Méndez', especialidad: 'Plomería', dni: '28.445.123', tel: '1566778899', email: 'jorge@gmail.com', exp: '12 años', matricula: 'MAT-PLO-2341', estado: 'aprobado', fecha: '10/06/2026', trabajos: 8 },
+  { id: 2, nombre: 'Roberto Silva', especialidad: 'Gas', dni: '31.220.445', tel: '1577889900', email: 'roberto@gmail.com', exp: '8 años', matricula: 'MAT-GAS-1122', estado: 'aprobado', fecha: '12/06/2026', trabajos: 3 },
+  { id: 3, nombre: 'María Fernández', especialidad: 'Limpieza', dni: '34.112.778', tel: '1588990011', email: 'maria@gmail.com', exp: '5 años', matricula: '-', estado: 'aprobado', fecha: '15/06/2026', trabajos: 5 },
+  { id: 4, nombre: 'Pablo Ríos', especialidad: 'Electricidad', dni: '29.887.334', tel: '1599001122', email: 'pablo@gmail.com', exp: '15 años', matricula: 'MAT-ELE-4455', estado: 'pendiente', fecha: '24/06/2026', trabajos: 0 },
+  { id: 5, nombre: 'Sofía Castro', especialidad: 'Albañilería', dni: '36.554.990', tel: '1500112233', email: 'sofia@gmail.com', exp: '6 años', matricula: 'MAT-ALB-7788', estado: 'pendiente', fecha: '25/06/2026', trabajos: 0 },
+];
+
+let clientes = [
+  { id: 1, nombre: 'Martín López', email: 'martin@gmail.com', tel: '1155443322', pedidos: 2, fecha: '20/06/2026' },
+  { id: 2, nombre: 'Ana García', email: 'ana@gmail.com', tel: '1144332211', pedidos: 1, fecha: '25/06/2026' },
+  { id: 3, nombre: 'Carlos Ruiz', email: 'carlos@gmail.com', tel: '1133221100', pedidos: 1, fecha: '24/06/2026' },
+  { id: 4, nombre: 'Laura Pérez', email: 'laura@gmail.com', tel: '1122110099', pedidos: 3, fecha: '15/06/2026' },
+  { id: 5, nombre: 'Diego Torres', email: 'diego@gmail.com', tel: '1111009988', pedidos: 1, fecha: '25/06/2026' },
+];
+
+let filtroActualPedidos = 'todos';
+let filtroActualPros = 'todos';
+
+// ── AUTH ──
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const ok = ADMINS.find(a => a.user === u && a.pass === p);
+  if (ok) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    renderAll();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+function doLogout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+}
+
+// ── NAVEGACIÓN ──
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.textContent.toLowerCase().includes(page === 'dashboard' ? 'dashboard' : page)) n.classList.add('active'); });
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'pedidos') renderPedidos();
+  if (page === 'profesionales') renderPros();
+  if (page === 'clientes') renderClientes();
+  if (page === 'pagos') renderPagos();
+}
+
+// ── RENDER ──
+function renderAll() {
+  const now = new Date();
+  document.getElementById('dash-date').textContent = now.toLocaleDateString('es-AR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  renderDashboard(); renderPedidos(); renderPros(); renderClientes(); renderPagos();
+  updateBadges();
+}
+
+function estadoBadge(e) {
+  const map = { nuevo: ['badge-red','Nuevo'], en_proceso: ['badge-amber','En proceso'], completado: ['badge-green','Completado'], cancelado: ['badge-gray','Cancelado'], pendiente: ['badge-amber','Pendiente'], aprobado: ['badge-green','Aprobado'], rechazado: ['badge-red','Rechazado'] };
+  const [cls, label] = map[e] || ['badge-gray', e];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function updateBadges() {
+  const nuevos = pedidos.filter(p => p.estado === 'nuevo').length;
+  const pendPros = profesionales.filter(p => p.estado === 'pendiente').length;
+  document.getElementById('badge-pedidos').textContent = nuevos;
+  document.getElementById('badge-pedidos').style.display = nuevos ? 'inline' : 'none';
+  document.getElementById('badge-pros').textContent = pendPros;
+  document.getElementById('badge-pros').style.display = pendPros ? 'inline' : 'none';
+}
+
+function renderDashboard() {
+  document.getElementById('m-pedidos').textContent = pedidos.filter(p => p.fecha === '25/06/2026').length;
+  document.getElementById('m-pedidos-total').textContent = pedidos.length;
+  document.getElementById('m-pros').textContent = profesionales.filter(p => p.estado === 'aprobado').length;
+  document.getElementById('m-pendientes').textContent = profesionales.filter(p => p.estado === 'pendiente').length;
+  const totalCom = pedidos.filter(p => p.estado === 'completado').reduce((s,p) => s + p.comision, 0);
+  document.getElementById('m-comisiones').textContent = '$' + totalCom.toLocaleString('es-AR');
+
+  const recientes = [...pedidos].reverse().slice(0, 5);
+  document.getElementById('dash-pedidos-tbody').innerHTML = recientes.map(p => `
+    <tr>
+      <td class="td-primary">${p.cliente}</td>
+      <td>${p.servicio}</td>
+      <td>${estadoBadge(p.estado)}</td>
+      <td>${p.fecha}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="verPedido(${p.id})">Ver</button></td>
+    </tr>`).join('');
+
+  const pendientes = profesionales.filter(p => p.estado === 'pendiente');
+  document.getElementById('dash-pros-tbody').innerHTML = pendientes.length
+    ? pendientes.map(p => `<tr><td class="td-primary">${p.nombre}</td><td>${p.especialidad}</td><td>${p.fecha}</td><td><button class="btn btn-teal btn-sm" onclick="verPro(${p.id})">Revisar</button></td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty">No hay profesionales pendientes ✅</td></tr>';
+}
+
+function renderPedidos(lista) {
+  const data = (lista || pedidos).filter(p => filtroActualPedidos === 'todos' || p.estado === filtroActualPedidos);
+  document.getElementById('pedidos-tbody').innerHTML = data.length
+    ? data.map(p => `<tr>
+        <td>#${p.id}</td>
+        <td class="td-primary">${p.cliente}</td>
+        <td>${p.servicio}</td>
+        <td>${p.profesional || '<span style="color:var(--text-soft)">Sin asignar</span>'}</td>
+        <td>${estadoBadge(p.estado)}</td>
+        <td>${p.fecha}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="verPedido(${p.id})">Ver</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" class="empty">No hay pedidos</td></tr>';
+}
+
+function renderPros(lista) {
+  const data = (lista || profesionales).filter(p => filtroActualPros === 'todos' || p.estado === filtroActualPros);
+  document.getElementById('pros-tbody').innerHTML = data.length
+    ? data.map(p => `<tr>
+        <td class="td-primary">${p.nombre}</td>
+        <td>${p.especialidad}</td>
+        <td>${p.dni}</td>
+        <td>${estadoBadge(p.estado)}</td>
+        <td>${p.fecha}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="verPro(${p.id})">Ver</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" class="empty">No hay profesionales</td></tr>';
+}
+
+function renderClientes(lista) {
+  const data = lista || clientes;
+  document.getElementById('clientes-count').textContent = data.length + ' clientes';
+  document.getElementById('clientes-tbody').innerHTML = data.length
+    ? data.map(c => `<tr>
+        <td class="td-primary">${c.nombre}</td>
+        <td>${c.email}</td>
+        <td>${c.tel}</td>
+        <td>${c.pedidos}</td>
+        <td>${c.fecha}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="verCliente(${c.id})">Ver</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" class="empty">No hay clientes</td></tr>';
+}
+
+function renderPagos() {
+  const completados = pedidos.filter(p => p.estado === 'completado');
+  const totalMes = completados.reduce((s,p) => s + p.comision, 0);
+  document.getElementById('p-mes').textContent = '$' + totalMes.toLocaleString('es-AR');
+  document.getElementById('p-total').textContent = '$' + totalMes.toLocaleString('es-AR');
+  const pendiente = pedidos.filter(p => p.estado === 'en_proceso').reduce((s,p) => s + p.comision, 0);
+  document.getElementById('p-pendiente').textContent = '$' + pendiente.toLocaleString('es-AR');
+  document.getElementById('pagos-tbody').innerHTML = pedidos.filter(p => p.monto > 0).map(p => `
+    <tr>
+      <td>#${p.id}</td>
+      <td class="td-primary">${p.cliente}</td>
+      <td>${p.profesional || '-'}</td>
+      <td>$${p.monto.toLocaleString('es-AR')}</td>
+      <td style="color:var(--teal);font-weight:500">$${p.comision.toLocaleString('es-AR')}</td>
+      <td>${estadoBadge(p.estado)}</td>
+    </tr>`).join('') || '<tr><td colspan="6" class="empty">No hay pagos registrados</td></tr>';
+}
+
+// ── FILTROS ──
+function filtrarPedidos(f, btn) {
+  filtroActualPedidos = f;
+  document.querySelectorAll('#page-pedidos .filter-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPedidos();
+}
+function filtrarPros(f, btn) {
+  filtroActualPros = f;
+  document.querySelectorAll('#page-profesionales .filter-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPros();
+}
+function buscarPedidos(q) { renderPedidos(q ? pedidos.filter(p => p.cliente.toLowerCase().includes(q.toLowerCase()) || p.servicio.toLowerCase().includes(q.toLowerCase())) : null); }
+function buscarPros(q) { renderPros(q ? profesionales.filter(p => p.nombre.toLowerCase().includes(q.toLowerCase())) : null); }
+function buscarClientes(q) { renderClientes(q ? clientes.filter(c => c.nombre.toLowerCase().includes(q.toLowerCase()) || c.email.toLowerCase().includes(q.toLowerCase())) : null); }
+
+// ── MODALES ──
+function verPedido(id) {
+  const p = pedidos.find(x => x.id === id);
+  const prosList = profesionales.filter(x => x.estado === 'aprobado').map(x => `<option value="${x.nombre}" ${p.profesional === x.nombre ? 'selected' : ''}>${x.nombre} (${x.especialidad})</option>`).join('');
+  document.getElementById('modal-pedido-content').innerHTML = `
+    <div class="modal-field"><label>Cliente</label><div class="val">${p.cliente}</div></div>
+    <div class="modal-field"><label>Contacto</label><div class="val">${p.email} · ${p.tel}</div></div>
+    <div class="modal-field"><label>Servicio</label><div class="val">${p.servicio}</div></div>
+    <div class="modal-field"><label>Descripción</label><div class="val">${p.descripcion}</div></div>
+    <div class="modal-field"><label>Fecha</label><div class="val">${p.fecha}</div></div>
+    <hr class="modal-divider">
+    <div class="modal-field"><label>Asignar profesional</label>
+      <select id="sel-pro" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px">
+        <option value="">Sin asignar</option>${prosList}
+      </select>
+    </div>
+    <div class="modal-field"><label>Estado</label>
+      <select id="sel-estado" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px">
+        <option value="nuevo" ${p.estado==='nuevo'?'selected':''}>Nuevo</option>
+        <option value="en_proceso" ${p.estado==='en_proceso'?'selected':''}>En proceso</option>
+        <option value="completado" ${p.estado==='completado'?'selected':''}>Completado</option>
+        <option value="cancelado" ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-teal" onclick="guardarPedido(${id})">Guardar cambios</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-pedido')">Cancelar</button>
+    </div>`;
+  openModal('modal-pedido');
+}
+
+function guardarPedido(id) {
+  const p = pedidos.find(x => x.id === id);
+  p.profesional = document.getElementById('sel-pro').value || null;
+  p.estado = document.getElementById('sel-estado').value;
+  closeModal('modal-pedido');
+  renderAll();
+  toast('Pedido actualizado ✅');
+}
+
+function verPro(id) {
+  const p = profesionales.find(x => x.id === id);
+  document.getElementById('modal-pro-content').innerHTML = `
+    <div class="modal-field"><label>Nombre completo</label><div class="val">${p.nombre}</div></div>
+    <div class="modal-field"><label>Especialidad</label><div class="val">${p.especialidad}</div></div>
+    <div class="modal-field"><label>DNI</label><div class="val">${p.dni}</div></div>
+    <div class="modal-field"><label>Teléfono</label><div class="val">${p.tel}</div></div>
+    <div class="modal-field"><label>Email</label><div class="val">${p.email}</div></div>
+    <div class="modal-field"><label>Experiencia</label><div class="val">${p.exp}</div></div>
+    <div class="modal-field"><label>Matrícula</label><div class="val">${p.matricula}</div></div>
+    <div class="modal-field"><label>Estado actual</label><div class="val">${estadoBadge(p.estado)}</div></div>
+    <hr class="modal-divider">
+    <div class="modal-actions">
+      ${p.estado === 'pendiente' ? `
+        <button class="btn btn-teal" onclick="cambiarEstadoPro(${id},'aprobado')">✅ Aprobar</button>
+        <button class="btn btn-red" onclick="cambiarEstadoPro(${id},'rechazado')">❌ Rechazar</button>` : ''}
+      ${p.estado === 'aprobado' ? `<button class="btn btn-red" onclick="cambiarEstadoPro(${id},'rechazado')">Suspender</button>` : ''}
+      ${p.estado === 'rechazado' ? `<button class="btn btn-teal" onclick="cambiarEstadoPro(${id},'aprobado')">Reactivar</button>` : ''}
+      <button class="btn btn-ghost" onclick="closeModal('modal-pro')">Cerrar</button>
+    </div>`;
+  openModal('modal-pro');
+}
+
+function cambiarEstadoPro(id, estado) {
+  profesionales.find(x => x.id === id).estado = estado;
+  closeModal('modal-pro');
+  renderAll();
+  toast(estado === 'aprobado' ? 'Profesional aprobado ✅' : 'Profesional rechazado');
+}
+
+function verCliente(id) {
+  const c = clientes.find(x => x.id === id);
+  const historial = pedidos.filter(p => p.cliente === c.nombre);
+  document.getElementById('modal-cliente-content').innerHTML = `
+    <div class="modal-field"><label>Nombre</label><div class="val">${c.nombre}</div></div>
+    <div class="modal-field"><label>Email</label><div class="val">${c.email}</div></div>
+    <div class="modal-field"><label>Teléfono</label><div class="val">${c.tel}</div></div>
+    <div class="modal-field"><label>Registrado</label><div class="val">${c.fecha}</div></div>
+    <hr class="modal-divider">
+    <div class="modal-field"><label>Historial de pedidos</label>
+      ${historial.length ? historial.map(p => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)"><span>${p.servicio}</span>${estadoBadge(p.estado)}</div>`).join('') : '<div style="color:var(--text-soft);font-size:14px">Sin pedidos</div>'}
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('modal-cliente')">Cerrar</button></div>`;
+  openModal('modal-cliente');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Cerrar modal al clickear fuera
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
