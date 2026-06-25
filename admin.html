@@ -376,29 +376,11 @@ const ADMINS = [
 ];
 
 // ── DATOS DE EJEMPLO ──
-let pedidos = [
-  { id: 1, cliente: 'Martín López', email: 'martin@gmail.com', tel: '1155443322', servicio: 'Plomería', descripcion: 'Pérdida de agua debajo del fregadero', profesional: 'Jorge Méndez', estado: 'nuevo', fecha: '25/06/2026', monto: 25000, comision: 5000 },
-  { id: 2, cliente: 'Ana García', email: 'ana@gmail.com', tel: '1144332211', servicio: 'Electricidad', descripcion: 'Cortocircuito en el tablero', profesional: null, estado: 'nuevo', fecha: '25/06/2026', monto: 0, comision: 0 },
-  { id: 3, cliente: 'Carlos Ruiz', email: 'carlos@gmail.com', tel: '1133221100', servicio: 'Gas', descripcion: 'Olor a gas en la cocina', profesional: 'Roberto Silva', estado: 'en_proceso', fecha: '24/06/2026', monto: 18000, comision: 3600 },
-  { id: 4, cliente: 'Laura Pérez', email: 'laura@gmail.com', tel: '1122110099', servicio: 'Limpieza', descripcion: 'Limpieza general del departamento', profesional: 'María Fernández', estado: 'completado', fecha: '23/06/2026', monto: 12000, comision: 2400 },
-  { id: 5, cliente: 'Diego Torres', email: 'diego@gmail.com', tel: '1111009988', servicio: 'Pintura', descripcion: 'Pintura de living y cocina', profesional: null, estado: 'nuevo', fecha: '25/06/2026', monto: 0, comision: 0 },
-];
+let pedidos = [];
 
-let profesionales = [
-  { id: 1, nombre: 'Jorge Méndez', especialidad: 'Plomería', dni: '28.445.123', tel: '1566778899', email: 'jorge@gmail.com', exp: '12 años', matricula: 'MAT-PLO-2341', estado: 'aprobado', fecha: '10/06/2026', trabajos: 8 },
-  { id: 2, nombre: 'Roberto Silva', especialidad: 'Gas', dni: '31.220.445', tel: '1577889900', email: 'roberto@gmail.com', exp: '8 años', matricula: 'MAT-GAS-1122', estado: 'aprobado', fecha: '12/06/2026', trabajos: 3 },
-  { id: 3, nombre: 'María Fernández', especialidad: 'Limpieza', dni: '34.112.778', tel: '1588990011', email: 'maria@gmail.com', exp: '5 años', matricula: '-', estado: 'aprobado', fecha: '15/06/2026', trabajos: 5 },
-  { id: 4, nombre: 'Pablo Ríos', especialidad: 'Electricidad', dni: '29.887.334', tel: '1599001122', email: 'pablo@gmail.com', exp: '15 años', matricula: 'MAT-ELE-4455', estado: 'pendiente', fecha: '24/06/2026', trabajos: 0 },
-  { id: 5, nombre: 'Sofía Castro', especialidad: 'Albañilería', dni: '36.554.990', tel: '1500112233', email: 'sofia@gmail.com', exp: '6 años', matricula: 'MAT-ALB-7788', estado: 'pendiente', fecha: '25/06/2026', trabajos: 0 },
-];
+let profesionales = [];
 
-let clientes = [
-  { id: 1, nombre: 'Martín López', email: 'martin@gmail.com', tel: '1155443322', pedidos: 2, fecha: '20/06/2026' },
-  { id: 2, nombre: 'Ana García', email: 'ana@gmail.com', tel: '1144332211', pedidos: 1, fecha: '25/06/2026' },
-  { id: 3, nombre: 'Carlos Ruiz', email: 'carlos@gmail.com', tel: '1133221100', pedidos: 1, fecha: '24/06/2026' },
-  { id: 4, nombre: 'Laura Pérez', email: 'laura@gmail.com', tel: '1122110099', pedidos: 3, fecha: '15/06/2026' },
-  { id: 5, nombre: 'Diego Torres', email: 'diego@gmail.com', tel: '1111009988', pedidos: 1, fecha: '25/06/2026' },
-];
+let clientes = [];
 
 let filtroActualPedidos = 'todos';
 let filtroActualPros = 'todos';
