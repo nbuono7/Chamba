@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChamBA — Registrarse</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #1D9E75; --teal-dark: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #5DCAA5;
+      --bg: #f4f5f4; --card: #fff; --text: #111; --text-mid: #555; --text-soft: #999;
+      --border: #e5e7eb; --radius: 12px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* NAV */
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 5%; height: 64px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+    .nav-logo { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--text); }
+    .nav-logo span { color: var(--teal); }
+    .nav-link { font-size: 14px; color: var(--text-mid); text-decoration: none; }
+    .nav-link:hover { color: var(--teal); }
+
+    /* LAYOUT */
+    .page { max-width: 560px; margin: 48px auto; padding: 0 20px 60px; }
+    .page-title { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .page-sub { font-size: 15px; color: var(--text-mid); margin-bottom: 32px; }
+
+    /* TIPO SELECTOR */
+    .tipo-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+    .tipo-card {
+      border: 2px solid var(--border); border-radius: var(--radius);
+      padding: 20px 16px; cursor: pointer; transition: all 0.15s; text-align: center;
+      background: #fff;
+    }
+    .tipo-card:hover { border-color: var(--teal-mid); }
+    .tipo-card.selected { border-color: var(--teal); background: var(--teal-light); }
+    .tipo-icon { font-size: 32px; margin-bottom: 10px; }
+    .tipo-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .tipo-desc { font-size: 13px; color: var(--text-soft); line-height: 1.4; }
+    .tipo-card.selected .tipo-desc { color: var(--teal-dark); }
+
+    /* FORM */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+    .form-section { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-soft); margin: 20px 0 14px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .form-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; font-size: 14px; font-family: inherit;
+      color: var(--text); background: #fff; transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
+    .form-group textarea { resize: none; line-height: 1.5; }
+    .form-group .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    .required { color: var(--teal); }
+
+    /* EXTRA FIELDS */
+    .socio-fields { display: none; }
+    .socio-fields.visible { display: block; }
+
+    /* SUBMIT */
+    .btn-submit {
+      width: 100%; background: var(--teal); color: #fff; border: none;
+      border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 500;
+      cursor: pointer; font-family: inherit; margin-top: 8px; transition: background 0.15s;
+    }
+    .btn-submit:hover { background: var(--teal-dark); }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+    .error-box { background: #fdeaea; border: 1px solid #f09595; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #a32d2d; margin-bottom: 16px; display: none; }
+    .success-box { background: var(--teal-light); border: 1px solid var(--teal-mid); border-radius: 8px; padding: 20px; font-size: 15px; color: var(--teal-dark); text-align: center; display: none; }
+    .success-icon { font-size: 40px; margin-bottom: 12px; }
+    .success-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+
+    .divider { text-align: center; font-size: 13px; color: var(--text-soft); margin: 20px 0; }
+    .link-login { text-align: center; font-size: 14px; color: var(--text-mid); margin-top: 16px; }
+    .link-login a { color: var(--teal); text-decoration: none; font-weight: 500; }
+
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+      .tipo-selector { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">Cham<span>BA</span></a>
+  <a class="nav-link" href="/login.html">Ya tengo cuenta →</a>
+</nav>
+
+<div class="page">
+  <div class="page-title">Creá tu cuenta</div>
+  <div class="page-sub">Elegí cómo querés usar ChamBA</div>
+
+  <!-- TIPO -->
+  <div class="tipo-selector">
+    <div class="tipo-card" id="tipo-cliente" onclick="selectTipo('cliente')">
+      <div class="tipo-icon">🏠</div>
+      <div class="tipo-name">Cliente</div>
+      <div class="tipo-desc">Quiero contratar servicios para mi hogar</div>
+    </div>
+    <div class="tipo-card" id="tipo-socio" onclick="selectTipo('socio')">
+      <div class="tipo-icon">🔧</div>
+      <div class="tipo-name">Socio</div>
+      <div class="tipo-desc">Soy un profesional y quiero ofrecer mis servicios</div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="card" id="form-card" style="display:none">
+    <div class="error-box" id="error-box"></div>
+    <div class="success-box" id="success-box">
+      <div class="success-icon">✅</div>
+      <div class="success-title" id="success-title">¡Registro exitoso!</div>
+      <div id="success-msg"></div>
+      <br>
+      <a href="/" style="color:var(--teal);font-weight:500">Volver al inicio →</a>
+    </div>
+
+    <div id="form-content">
+      <!-- DATOS PERSONALES -->
+      <div class="form-section">Datos personales</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre completo <span class="required">*</span></label>
+          <input type="text" id="f-nombre" placeholder="Juan García" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono <span class="required">*</span></label>
+          <input type="tel" id="f-telefono" placeholder="11 5544 3322" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="required">*</span></label>
+        <input type="email" id="f-email" placeholder="juan@gmail.com" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Contraseña <span class="required">*</span></label>
+          <input type="password" id="f-password" placeholder="Mínimo 8 caracteres" />
+        </div>
+        <div class="form-group">
+          <label>Repetir contraseña <span class="required">*</span></label>
+          <input type="password" id="f-password2" placeholder="Repetí tu contraseña" />
+        </div>
+      </div>
+
+      <!-- CAMPOS SOCIO -->
+      <div class="socio-fields" id="socio-fields">
+        <div class="form-section">Información profesional</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>DNI <span class="required">*</span></label>
+            <input type="text" id="f-dni" placeholder="28.445.123" />
+          </div>
+          <div class="form-group">
+            <label>Especialidad <span class="required">*</span></label>
+            <select id="f-especialidad">
+              <option value="">Elegí una especialidad</option>
+              <option>Plomería</option>
+              <option>Electricidad</option>
+              <option>Gas</option>
+              <option>Limpieza</option>
+              <option>Pintura</option>
+              <option>Albañilería</option>
+              <option>Otra</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Años de experiencia <span class="required">*</span></label>
+            <input type="text" id="f-experiencia" placeholder="Ej: 8 años" />
+          </div>
+          <div class="form-group">
+            <label>Número de matrícula</label>
+            <input type="text" id="f-matricula" placeholder="Ej: MAT-PLO-1234" />
+            <div class="hint">Si no tenés, dejalo vacío</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>¿Por qué querés unirte a ChamBA? <span class="required">*</span></label>
+          <textarea id="f-mensaje" rows="3" placeholder="Contanos un poco sobre vos, tu experiencia y por qué querés ser parte de ChamBA..."></textarea>
+        </div>
+        <div class="form-group" style="background:#fef3e2;border:1px solid #fbbf24;border-radius:8px;padding:12px;font-size:13px;color:#854f0b">
+          ⏳ <strong>Revisamos tu solicitud</strong> — Una vez que te registres, nuestro equipo va a revisar tu perfil y te avisamos por email si fue aprobado. Esto puede tardar hasta 48hs.
+        </div>
+      </div>
+
+      <!-- CONTRASEÑA -->
+      <div class="form-section">Seguridad</div>
+
+      <button class="btn-submit" id="btn-submit" onclick="registrar()">Crear cuenta</button>
+      <div class="link-login">¿Ya tenés cuenta? <a href="/login.html">Ingresá acá</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BACKEND = 'https://TU-BACKEND.railway.app';
+let tipoSeleccionado = null;
+
+function selectTipo(tipo) {
+  tipoSeleccionado = tipo;
+  document.getElementById('tipo-cliente').classList.toggle('selected', tipo === 'cliente');
+  document.getElementById('tipo-socio').classList.toggle('selected', tipo === 'socio');
+  document.getElementById('form-card').style.display = 'block';
+  document.getElementById('socio-fields').classList.toggle('visible', tipo === 'socio');
+  document.getElementById('btn-submit').textContent = tipo === 'cliente' ? 'Crear cuenta' : 'Enviar solicitud';
+  document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function registrar() {
+  const btn = document.getElementById('btn-submit');
+  const errorBox = document.getElementById('error-box');
+  errorBox.style.display = 'none';
+
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const telefono = document.getElementById('f-telefono').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const password = document.getElementById('f-password').value;
+  const password2 = document.getElementById('f-password2').value;
+
+  if (!nombre || !email || !telefono || !password) return showError('Completá todos los campos obligatorios.');
+  if (password.length < 8) return showError('La contraseña debe tener al menos 8 caracteres.');
+  if (password !== password2) return showError('Las contraseñas no coinciden.');
+
+  const body = { nombre, email, telefono, tipo: tipoSeleccionado, password };
+
+  if (tipoSeleccionado === 'socio') {
+    const dni = document.getElementById('f-dni').value.trim();
+    const especialidad = document.getElementById('f-especialidad').value;
+    const experiencia = document.getElementById('f-experiencia').value.trim();
+    const matricula = document.getElementById('f-matricula').value.trim();
+    const mensaje = document.getElementById('f-mensaje').value.trim();
+    if (!dni || !especialidad || !experiencia || !mensaje) return showError('Completá todos los campos obligatorios para socios.');
+    Object.assign(body, { dni, especialidad, experiencia, matricula, mensaje_solicitud: mensaje });
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Registrando...';
+
+  try {
+    const r = await fetch(`${BACKEND}/api/usuarios/registro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    if (!r.ok) return showError(data.error || 'Error al registrar.');
+
+    document.getElementById('form-content').style.display = 'none';
+    const box = document.getElementById('success-box');
+    box.style.display = 'block';
+    if (tipoSeleccionado === 'cliente') {
+      document.getElementById('success-title').textContent = '¡Bienvenido a ChamBA!';
+      document.getElementById('success-msg').textContent = 'Tu cuenta fue creada exitosamente. Ya podés pedir servicios.';
+    } else {
+      document.getElementById('success-title').textContent = '¡Solicitud enviada!';
+      document.getElementById('success-msg').textContent = 'Recibimos tu solicitud. Nuestro equipo la va a revisar y te avisamos por email en las próximas 48hs.';
+    }
+  } catch (e) {
+    showError('No se pudo conectar al servidor. Intentá de nuevo.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = tipoSeleccionado === 'cliente' ? 'Crear cuenta' : 'Enviar solicitud';
+  }
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = msg;
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  document.getElementById('btn-submit').disabled = false;
+}
+</script>
+</body>
+</html>
