@@ -542,12 +542,55 @@
 </footer>
 
 <script>
-  const BACKEND_URL = 'https://TU-BACKEND.railway.app';
+  const BACKEND_URL = 'https://chamba-production-0c2d.up.railway.app';
 
   let selectedService = '';
   let photoBase64List = [];
+  let usuarioLogueado = null;
+
+  // Chequear si hay usuario logueado al cargar la página
+  window.addEventListener('DOMContentLoaded', () => {
+    const u = localStorage.getItem('chamba_user');
+    if (u) {
+      usuarioLogueado = JSON.parse(u);
+      // Cambiar nav: mostrar nombre y panel
+      const navLinks = document.querySelector('.nav-links');
+      if (navLinks) {
+        navLinks.innerHTML = `
+          <a href="#servicios">Servicios</a>
+          <a href="#como-funciona">Cómo funciona</a>
+          <a href="#ia">IA</a>
+          <a href="${usuarioLogueado.tipo === 'socio' ? '/panel-socio' : '/panel-cliente'}" class="nav-cta">Mi panel</a>
+        `;
+      }
+    } else {
+      // Mostrar bloqueo en la sección de IA
+      mostrarBloqueIA();
+    }
+  });
+
+  function mostrarBloqueIA() {
+    const formBody = document.querySelector('.app-form-body');
+    if (!formBody) return;
+    formBody.innerHTML = `
+      <div style="text-align:center;padding:32px 16px">
+        <div style="font-size:48px;margin-bottom:16px">🔒</div>
+        <div style="font-size:18px;font-weight:600;margin-bottom:8px">Registrate para usar la IA</div>
+        <div style="font-size:14px;color:var(--text-mid);margin-bottom:24px;line-height:1.6">
+          El diagnóstico con IA está disponible para usuarios registrados en ChamBA. Es gratis y tarda menos de 1 minuto.
+        </div>
+        <a href="/registro" style="display:inline-block;background:var(--teal);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:500;font-size:15px;margin-bottom:12px">Crear cuenta gratis</a>
+        <br>
+        <a href="/login" style="font-size:14px;color:var(--teal);text-decoration:none">Ya tengo cuenta → Ingresar</a>
+      </div>
+    `;
+  }
 
   function irAServicio(service) {
+    if (!usuarioLogueado) {
+      window.location.href = '/registro';
+      return;
+    }
     document.getElementById('app-section').scrollIntoView({ behavior: 'smooth' });
     setTimeout(() => selectService(service), 500);
   }
@@ -587,16 +630,15 @@
   }
 
   async function analyzeWithAI() {
+    if (!usuarioLogueado) { window.location.href = '/login'; return; }
     const desc = document.getElementById('problem-desc').value.trim();
     if (!selectedService && !desc && photoBase64List.length === 0) {
       alert('Por favor elegí un servicio o describí el problema.');
       return;
     }
-
     setScreen('screen-result');
     document.getElementById('thinking').style.display = 'flex';
     document.getElementById('result-content').innerHTML = '';
-
     try {
       const response = await fetch(`${BACKEND_URL}/api/analizar`, {
         method: 'POST',
@@ -639,9 +681,9 @@
         <div class="card-label" style="color:#085041">¿Lo podés resolver vos?</div>
         <div class="card-content" style="color:#085041">Puede que puedas solucionarlo sin un profesional. Si tenés dudas, igual te recomendamos consultar.</div>
       </div>` : ''}
-      <button class="contact-btn" onclick="window.open('https://wa.me/5491100000000?text=Hola!+Necesito+un+${encodeURIComponent(r.profesional)}+para:+${encodeURIComponent(r.diagnostico)}', '_blank')">
-        📲 Contactar a ChamBA por WhatsApp
-      </button>
+      <a href="/panel-cliente" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);color:#fff;padding:13px;border-radius:10px;text-decoration:none;font-weight:500;font-size:15px;margin-top:4px">
+        📋 Ir a mi panel para pedir el servicio
+      </a>
     `;
   }
 </script>
