@@ -141,3 +141,20 @@ app.post('/api/mensajes', async (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Chamba backend en puerto ${PORT}`));
+
+// ── FORO ──
+app.get('/api/foro', async (req, res) => {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/foro?select=*&order=created_at.desc`, { headers: sbHeaders });
+  res.json(await r.json());
+});
+app.post('/api/foro', async (req, res) => {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/foro`, {
+    method: 'POST', headers: { ...sbHeaders, 'Prefer': 'return=representation' },
+    body: JSON.stringify(req.body)
+  });
+  res.json(await r.json());
+});
+app.delete('/api/foro/:id', async (req, res) => {
+  await fetch(`${SUPABASE_URL}/rest/v1/foro?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbHeaders });
+  res.json({ ok: true });
+});
