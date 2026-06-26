@@ -27,55 +27,42 @@
     .nav-item.active { background: rgba(29,158,117,0.15); color: var(--teal-mid); }
     .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
     .logout-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.3); border: none; background: none; font-family: inherit; width: 100%; }
-
     .main { margin-left: 220px; flex: 1; padding: 32px; }
     .page { display: none; }
     .page.active { display: block; }
     .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
-
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
     .card-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .card-title { font-size: 15px; font-weight: 600; }
     .card-body { padding: 20px; }
-
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); background: #fafafa; }
-    td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    .td-primary { color: var(--text); font-weight: 500; }
-
     .badge { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
     .badge-green { background: var(--teal-light); color: var(--teal-dark); }
     .badge-red { background: var(--red-light); color: var(--red); }
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-gray { background: #f1f1f1; color: #666; }
-
     .btn { padding: 9px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; border: none; transition: all 0.15s; }
     .btn-teal { background: var(--teal); color: #fff; }
     .btn-teal:hover { background: var(--teal-dark); }
     .btn-ghost { background: transparent; color: var(--text-mid); border: 1px solid var(--border); }
     .btn-sm { padding: 5px 12px; font-size: 13px; }
-
     .tarea-card { border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 12px; background: #fff; }
     .tarea-card.nueva { border-color: var(--teal-mid); background: var(--teal-light); }
+    .tarea-card.en_proceso { border-color: #fbbf24; background: var(--amber-light); }
     .tarea-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .tarea-servicio { font-size: 16px; font-weight: 600; }
     .tarea-desc { font-size: 14px; color: var(--text-mid); line-height: 1.6; margin-bottom: 12px; }
-    .tarea-footer { display: flex; align-items: center; justify-content: space-between; }
+    .tarea-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
     .tarea-fecha { font-size: 12px; color: var(--text-soft); }
-    .tarea-btns { display: flex; gap: 8px; }
-
     .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .perfil-field { }
     .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
     .perfil-val { font-size: 15px; color: var(--text); }
-
-    .pendiente-aviso { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: 10px; padding: 20px; text-align: center; }
-    .pendiente-aviso .icon { font-size: 36px; margin-bottom: 10px; }
-    .pendiente-aviso .title { font-size: 17px; font-weight: 600; color: var(--amber); margin-bottom: 6px; }
-    .pendiente-aviso .desc { font-size: 14px; color: #854f0b; line-height: 1.6; }
-
+    .pendiente-aviso { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: 10px; padding: 28px; text-align: center; }
+    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+    .tipo-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+    .tipo-cliente { background: #eff6ff; color: #2563eb; }
+    .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
+    .refresh-btn { font-size: 12px; color: var(--teal); cursor: pointer; background: none; border: none; font-family: inherit; }
     .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
     @media(max-width:768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 20px; } .perfil-grid { grid-template-columns: 1fr; } }
   </style>
@@ -85,14 +72,14 @@
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo">Cham<span>BA</span></div>
-      <div class="sidebar-user" id="sidebar-user">Cargando...</div>
+      <div class="sidebar-user" id="sidebar-user"></div>
       <div class="sidebar-badge">🔧 Socio</div>
     </div>
     <nav class="sidebar-nav">
-      <button class="nav-item active" onclick="goTo('inicio')">🏠 Inicio</button>
-      <button class="nav-item" onclick="goTo('mis-tareas')">📋 Mis tareas</button>
-      <button class="nav-item" onclick="goTo('foro')">💬 Foro</button>
-      <button class="nav-item" onclick="goTo('mi-perfil')">👤 Mi perfil</button>
+      <button class="nav-item active" onclick="goTo('inicio', this)">🏠 Inicio</button>
+      <button class="nav-item" onclick="goTo('mis-tareas', this)">📋 Mis tareas</button>
+      <button class="nav-item" onclick="goTo('foro', this)">💬 Foro</button>
+      <button class="nav-item" onclick="goTo('mi-perfil', this)">👤 Mi perfil</button>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">🚪 Cerrar sesión</button>
@@ -103,23 +90,26 @@
     <!-- INICIO -->
     <div class="page active" id="page-inicio">
       <div class="page-title" id="bienvenida">Bienvenido</div>
-      <div class="page-sub" id="inicio-sub">Panel de socio ChamBA</div>
+      <div class="page-sub" id="inicio-sub"></div>
       <div id="pendiente-aviso" style="display:none">
         <div class="pendiente-aviso">
-          <div class="icon">⏳</div>
-          <div class="title">Tu solicitud está siendo revisada</div>
-          <div class="desc">Nuestro equipo está revisando tu perfil. Te vamos a avisar por email cuando sea aprobado. Esto puede tardar hasta 48hs.</div>
+          <div style="font-size:40px;margin-bottom:12px">⏳</div>
+          <div style="font-size:18px;font-weight:600;color:var(--amber);margin-bottom:8px">Tu solicitud está siendo revisada</div>
+          <div style="font-size:14px;color:#854f0b;line-height:1.6">Nuestro equipo está revisando tu perfil. Te vamos a avisar por email cuando sea aprobado. Esto puede tardar hasta 48hs.</div>
         </div>
       </div>
-      <div id="inicio-aprobado">
+      <div id="inicio-aprobado" style="display:none">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px">
-          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-size:24px;font-weight:600" id="stat-tareas">0</div><div style="font-size:13px;color:var(--text-soft)">Tareas asignadas</div></div></div>
-          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">✅</div><div style="font-size:24px;font-weight:600" id="stat-completadas">0</div><div style="font-size:13px;color:var(--text-soft)">Completadas</div></div></div>
-          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">⏳</div><div style="font-size:24px;font-weight:600" id="stat-pendientes">0</div><div style="font-size:13px;color:var(--text-soft)">En proceso</div></div></div>
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-size:24px;font-weight:600" id="stat-tareas">—</div><div style="font-size:13px;color:var(--text-soft)">Tareas asignadas</div></div></div>
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">✅</div><div style="font-size:24px;font-weight:600" id="stat-completadas">—</div><div style="font-size:13px;color:var(--text-soft)">Completadas</div></div></div>
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">⏳</div><div style="font-size:24px;font-weight:600" id="stat-enproceso">—</div><div style="font-size:13px;color:var(--text-soft)">En proceso</div></div></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Tareas recientes</div><button class="btn btn-ghost btn-sm" onclick="goTo('mis-tareas')">Ver todas →</button></div>
-          <div style="padding:16px" id="inicio-tareas"><div class="empty">No tenés tareas asignadas aún</div></div>
+          <div class="card-header">
+            <div class="card-title">Tareas recientes</div>
+            <button class="refresh-btn" onclick="cargarTareas()">↻ Actualizar</button>
+          </div>
+          <div style="padding:16px" id="inicio-tareas"></div>
         </div>
       </div>
     </div>
@@ -127,19 +117,26 @@
     <!-- MIS TAREAS -->
     <div class="page" id="page-mis-tareas">
       <div class="page-title">Mis tareas</div>
-      <div class="page-sub">Trabajos que ChamBA te asignó.</div>
-      <div id="tareas-lista"><div class="empty">No tenés tareas asignadas aún</div></div>
+      <div class="page-sub">Trabajos que ChamBA te asignó. <button class="refresh-btn" onclick="cargarTareas()">↻ Actualizar</button></div>
+      <div id="tareas-lista"></div>
     </div>
 
     <!-- FORO -->
     <div class="page" id="page-foro">
-      <div class="page-title">Foro de socios</div>
-      <div class="page-sub">Compartí consejos y experiencias con otros socios de ChamBA.</div>
-      <div style="background:var(--teal-light);border:1px solid var(--teal-mid);border-radius:10px;padding:16px;margin-bottom:20px">
-        <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--teal-dark)">✍️ Nueva publicación</div>
-        <input id="foro-titulo" placeholder="Título..." style="width:100%;border:1px solid var(--teal-mid);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;margin-bottom:8px"/>
-        <textarea id="foro-body" rows="3" placeholder="Escribí tu mensaje..." style="width:100%;border:1px solid var(--teal-mid);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:none;margin-bottom:8px"></textarea>
-        <button class="btn btn-teal btn-sm" onclick="publicarForo()">Publicar</button>
+      <div class="page-title">Foro de la comunidad</div>
+      <div class="page-sub">Compartí consejos con clientes y otros socios. <button class="refresh-btn" onclick="cargarForo()">↻ Actualizar</button></div>
+      <div class="card">
+        <div class="card-body">
+          <div style="margin-bottom:12px">
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Título</label>
+            <input type="text" id="foro-titulo" placeholder="Título de tu publicación..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit"/>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Mensaje</label>
+            <textarea id="foro-body" rows="3" placeholder="Escribí tu mensaje..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:none"></textarea>
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="publicarForo()">Publicar</button>
+        </div>
       </div>
       <div id="foro-posts"></div>
     </div>
@@ -148,11 +145,7 @@
     <div class="page" id="page-mi-perfil">
       <div class="page-title">Mi perfil</div>
       <div class="page-sub">Tus datos registrados en ChamBA.</div>
-      <div class="card">
-        <div class="card-body">
-          <div class="perfil-grid" id="perfil-grid"></div>
-        </div>
-      </div>
+      <div class="card"><div class="card-body"><div class="perfil-grid" id="perfil-grid"></div></div></div>
     </div>
 
   </main>
@@ -161,9 +154,8 @@
 const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
 let usuario = null;
 let misTareas = [];
-let foroPosts = JSON.parse(localStorage.getItem('chamba_foro_socios') || '[]');
 
-window.onload = () => {
+window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
   if (!u) return window.location.href = '/login';
   usuario = JSON.parse(u);
@@ -173,27 +165,38 @@ window.onload = () => {
 
   if (usuario.estado === 'pendiente') {
     document.getElementById('pendiente-aviso').style.display = 'block';
-    document.getElementById('inicio-aprobado').style.display = 'none';
     document.getElementById('inicio-sub').textContent = 'Tu solicitud está pendiente de aprobación.';
   } else {
-    cargarTareas();
+    document.getElementById('inicio-aprobado').style.display = 'block';
+    document.getElementById('inicio-sub').textContent = 'Panel de socio ChamBA.';
+    await cargarTareas();
+    setInterval(cargarTareas, 30000);
   }
   renderPerfil();
-  renderForo();
+  await cargarForo();
 };
 
 function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
 
-function goTo(page) {
+function goTo(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  event?.currentTarget?.classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (page === 'foro') cargarForo();
+  if (page === 'mis-tareas') cargarTareas();
+}
+
+async function api(path, method='GET', body=null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(BACKEND + path, opts);
+  return r.json();
 }
 
 async function cargarTareas() {
   try {
-    const todos = await (await fetch(`${BACKEND}/api/pedidos`)).json();
+    const todos = await api('/api/pedidos');
     misTareas = Array.isArray(todos) ? todos.filter(p => p.profesional_id === usuario.id) : [];
   } catch(e) { misTareas = []; }
   renderTareas();
@@ -209,21 +212,19 @@ function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'
 function renderTareas() {
   document.getElementById('stat-tareas').textContent = misTareas.length;
   document.getElementById('stat-completadas').textContent = misTareas.filter(t => t.estado === 'completado').length;
-  document.getElementById('stat-pendientes').textContent = misTareas.filter(t => t.estado === 'en_proceso').length;
+  document.getElementById('stat-enproceso').textContent = misTareas.filter(t => t.estado === 'en_proceso').length;
 
   const html = misTareas.length
     ? misTareas.map(t => `
-      <div class="tarea-card ${t.estado === 'nuevo' ? 'nueva' : ''}">
+      <div class="tarea-card ${t.estado === 'nuevo' ? 'nueva' : t.estado === 'en_proceso' ? 'en_proceso' : ''}">
         <div class="tarea-header">
           <div class="tarea-servicio">${t.servicio||'—'}</div>
           ${badge(t.estado)}
         </div>
         <div class="tarea-desc">${t.descripcion||'Sin descripción'}</div>
         <div class="tarea-footer">
-          <div class="tarea-fecha">${fmtDate(t.created_at)}</div>
-          <div class="tarea-btns">
-            ${t.monto ? `<span style="font-weight:600;color:var(--teal)">$${Number(t.monto).toLocaleString('es-AR')}</span>` : ''}
-          </div>
+          <div class="tarea-fecha">📅 ${fmtDate(t.created_at)}</div>
+          ${t.monto ? `<div style="font-weight:600;color:var(--teal)">💰 $${Number(t.monto).toLocaleString('es-AR')}</div>` : ''}
         </div>
       </div>`).join('')
     : '<div class="empty">No tenés tareas asignadas aún.<br>ChamBA te va a avisar cuando haya trabajo para vos.</div>';
@@ -234,40 +235,42 @@ function renderTareas() {
 
 function renderPerfil() {
   document.getElementById('perfil-grid').innerHTML = `
-    <div class="perfil-field"><div class="perfil-label">Nombre</div><div class="perfil-val">${usuario.nombre}</div></div>
-    <div class="perfil-field"><div class="perfil-label">Email</div><div class="perfil-val">${usuario.email}</div></div>
-    <div class="perfil-field"><div class="perfil-label">Teléfono</div><div class="perfil-val">${usuario.telefono||'—'}</div></div>
-    <div class="perfil-field"><div class="perfil-label">Especialidad</div><div class="perfil-val">${usuario.especialidad||'—'}</div></div>
-    <div class="perfil-field"><div class="perfil-label">DNI</div><div class="perfil-val">${usuario.dni||'—'}</div></div>
-    <div class="perfil-field"><div class="perfil-label">Experiencia</div><div class="perfil-val">${usuario.experiencia||'—'}</div></div>
-    <div class="perfil-field"><div class="perfil-label">Matrícula</div><div class="perfil-val">${usuario.matricula||'Sin matrícula'}</div></div>
-    <div class="perfil-field"><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado === 'aprobado' ? '✅ Aprobado' : '⏳ Pendiente'}</div></div>
-  `;
+    <div><div class="perfil-label">Nombre</div><div class="perfil-val">${usuario.nombre}</div></div>
+    <div><div class="perfil-label">Email</div><div class="perfil-val">${usuario.email}</div></div>
+    <div><div class="perfil-label">Teléfono</div><div class="perfil-val">${usuario.telefono||'—'}</div></div>
+    <div><div class="perfil-label">Especialidad</div><div class="perfil-val">${usuario.especialidad||'—'}</div></div>
+    <div><div class="perfil-label">DNI</div><div class="perfil-val">${usuario.dni||'—'}</div></div>
+    <div><div class="perfil-label">Experiencia</div><div class="perfil-val">${usuario.experiencia||'—'}</div></div>
+    <div><div class="perfil-label">Matrícula</div><div class="perfil-val">${usuario.matricula||'—'}</div></div>
+    <div><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado==='aprobado'?'✅ Aprobado':'⏳ Pendiente'}</div></div>`;
 }
 
-function renderForo() {
-  document.getElementById('foro-posts').innerHTML = foroPosts.length
-    ? [...foroPosts].reverse().map(p => `
-        <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;background:#fff">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-            <div style="font-size:13px;font-weight:600">${p.autor}</div>
-            <div style="font-size:12px;color:var(--text-soft)">${p.fecha}</div>
-          </div>
-          <div style="font-size:15px;font-weight:600;margin-bottom:6px">${p.titulo}</div>
-          <div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.body}</div>
-        </div>`).join('')
-    : '<div class="empty">Todavía no hay publicaciones. ¡Sé el primero!</div>';
+async function cargarForo() {
+  try {
+    const posts = await api('/api/foro');
+    const container = document.getElementById('foro-posts');
+    container.innerHTML = Array.isArray(posts) && posts.length
+      ? posts.map(p => `
+          <div class="foro-post">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div>
+              <div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div>
+            </div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px">${p.titulo}</div>
+            <div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div>
+          </div>`).join('')
+      : '<div class="empty">No hay publicaciones aún.</div>';
+  } catch(e) {}
 }
 
-function publicarForo() {
+async function publicarForo() {
   const titulo = document.getElementById('foro-titulo').value.trim();
-  const body = document.getElementById('foro-body').value.trim();
-  if (!titulo || !body) return;
-  foroPosts.push({ autor: usuario.nombre, titulo, body, fecha: new Date().toLocaleDateString('es-AR') });
-  localStorage.setItem('chamba_foro_socios', JSON.stringify(foroPosts));
+  const contenido = document.getElementById('foro-body').value.trim();
+  if (!titulo || !contenido) return;
+  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: usuario.tipo, titulo, contenido });
   document.getElementById('foro-titulo').value = '';
   document.getElementById('foro-body').value = '';
-  renderForo();
+  cargarForo();
 }
 </script>
 </body>
