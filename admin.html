@@ -155,6 +155,8 @@
         <div class="nav-section">Usuarios</div>
         <button class="nav-item" onclick="goTo('clientes-reg')"><span>🏠</span> Clientes <span class="nav-badge" id="badge-clientes" style="display:none">0</span></button>
         <button class="nav-item" onclick="goTo('socios-reg')"><span>🔧</span> Socios <span class="nav-badge" id="badge-socios" style="display:none">0</span></button>
+        <div class="nav-section">Comunidad</div>
+        <button class="nav-item" onclick="goTo('foro')"><span>💬</span> Foro</button>
       </nav>
       <div class="sidebar-footer">
         <button class="logout-btn" onclick="doLogout()"><span>🚪</span> Cerrar sesión</button>
@@ -252,6 +254,26 @@
         </div>
       </div>
 
+
+      <!-- FORO ADMIN -->
+      <div class="page" id="page-foro">
+        <div class="page-title">Foro de la comunidad</div>
+        <div class="page-sub">Publicaciones de clientes y socios. Podés moderar y publicar como ChamBA.</div>
+        <div class="card">
+          <div class="card-body">
+            <div style="margin-bottom:12px">
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Título</label>
+              <input type="text" id="foro-admin-titulo" placeholder="Título de tu publicación..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit"/>
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Mensaje</label>
+              <textarea id="foro-admin-body" rows="3" placeholder="Escribí tu mensaje..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:none"></textarea>
+            </div>
+            <button class="btn btn-teal btn-sm" onclick="publicarForoAdmin()">Publicar como ChamBA</button>
+          </div>
+        </div>
+        <div id="foro-admin-posts"><div class="loading">Cargando...</div></div>
+      </div>
     </main>
   </div>
 </div>
@@ -275,7 +297,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
+const BACKEND = 'https://TU-BACKEND.railway.app';
 const ADMINS = [
   { user: 'admin', pass: 'chamba2024' },
   { user: 'empleado1', pass: 'empleado123' }
@@ -323,6 +345,7 @@ function goTo(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   event?.currentTarget?.classList.add('active');
+  if (page === 'foro') cargarForo();
 }
 
 function updateBadges() {
@@ -520,6 +543,50 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target===m) m.classList.remove('open'); }));
 function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+// FORO ADMIN
+async function cargarForo() {
+  try {
+    const posts = await api('/api/foro');
+    const container = document.getElementById('foro-admin-posts');
+    if (!container) return;
+    container.innerHTML = Array.isArray(posts) && posts.length
+      ? posts.map(p => `
+          <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;background:#fff">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div>
+                <span style="font-size:13px;font-weight:600">${p.autor_nombre}</span>
+                <span style="display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;background:${p.autor_tipo==='admin'?'#f1f1f1':p.autor_tipo==='socio'?'#E1F5EE':'#eff6ff'};color:${p.autor_tipo==='admin'?'#666':p.autor_tipo==='socio'?'#0F6E56':'#2563eb'}">${p.autor_tipo}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</span>
+                <button class="btn btn-red btn-sm" onclick="eliminarPost('${p.id}')">Eliminar</button>
+              </div>
+            </div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px">${p.titulo}</div>
+            <div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div>
+          </div>`).join('')
+      : '<div class="empty">No hay publicaciones en el foro</div>';
+  } catch(e) { console.error(e); }
+}
+
+async function publicarForoAdmin() {
+  const titulo = document.getElementById('foro-admin-titulo').value.trim();
+  const contenido = document.getElementById('foro-admin-body').value.trim();
+  if (!titulo || !contenido) return;
+  await api('/api/foro', 'POST', { autor_id: null, autor_nombre: 'ChamBA', autor_tipo: 'admin', titulo, contenido });
+  document.getElementById('foro-admin-titulo').value = '';
+  document.getElementById('foro-admin-body').value = '';
+  cargarForo();
+  toast('Publicado en el foro ✅');
+}
+
+async function eliminarPost(id) {
+  if (!confirm('¿Eliminar esta publicación?')) return;
+  await api(`/api/foro/${id}`, 'DELETE');
+  cargarForo();
+  toast('Publicación eliminada');
+}
 </script>
 </body>
 </html>
