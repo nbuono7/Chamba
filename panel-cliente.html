@@ -31,15 +31,10 @@
     .page.active { display: block; }
     .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
-    .card-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .card-title { font-size: 15px; font-weight: 600; }
     .card-body { padding: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); background: #fafafa; }
-    td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    .td-primary { color: var(--text); font-weight: 500; }
     .badge { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
     .badge-green { background: var(--teal-light); color: var(--teal-dark); }
     .badge-red { background: var(--red-light); color: var(--red); }
@@ -49,25 +44,70 @@
     .btn-teal { background: var(--teal); color: #fff; }
     .btn-teal:hover { background: var(--teal-dark); }
     .btn-ghost { background: transparent; color: var(--text-mid); border: 1px solid var(--border); }
-    .btn-sm { padding: 5px 12px; font-size: 13px; }
+    .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+    .btn-red { background: var(--red-light); color: var(--red); border: none; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
-    .form-group select, .form-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; color: var(--text); background: #fff; }
-    .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
+    .form-group select, .form-group textarea, .form-group input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; color: var(--text); background: #fff; }
+    .form-group select:focus, .form-group textarea:focus, .form-group input:focus { outline: none; border-color: var(--teal); }
     .form-group textarea { resize: none; line-height: 1.5; }
-    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
-    .foro-autor { font-size: 13px; font-weight: 600; }
-    .foro-meta { font-size: 12px; color: var(--text-soft); }
-    .foro-titulo { font-size: 15px; font-weight: 600; margin: 6px 0; }
-    .foro-body { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
-    .tipo-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
-    .tipo-cliente { background: #eff6ff; color: #2563eb; }
-    .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
-    .alert-box { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 16px; display: none; }
+    .alert { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; display: none; }
     .alert-success { background: var(--teal-light); border: 1px solid var(--teal-mid); color: var(--teal-dark); }
     .alert-error { background: var(--red-light); border: 1px solid #f09595; color: var(--red); }
     .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
     .refresh-btn { font-size: 12px; color: var(--teal); cursor: pointer; background: none; border: none; font-family: inherit; }
+
+    /* PEDIDO CARD */
+    .pedido-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; background: #fff; }
+    .pedido-card.activo { border-color: var(--teal-mid); }
+    .pedido-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .pedido-servicio { font-size: 16px; font-weight: 600; }
+    .pedido-desc { font-size: 14px; color: var(--text-mid); margin-bottom: 12px; line-height: 1.5; }
+    .pedido-ia { background: var(--teal-light); border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 13px; color: var(--teal-dark); }
+
+    /* OFERTAS */
+    .oferta-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fafafa; }
+    .oferta-card.destacada { border-color: var(--teal); background: var(--teal-light); }
+    .oferta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .oferta-socio { font-size: 14px; font-weight: 600; }
+    .oferta-precio { font-size: 20px; font-weight: 700; color: var(--teal-dark); }
+    .oferta-rep { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .stars { color: #f59e0b; }
+    .oferta-msg { font-size: 13px; color: var(--text-mid); margin: 8px 0; font-style: italic; }
+    .oferta-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+    /* NEGOCIACIÓN */
+    .negociacion-box { background: #fff8e1; border: 1px solid #fbbf24; border-radius: 10px; padding: 14px; margin-top: 10px; }
+    .negociacion-title { font-size: 13px; font-weight: 600; color: var(--amber); margin-bottom: 8px; }
+
+    /* CÓDIGO */
+    .codigo-box { background: var(--teal-light); border: 2px solid var(--teal); border-radius: 12px; padding: 20px; text-align: center; margin-top: 12px; }
+    .codigo-num { font-size: 48px; font-weight: 700; letter-spacing: 8px; color: var(--teal-dark); font-family: monospace; }
+    .codigo-hint { font-size: 13px; color: var(--teal-dark); margin-top: 6px; }
+
+    /* CHAT */
+    .chat-box { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 12px; }
+    .chat-messages { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #fafafa; }
+    .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
+    .chat-msg.yo { background: var(--teal); color: #fff; align-self: flex-end; }
+    .chat-msg.otro { background: #fff; border: 1px solid var(--border); align-self: flex-start; }
+    .chat-msg-meta { font-size: 11px; opacity: 0.6; margin-bottom: 2px; }
+    .chat-input-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border); }
+    .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
+    .chat-input:focus { outline: none; border-color: var(--teal); }
+
+    /* CALIFICACIÓN */
+    .stars-input { display: flex; gap: 6px; margin: 8px 0; }
+    .star-btn { font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; filter: grayscale(1); transition: filter 0.1s; }
+    .star-btn.activa { filter: grayscale(0); }
+
+    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fff; }
+    .tipo-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+    .tipo-cliente { background: #eff6ff; color: #2563eb; }
+    .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
+    .tipo-admin { background: #f1f1f1; color: #666; }
+
     @media(max-width:768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 20px; } }
   </style>
 </head>
@@ -79,10 +119,10 @@
       <div class="sidebar-user" id="sidebar-user"></div>
     </div>
     <nav class="sidebar-nav">
-      <button class="nav-item active" onclick="goTo('inicio', this)">🏠 Inicio</button>
-      <button class="nav-item" onclick="goTo('mis-trabajos', this)">📋 Mis trabajos</button>
-      <button class="nav-item" onclick="goTo('nuevo-pedido', this)">➕ Pedir servicio</button>
-      <button class="nav-item" onclick="goTo('foro', this)">💬 Foro</button>
+      <button class="nav-item active" onclick="goTo('inicio',this)">🏠 Inicio</button>
+      <button class="nav-item" onclick="goTo('nuevo-pedido',this)">➕ Publicar trabajo</button>
+      <button class="nav-item" onclick="goTo('mis-trabajos',this)">📋 Mis trabajos</button>
+      <button class="nav-item" onclick="goTo('foro',this)">💬 Foro</button>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">🚪 Cerrar sesión</button>
@@ -94,42 +134,25 @@
     <div class="page active" id="page-inicio">
       <div class="page-title" id="bienvenida">Bienvenido</div>
       <div class="page-sub">Panel de cliente ChamBA</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px">
-        <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-size:24px;font-weight:600" id="stat-pedidos">—</div><div style="font-size:13px;color:var(--text-soft)">Pedidos</div></div></div>
-        <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">✅</div><div style="font-size:24px;font-weight:600" id="stat-completados">—</div><div style="font-size:13px;color:var(--text-soft)">Completados</div></div></div>
-        <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center;cursor:pointer" onclick="goTo('nuevo-pedido')"><div style="font-size:32px;margin-bottom:8px">➕</div><div style="font-size:15px;font-weight:600;color:var(--teal)">Nuevo pedido</div></div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px">
+        <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">📋</div><div style="font-size:22px;font-weight:600" id="stat-total">—</div><div style="font-size:12px;color:var(--text-soft)">Trabajos publicados</div></div></div>
+        <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">⏳</div><div style="font-size:22px;font-weight:600" id="stat-activos">—</div><div style="font-size:12px;color:var(--text-soft)">En proceso</div></div></div>
+        <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;font-weight:600;margin-bottom:6px">✅</div><div style="font-size:22px;font-weight:600" id="stat-completados">—</div><div style="font-size:12px;color:var(--text-soft)">Completados</div></div></div>
+        <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('nuevo-pedido')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">➕</div><div style="font-size:14px;font-weight:600;color:var(--teal)">Publicar trabajo</div></div></div>
       </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Mis últimos pedidos</div>
-          <button class="refresh-btn" onclick="cargarPedidos()">↻ Actualizar</button>
-        </div>
-        <table><thead><tr><th>Servicio</th><th>Estado</th><th>Socio asignado</th><th>Fecha</th></tr></thead>
-        <tbody id="inicio-pedidos"></tbody></table>
-      </div>
-    </div>
-
-    <!-- MIS TRABAJOS -->
-    <div class="page" id="page-mis-trabajos">
-      <div class="page-title">Mis trabajos</div>
-      <div class="page-sub">Historial completo de tus pedidos. <button class="refresh-btn" onclick="cargarPedidos()">↻ Actualizar</button></div>
-      <div class="card">
-        <div class="card-header"><div class="card-title" id="trabajos-count">Pedidos</div></div>
-        <table><thead><tr><th>Servicio</th><th>Descripción</th><th>Estado</th><th>Socio asignado</th><th>Monto</th><th>Fecha</th></tr></thead>
-        <tbody id="trabajos-tbody"></tbody></table>
-      </div>
+      <div id="inicio-pedidos-recientes"></div>
     </div>
 
     <!-- NUEVO PEDIDO -->
     <div class="page" id="page-nuevo-pedido">
-      <div class="page-title">Pedir un servicio</div>
-      <div class="page-sub">Describí tu problema y te conseguimos el profesional indicado.</div>
+      <div class="page-title">Publicar un trabajo</div>
+      <div class="page-sub">Describí lo que necesitás y los socios capacitados van a hacerte sus ofertas.</div>
       <div class="card">
         <div class="card-body">
-          <div class="alert-box alert-success" id="pedido-success">✅ ¡Pedido enviado! Nuestro equipo se va a contactar con vos pronto.</div>
-          <div class="alert-box alert-error" id="pedido-error"></div>
+          <div class="alert alert-success" id="pedido-ok">✅ ¡Trabajo publicado! Los socios van a enviarte sus ofertas pronto.</div>
+          <div class="alert alert-error" id="pedido-err"></div>
           <div class="form-group">
-            <label>Tipo de servicio</label>
+            <label>Tipo de servicio necesitado</label>
             <select id="p-servicio">
               <option value="">Elegí el servicio</option>
               <option>Plomería</option><option>Electricidad</option><option>Gas</option>
@@ -138,27 +161,31 @@
           </div>
           <div class="form-group">
             <label>Descripción del problema</label>
-            <textarea id="p-descripcion" rows="4" placeholder="Describí con detalle el problema..."></textarea>
+            <textarea id="p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea>
           </div>
-          <button class="btn btn-teal" onclick="enviarPedido()">Enviar pedido</button>
+          <div id="ia-sugerencia" style="display:none" class="pedido-ia"></div>
+          <button class="btn btn-ghost btn-sm" style="margin-bottom:16px" onclick="consultarIA()">🤖 Consultar precio a la IA</button>
+          <br>
+          <button class="btn btn-teal" onclick="publicarTrabajo()">Publicar trabajo</button>
         </div>
       </div>
+    </div>
+
+    <!-- MIS TRABAJOS -->
+    <div class="page" id="page-mis-trabajos">
+      <div class="page-title">Mis trabajos</div>
+      <div class="page-sub">Tus trabajos publicados y su estado. <button class="refresh-btn" onclick="cargarPedidos()">↻ Actualizar</button></div>
+      <div id="lista-trabajos"><div class="empty">Cargando...</div></div>
     </div>
 
     <!-- FORO -->
     <div class="page" id="page-foro">
       <div class="page-title">Foro de la comunidad</div>
-      <div class="page-sub">Hacé preguntas y compartí experiencias. Visible para clientes y socios. <button class="refresh-btn" onclick="cargarForo()">↻ Actualizar</button></div>
+      <div class="page-sub">Preguntá y compartí con otros usuarios. <button class="refresh-btn" onclick="cargarForo()">↻ Actualizar</button></div>
       <div class="card">
         <div class="card-body">
-          <div class="form-group">
-            <label>Título</label>
-            <input type="text" id="foro-titulo" placeholder="¿Cuál es tu pregunta o tema?" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit"/>
-          </div>
-          <div class="form-group">
-            <label>Mensaje</label>
-            <textarea id="foro-body" rows="3" placeholder="Escribí tu mensaje..."></textarea>
-          </div>
+          <div class="form-group"><label>Título</label><input type="text" id="foro-titulo" placeholder="Título de tu publicación..."/></div>
+          <div class="form-group"><label>Mensaje</label><textarea id="foro-body" rows="3" placeholder="Escribí tu mensaje..."></textarea></div>
           <button class="btn btn-teal btn-sm" onclick="publicarForo()">Publicar</button>
         </div>
       </div>
@@ -171,41 +198,33 @@
 const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
 let usuario = null;
 let misPedidos = [];
-let socios = [];
+let iaSugerencia = null;
+let estrellasSeleccionadas = 0;
 
 window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
   if (!u) return window.location.href = '/login';
   usuario = JSON.parse(u);
-
-  // Refrescar datos del usuario desde el backend
   try {
     const todos = await api('/api/usuarios');
     const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
-    if (fresco) {
-      const safe = { ...fresco };
-      delete safe.password_hash;
-      usuario = safe;
-      localStorage.setItem('chamba_user', JSON.stringify(safe));
-    }
+    if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); }
   } catch(e) {}
-
   document.getElementById('sidebar-user').textContent = usuario.nombre;
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
-  await cargarSocios();
   await cargarPedidos();
   await cargarForo();
-  setInterval(() => { cargarPedidos(); }, 30000);
+  setInterval(cargarPedidos, 30000);
 };
 
 function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
-
 function goTo(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
   if (page === 'foro') cargarForo();
+  if (page === 'mis-trabajos') cargarPedidos();
 }
 
 async function api(path, method='GET', body=null) {
@@ -215,12 +234,14 @@ async function api(path, method='GET', body=null) {
   return r.json();
 }
 
-async function cargarSocios() {
-  try {
-    const todos = await api('/api/usuarios');
-    socios = Array.isArray(todos) ? todos.filter(u => u.tipo === 'socio' && u.estado === 'aprobado') : [];
-  } catch(e) { socios = []; }
+function badge(e) {
+  const map = { nuevo:'badge-gray|Esperando ofertas', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-red|Cancelado' };
+  const [cls, label] = (map[e] || 'badge-gray|' + e).split('|');
+  return `<span class="badge ${cls}">${label}</span>`;
 }
+function stars(n) { return '⭐'.repeat(Math.round(n||0)) || '—'; }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'; }
+function fmt(n) { return '$' + Number(n||0).toLocaleString('es-AR'); }
 
 async function cargarPedidos() {
   try {
@@ -230,83 +251,233 @@ async function cargarPedidos() {
   renderPedidos();
 }
 
-function getNombreSocio(id) {
-  if (!id) return '—';
-  const s = socios.find(x => x.id === id);
-  return s ? s.nombre : '—';
-}
-
-function badge(e) {
-  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado' };
-  const [cls, label] = (map[e] || 'badge-gray|' + e).split('|');
-  return `<span class="badge ${cls}">${label}</span>`;
-}
-function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'; }
-
 function renderPedidos() {
-  document.getElementById('stat-pedidos').textContent = misPedidos.length;
+  document.getElementById('stat-total').textContent = misPedidos.length;
+  document.getElementById('stat-activos').textContent = misPedidos.filter(p => p.estado === 'en_proceso').length;
   document.getElementById('stat-completados').textContent = misPedidos.filter(p => p.estado === 'completado').length;
-  document.getElementById('trabajos-count').textContent = `${misPedidos.length} pedidos`;
 
-  const rows1 = misPedidos.slice(0,5).map(p =>
-    `<tr><td class="td-primary">${p.servicio||'—'}</td><td>${badge(p.estado)}</td><td>${getNombreSocio(p.profesional_id)}</td><td>${fmtDate(p.created_at)}</td></tr>`
-  ).join('') || '<tr><td colspan="4" class="empty">Todavía no hiciste ningún pedido</td></tr>';
-  document.getElementById('inicio-pedidos').innerHTML = rows1;
-
-  const rows2 = misPedidos.map(p =>
-    `<tr><td class="td-primary">${p.servicio||'—'}</td><td>${(p.descripcion||'').slice(0,40)}...</td><td>${badge(p.estado)}</td><td>${getNombreSocio(p.profesional_id)}</td><td>${p.monto?'$'+Number(p.monto).toLocaleString('es-AR'):'—'}</td><td>${fmtDate(p.created_at)}</td></tr>`
-  ).join('') || '<tr><td colspan="6" class="empty">Todavía no hiciste ningún pedido</td></tr>';
-  document.getElementById('trabajos-tbody').innerHTML = rows2;
+  const recientes = misPedidos.slice(0, 3).map(p => renderPedidoCard(p)).join('') || '<div class="empty">No publicaste trabajos aún. ¡Publicá tu primer trabajo!</div>';
+  document.getElementById('inicio-pedidos-recientes').innerHTML = '<div style="font-size:15px;font-weight:600;margin-bottom:12px">Trabajos recientes</div>' + recientes;
+  document.getElementById('lista-trabajos').innerHTML = misPedidos.map(p => renderPedidoCard(p)).join('') || '<div class="empty">No publicaste trabajos aún.</div>';
 }
 
-async function enviarPedido() {
-  const servicio = document.getElementById('p-servicio').value;
-  const descripcion = document.getElementById('p-descripcion').value.trim();
-  document.getElementById('pedido-success').style.display = 'none';
-  document.getElementById('pedido-error').style.display = 'none';
-  if (!servicio || !descripcion) return showAlert('pedido-error', 'Completá todos los campos.');
+function renderPedidoCard(p) {
+  const esActivo = p.estado === 'en_proceso';
+  const esCompletado = p.estado === 'completado';
+  return `
+    <div class="pedido-card ${esActivo ? 'activo' : ''}">
+      <div class="pedido-header">
+        <div class="pedido-servicio">${p.servicio||'—'}</div>
+        ${badge(p.estado)}
+      </div>
+      <div class="pedido-desc">${p.descripcion||''}</div>
+      ${p.precio_sugerido_ia ? `<div class="pedido-ia">🤖 Precio sugerido por IA: <strong>${fmt(p.precio_sugerido_ia)}</strong> (incluye comisión ChamBA 20%)</div>` : ''}
+      <div style="font-size:12px;color:var(--text-soft);margin-bottom:12px">📅 ${fmtDate(p.created_at)}</div>
+      ${p.estado === 'nuevo' ? `<button class="btn btn-ghost btn-sm" onclick="verOfertas('${p.id}')">Ver ofertas</button>` : ''}
+      ${esActivo ? `
+        <div style="background:var(--teal-light);border-radius:8px;padding:12px;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600;color:var(--teal-dark);margin-bottom:4px">✅ Trabajo en proceso</div>
+          <div style="font-size:13px;color:var(--teal-dark)">Precio acordado: <strong>${fmt(p.precio_cliente)}</strong></div>
+        </div>
+        ${p.codigo_verificacion && !p.codigo_usado ? `
+          <div class="codigo-box">
+            <div style="font-size:13px;font-weight:600;color:var(--teal-dark);margin-bottom:8px">🔐 Código para el socio</div>
+            <div class="codigo-num">${p.codigo_verificacion}</div>
+            <div class="codigo-hint">Dáselo al socio cuando termine el trabajo</div>
+          </div>` : ''}
+        ${p.codigo_usado ? '<div style="color:var(--teal);font-weight:500;font-size:14px">✅ Trabajo verificado — el dinero fue liberado al socio</div>' : ''}
+        <div style="margin-top:12px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">💬 Chat con el socio</div>
+          ${renderChat(p.id)}
+        </div>
+      ` : ''}
+      ${esCompletado && !p._calificado ? `
+        <div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:10px">
+          <div style="font-size:14px;font-weight:600;margin-bottom:8px">⭐ Calificá al socio</div>
+          <div class="stars-input" id="stars-${p.id}">
+            ${[1,2,3,4,5].map(n => `<button class="star-btn" onclick="selStar('${p.id}',${n})">⭐</button>`).join('')}
+          </div>
+          <textarea id="comment-${p.id}" rows="2" placeholder="Comentario (opcional)..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px;font-family:inherit;font-size:13px;margin-top:8px;resize:none"></textarea>
+          <button class="btn btn-teal btn-sm" style="margin-top:8px" onclick="calificar('${p.id}','${p.profesional_id}')">Enviar calificación</button>
+        </div>` : ''}
+    </div>
+    <div id="ofertas-${p.id}" style="display:none;margin-bottom:12px"></div>`;
+}
+
+function renderChat(pedidoId) {
+  return `<div class="chat-box">
+    <div class="chat-messages" id="chat-${pedidoId}"><div style="color:var(--text-soft);font-size:13px;text-align:center;padding:16px">Cargando mensajes...</div></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input-${pedidoId}" placeholder="Escribí un mensaje..." onkeydown="if(event.key==='Enter')enviarMsg('${pedidoId}','${usuario.nombre}')"/>
+      <button class="btn btn-teal btn-sm" onclick="enviarMsg('${pedidoId}','${usuario.nombre}')">Enviar</button>
+    </div>
+  </div>`;
+}
+
+async function verOfertas(pedidoId) {
+  const container = document.getElementById('ofertas-' + pedidoId);
+  if (container.style.display !== 'none') { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  container.innerHTML = '<div class="empty">Cargando ofertas...</div>';
   try {
-    const r = await api('/api/pedidos', 'POST', { servicio, descripcion, usuario_id: usuario.id, estado: 'nuevo' });
-    if (r.error) return showAlert('pedido-error', r.error);
-    showAlert('pedido-success', '');
-    document.getElementById('p-servicio').value = '';
-    document.getElementById('p-descripcion').value = '';
-    cargarPedidos();
-  } catch(e) { showAlert('pedido-error', 'Error al enviar. Intentá de nuevo.'); }
+    const ofertas = await api('/api/ofertas?pedido_id=' + pedidoId);
+    if (!Array.isArray(ofertas) || !ofertas.length) {
+      container.innerHTML = '<div class="empty">Todavía no hay ofertas para este trabajo.</div>';
+      return;
+    }
+    // Ordenar por mejor reputación y menor precio
+    const sorted = ofertas.sort((a, b) => {
+      const repA = a.rep_promedio || 0; const repB = b.rep_promedio || 0;
+      if (repB !== repA) return repB - repA;
+      return a.precio_ofertado - b.precio_ofertado;
+    });
+    container.innerHTML = `
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text-mid)">Ofertas recibidas (ordenadas por reputación y precio):</div>
+      ${sorted.map((o, i) => `
+        <div class="oferta-card ${i === 0 ? 'destacada' : ''}">
+          ${i === 0 ? '<div style="font-size:11px;font-weight:600;color:var(--teal);margin-bottom:6px">⭐ MEJOR OFERTA</div>' : ''}
+          <div class="oferta-header">
+            <div>
+              <div class="oferta-socio">${o.socio_nombre}</div>
+              <div class="oferta-rep">${o.rep_promedio ? '⭐'.repeat(Math.round(o.rep_promedio)) + ' ' + o.rep_promedio : 'Sin calificaciones'} · ${o.trabajos_completados || 0} trabajos</div>
+            </div>
+            <div class="oferta-precio">${fmt(o.precio_ofertado)}</div>
+          </div>
+          ${o.mensaje ? `<div class="oferta-msg">"${o.mensaje}"</div>` : ''}
+          <div class="oferta-btns">
+            ${o.estado === 'pendiente' || o.estado === 'negociando' ? `
+              <button class="btn btn-teal btn-sm" onclick="aceptarOferta('${o.id}','${pedidoId}')">✅ Aceptar y pagar ${fmt(o.precio_ofertado)}</button>
+              <button class="btn btn-ghost btn-sm" onclick="mostrarNegociacion('${o.id}','${pedidoId}',${o.precio_ofertado})">💬 Negociar precio</button>
+            ` : `<span class="badge ${o.estado==='aceptada'?'badge-green':'badge-gray'}">${o.estado==='aceptada'?'Aceptada':'Rechazada'}</span>`}
+          </div>
+          <div id="neg-${o.id}" style="display:none" class="negociacion-box">
+            <div class="negociacion-title">Proponer otro precio</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="number" id="neg-precio-${o.id}" placeholder="Tu precio" style="flex:1;border:1px solid #fbbf24;border-radius:8px;padding:8px;font-family:inherit;font-size:14px"/>
+              <button class="btn btn-sm" style="background:#d97706;color:#fff" onclick="enviarContraoferta('${o.id}','${pedidoId}')">Enviar</button>
+            </div>
+          </div>
+        </div>`).join('')}`;
+  } catch(e) { container.innerHTML = '<div class="empty">Error al cargar ofertas.</div>'; }
+  // Cargar mensajes de chats activos
+  misPedidos.filter(p => p.estado === 'en_proceso').forEach(p => cargarMensajes(p.id));
 }
 
-function showAlert(id, msg) {
-  const el = document.getElementById(id);
-  if (msg) el.textContent = msg;
-  el.style.display = 'block';
+async function aceptarOferta(ofertaId, pedidoId) {
+  if (!confirm('¿Confirmás que querés aceptar esta oferta y realizar el pago?')) return;
+  try {
+    const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
+    if (r.error) return alert(r.error);
+    alert(`✅ ¡Trabajo asignado!\n\nPrecio: ${fmt(r.precio_cliente)}\nTu código de verificación: ${r.codigo}\n\nGuardá este código — se lo das al socio cuando termine el trabajo.`);
+    await cargarPedidos();
+  } catch(e) { alert('Error al aceptar la oferta.'); }
+}
+
+function mostrarNegociacion(ofertaId, pedidoId, precioActual) {
+  const box = document.getElementById('neg-' + ofertaId);
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  if (box.style.display === 'block') document.getElementById('neg-precio-' + ofertaId).value = precioActual;
+}
+
+async function enviarContraoferta(ofertaId, pedidoId) {
+  const precio = parseFloat(document.getElementById('neg-precio-' + ofertaId).value);
+  if (!precio || precio <= 0) return alert('Ingresá un precio válido.');
+  await api('/api/ofertas/' + ofertaId, 'PATCH', { estado: 'negociando', precio_contraoferta: precio });
+  alert('Contraoferta enviada al socio.');
+  document.getElementById('neg-' + ofertaId).style.display = 'none';
+}
+
+async function cargarMensajes(pedidoId) {
+  try {
+    const msgs = await api('/api/mensajes/' + pedidoId);
+    const box = document.getElementById('chat-' + pedidoId);
+    if (!box) return;
+    box.innerHTML = Array.isArray(msgs) && msgs.length
+      ? msgs.map(m => `<div class="chat-msg ${m.autor === usuario.nombre ? 'yo' : 'otro'}"><div class="chat-msg-meta">${m.autor}</div>${m.contenido}</div>`).join('')
+      : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:16px">No hay mensajes aún</div>';
+    box.scrollTop = box.scrollHeight;
+  } catch(e) {}
+}
+
+async function enviarMsg(pedidoId, autor) {
+  const input = document.getElementById('chat-input-' + pedidoId);
+  const contenido = input.value.trim(); if (!contenido) return;
+  input.value = '';
+  await api('/api/mensajes', 'POST', { pedido_id: pedidoId, autor, rol: 'cliente', contenido });
+  cargarMensajes(pedidoId);
+}
+
+function selStar(pedidoId, n) {
+  estrellasSeleccionadas = n;
+  document.querySelectorAll(`#stars-${pedidoId} .star-btn`).forEach((btn, i) => {
+    btn.classList.toggle('activa', i < n);
+  });
+}
+
+async function calificar(pedidoId, socioId) {
+  if (!estrellasSeleccionadas) return alert('Elegí una calificación de 1 a 5 estrellas.');
+  const comentario = document.getElementById('comment-' + pedidoId).value.trim();
+  await api('/api/calificaciones', 'POST', { pedido_id: pedidoId, socio_id: socioId, cliente_id: usuario.id, estrellas: estrellasSeleccionadas, comentario });
+  alert('¡Gracias por tu calificación!');
+  await cargarPedidos();
+}
+
+async function consultarIA() {
+  const servicio = document.getElementById('p-servicio').value;
+  const desc = document.getElementById('p-desc').value.trim();
+  if (!servicio || !desc) return alert('Completá el servicio y la descripción primero.');
+  const box = document.getElementById('ia-sugerencia');
+  box.style.display = 'block';
+  box.innerHTML = '🤖 Consultando a la IA...';
+  try {
+    const r = await api('/api/analizar', 'POST', { servicio, descripcion: desc, fotos: [] });
+    iaSugerencia = r;
+    box.innerHTML = `
+      🤖 <strong>Precio sugerido por la IA: ${fmt(r.precio_cliente)}</strong> (el socio recibiría ${fmt(r.precio_socio)}, ChamBA cobra ${fmt(r.comision_chamba)})<br>
+      <span style="font-size:12px;color:var(--teal-dark)">Rango estimado: ${fmt(r.precio_min)} – ${fmt(r.precio_max)}</span>`;
+  } catch(e) { box.innerHTML = '⚠️ No se pudo consultar la IA.'; }
+}
+
+async function publicarTrabajo() {
+  const servicio = document.getElementById('p-servicio').value;
+  const descripcion = document.getElementById('p-desc').value.trim();
+  document.getElementById('pedido-ok').style.display = 'none';
+  document.getElementById('pedido-err').style.display = 'none';
+  if (!servicio || !descripcion) {
+    const e = document.getElementById('pedido-err');
+    e.textContent = 'Completá todos los campos.'; e.style.display = 'block'; return;
+  }
+  const body = { servicio, descripcion, usuario_id: usuario.id, estado: 'nuevo' };
+  if (iaSugerencia) body.precio_sugerido_ia = iaSugerencia.precio_cliente;
+  try {
+    const r = await api('/api/pedidos', 'POST', body);
+    if (r.error) throw new Error(r.error);
+    document.getElementById('pedido-ok').style.display = 'block';
+    document.getElementById('p-servicio').value = '';
+    document.getElementById('p-desc').value = '';
+    document.getElementById('ia-sugerencia').style.display = 'none';
+    iaSugerencia = null;
+    await cargarPedidos();
+  } catch(e) {
+    const el = document.getElementById('pedido-err');
+    el.textContent = e.message || 'Error al publicar.'; el.style.display = 'block';
+  }
 }
 
 async function cargarForo() {
   try {
     const posts = await api('/api/foro');
-    renderForo(Array.isArray(posts) ? posts : []);
-  } catch(e) { renderForo([]); }
-}
-
-function renderForo(posts) {
-  document.getElementById('foro-posts').innerHTML = posts.length
-    ? posts.map(p => `
-      <div class="foro-post">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <div><span class="foro-autor">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div>
-          <div class="foro-meta">${fmtDate(p.created_at)}</div>
-        </div>
-        <div class="foro-titulo">${p.titulo}</div>
-        <div class="foro-body">${p.contenido}</div>
-      </div>`).join('')
-    : '<div class="empty">No hay publicaciones aún. ¡Sé el primero!</div>';
+    document.getElementById('foro-posts').innerHTML = Array.isArray(posts) && posts.length
+      ? posts.map(p => `<div class="foro-post"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div></div><div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.titulo}</div><div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div></div>`).join('')
+      : '<div class="empty">No hay publicaciones aún.</div>';
+  } catch(e) {}
 }
 
 async function publicarForo() {
   const titulo = document.getElementById('foro-titulo').value.trim();
   const contenido = document.getElementById('foro-body').value.trim();
   if (!titulo || !contenido) return;
-  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: usuario.tipo, titulo, contenido });
+  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'cliente', titulo, contenido });
   document.getElementById('foro-titulo').value = '';
   document.getElementById('foro-body').value = '';
   cargarForo();
