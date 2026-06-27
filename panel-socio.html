@@ -160,8 +160,20 @@ window.onload = async () => {
   if (!u) return window.location.href = '/login';
   usuario = JSON.parse(u);
   if (usuario.tipo !== 'socio') return window.location.href = '/panel-cliente';
+
+  // Refrescar datos del usuario desde el backend para tener el ID actualizado
+  try {
+    const todos = await api('/api/usuarios');
+    const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
+    if (fresco) {
+      const { password_hash, ...safe } = { ...fresco };
+      usuario = safe;
+      localStorage.setItem('chamba_user', JSON.stringify(safe));
+    }
+  } catch(e) { console.log('No se pudo refrescar usuario'); }
+
   document.getElementById('sidebar-user').textContent = usuario.nombre;
-  document.getElementById('bienvenida').textContent = `Hola, ${usuario.nombre.split(' ')[0]} 👋`;
+  document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
 
   if (usuario.estado === 'pendiente') {
     document.getElementById('pendiente-aviso').style.display = 'block';
