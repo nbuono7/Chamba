@@ -177,12 +177,24 @@ window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
   if (!u) return window.location.href = '/login';
   usuario = JSON.parse(u);
+
+  // Refrescar datos del usuario desde el backend
+  try {
+    const todos = await api('/api/usuarios');
+    const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
+    if (fresco) {
+      const safe = { ...fresco };
+      delete safe.password_hash;
+      usuario = safe;
+      localStorage.setItem('chamba_user', JSON.stringify(safe));
+    }
+  } catch(e) {}
+
   document.getElementById('sidebar-user').textContent = usuario.nombre;
-  document.getElementById('bienvenida').textContent = `Hola, ${usuario.nombre.split(' ')[0]} 👋`;
+  document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
   await cargarSocios();
   await cargarPedidos();
   await cargarForo();
-  // Auto-refresh cada 30 segundos
   setInterval(() => { cargarPedidos(); }, 30000);
 };
 
