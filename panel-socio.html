@@ -32,9 +32,7 @@
     .page.active { display: block; }
     .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
-    .card-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .card-title { font-size: 15px; font-weight: 600; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
     .card-body { padding: 20px; }
     .badge { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
     .badge-green { background: var(--teal-light); color: var(--teal-dark); }
@@ -45,25 +43,67 @@
     .btn-teal { background: var(--teal); color: #fff; }
     .btn-teal:hover { background: var(--teal-dark); }
     .btn-ghost { background: transparent; color: var(--text-mid); border: 1px solid var(--border); }
-    .btn-sm { padding: 5px 12px; font-size: 13px; }
-    .tarea-card { border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 12px; background: #fff; }
-    .tarea-card.nueva { border-color: var(--teal-mid); background: var(--teal-light); }
-    .tarea-card.en_proceso { border-color: #fbbf24; background: var(--amber-light); }
-    .tarea-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .tarea-servicio { font-size: 16px; font-weight: 600; }
-    .tarea-desc { font-size: 14px; color: var(--text-mid); line-height: 1.6; margin-bottom: 12px; }
-    .tarea-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-    .tarea-fecha { font-size: 12px; color: var(--text-soft); }
-    .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
-    .perfil-val { font-size: 15px; color: var(--text); }
-    .pendiente-aviso { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: 10px; padding: 28px; text-align: center; }
-    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+    .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+    .btn-amber { background: var(--amber); color: #fff; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+    .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
+    .refresh-btn { font-size: 12px; color: var(--teal); cursor: pointer; background: none; border: none; font-family: inherit; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
+    .form-group input, .form-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
+    .form-group textarea { resize: none; }
+
+    /* TRABAJO DISPONIBLE */
+    .trabajo-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; background: #fff; }
+    .trabajo-card.nuevo { border-left: 4px solid var(--teal); }
+    .trabajo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .trabajo-servicio { font-size: 16px; font-weight: 600; }
+    .trabajo-desc { font-size: 14px; color: var(--text-mid); margin-bottom: 10px; line-height: 1.5; }
+    .trabajo-ia { background: var(--teal-light); border-radius: 8px; padding: 10px; margin-bottom: 10px; font-size: 13px; color: var(--teal-dark); }
+
+    /* OFERTA FORM */
+    .oferta-form { background: #f9faf9; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 10px; }
+    .oferta-form-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+
+    /* TAREA ASIGNADA */
+    .tarea-card { border: 1px solid var(--teal-mid); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; background: var(--teal-light); }
+    .tarea-precio { font-size: 22px; font-weight: 700; color: var(--teal-dark); }
+
+    /* CÓDIGO */
+    .codigo-input-box { background: #fff; border: 2px solid var(--teal); border-radius: 12px; padding: 20px; text-align: center; margin-top: 12px; }
+    .codigo-inputs { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }
+    .codigo-digit { width: 52px; height: 60px; border: 2px solid var(--border); border-radius: 10px; text-align: center; font-size: 28px; font-family: monospace; font-weight: 700; }
+    .codigo-digit:focus { outline: none; border-color: var(--teal); }
+
+    /* SALDO */
+    .saldo-box { background: var(--sidebar); border-radius: var(--radius); padding: 20px; color: #fff; margin-bottom: 16px; }
+    .saldo-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+    .saldo-amount { font-size: 28px; font-weight: 600; color: var(--teal-mid); }
+
+    /* CHAT */
+    .chat-box { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 12px; }
+    .chat-messages { height: 180px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #fafafa; }
+    .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
+    .chat-msg.yo { background: var(--teal); color: #fff; align-self: flex-end; }
+    .chat-msg.otro { background: #fff; border: 1px solid var(--border); align-self: flex-start; }
+    .chat-msg-meta { font-size: 11px; opacity: 0.6; margin-bottom: 2px; }
+    .chat-input-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border); }
+    .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
+    .chat-input:focus { outline: none; border-color: var(--teal); }
+
+    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fff; }
     .tipo-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
     .tipo-cliente { background: #eff6ff; color: #2563eb; }
     .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
-    .refresh-btn { font-size: 12px; color: var(--teal); cursor: pointer; background: none; border: none; font-family: inherit; }
-    .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
+    .tipo-admin { background: #f1f1f1; color: #666; }
+
+    .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; margin-bottom: 3px; }
+    .perfil-val { font-size: 15px; color: var(--text); }
+
+    .pendiente-aviso { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: var(--radius); padding: 28px; text-align: center; }
+
     @media(max-width:768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 20px; } .perfil-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -76,10 +116,12 @@
       <div class="sidebar-badge">🔧 Socio</div>
     </div>
     <nav class="sidebar-nav">
-      <button class="nav-item active" onclick="goTo('inicio', this)">🏠 Inicio</button>
-      <button class="nav-item" onclick="goTo('mis-tareas', this)">📋 Mis tareas</button>
-      <button class="nav-item" onclick="goTo('foro', this)">💬 Foro</button>
-      <button class="nav-item" onclick="goTo('mi-perfil', this)">👤 Mi perfil</button>
+      <button class="nav-item active" onclick="goTo('inicio',this)">🏠 Inicio</button>
+      <button class="nav-item" onclick="goTo('trabajos-disponibles',this)">🔍 Trabajos disponibles</button>
+      <button class="nav-item" onclick="goTo('mis-tareas',this)">📋 Mis tareas</button>
+      <button class="nav-item" onclick="goTo('mi-saldo',this)">💰 Mi saldo</button>
+      <button class="nav-item" onclick="goTo('foro',this)">💬 Foro</button>
+      <button class="nav-item" onclick="goTo('mi-perfil',this)">👤 Mi perfil</button>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">🚪 Cerrar sesión</button>
@@ -95,46 +137,65 @@
         <div class="pendiente-aviso">
           <div style="font-size:40px;margin-bottom:12px">⏳</div>
           <div style="font-size:18px;font-weight:600;color:var(--amber);margin-bottom:8px">Tu solicitud está siendo revisada</div>
-          <div style="font-size:14px;color:#854f0b;line-height:1.6">Nuestro equipo está revisando tu perfil. Te vamos a avisar por email cuando sea aprobado. Esto puede tardar hasta 48hs.</div>
+          <div style="font-size:14px;color:#854f0b;line-height:1.6">Nuestro equipo va a revisar tu perfil y te avisamos en las próximas 48hs.</div>
         </div>
       </div>
       <div id="inicio-aprobado" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px">
-          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">📋</div><div style="font-size:24px;font-weight:600" id="stat-tareas">—</div><div style="font-size:13px;color:var(--text-soft)">Tareas asignadas</div></div></div>
-          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">✅</div><div style="font-size:24px;font-weight:600" id="stat-completadas">—</div><div style="font-size:13px;color:var(--text-soft)">Completadas</div></div></div>
-          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:32px;margin-bottom:8px">⏳</div><div style="font-size:24px;font-weight:600" id="stat-enproceso">—</div><div style="font-size:13px;color:var(--text-soft)">En proceso</div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px">
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">🔍</div><div style="font-size:22px;font-weight:600" id="stat-disponibles">—</div><div style="font-size:12px;color:var(--text-soft)">Trabajos disponibles</div></div></div>
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">📋</div><div style="font-size:22px;font-weight:600" id="stat-mis-tareas">—</div><div style="font-size:12px;color:var(--text-soft)">Mis tareas</div></div></div>
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">✅</div><div style="font-size:22px;font-weight:600" id="stat-completados">—</div><div style="font-size:12px;color:var(--text-soft)">Completados</div></div></div>
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">⭐</div><div style="font-size:22px;font-weight:600" id="stat-rep">—</div><div style="font-size:12px;color:var(--text-soft)">Reputación</div></div></div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Tareas recientes</div>
-            <button class="refresh-btn" onclick="cargarTareas()">↻ Actualizar</button>
-          </div>
-          <div style="padding:16px" id="inicio-tareas"></div>
-        </div>
+        <div id="inicio-tareas-recientes"></div>
       </div>
+    </div>
+
+    <!-- TRABAJOS DISPONIBLES -->
+    <div class="page" id="page-trabajos-disponibles">
+      <div class="page-title">Trabajos disponibles</div>
+      <div class="page-sub">Trabajos de <strong id="mi-especialidad-label"></strong> esperando ofertas. <button class="refresh-btn" onclick="cargarTrabajosDisponibles()">↻ Actualizar</button></div>
+      <div id="trabajos-disponibles-lista"><div class="empty">Cargando...</div></div>
     </div>
 
     <!-- MIS TAREAS -->
     <div class="page" id="page-mis-tareas">
       <div class="page-title">Mis tareas</div>
-      <div class="page-sub">Trabajos que ChamBA te asignó. <button class="refresh-btn" onclick="cargarTareas()">↻ Actualizar</button></div>
-      <div id="tareas-lista"></div>
+      <div class="page-sub">Trabajos que ganaste. <button class="refresh-btn" onclick="cargarMisTareas()">↻ Actualizar</button></div>
+      <div id="mis-tareas-lista"><div class="empty">Cargando...</div></div>
+    </div>
+
+    <!-- MI SALDO -->
+    <div class="page" id="page-mi-saldo">
+      <div class="page-title">Mi saldo</div>
+      <div class="page-sub">Tus ganancias en ChamBA.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+        <div class="saldo-box">
+          <div class="saldo-label">Disponible para retirar</div>
+          <div class="saldo-amount" id="saldo-disponible">$0</div>
+        </div>
+        <div style="background:#1a231f;border-radius:var(--radius);padding:20px;color:#fff">
+          <div class="saldo-label">Bloqueado (en proceso)</div>
+          <div style="font-size:28px;font-weight:600;color:#fbbf24" id="saldo-bloqueado">$0</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div style="font-size:15px;font-weight:600;margin-bottom:12px">Retirar dinero</div>
+          <p style="font-size:14px;color:var(--text-mid);margin-bottom:16px">Los retiros se procesarán por transferencia bancaria en 1-3 días hábiles.</p>
+          <button class="btn btn-teal" onclick="alert('Próximamente: retiros por transferencia bancaria y Mercado Pago.')">Solicitar retiro</button>
+        </div>
+      </div>
     </div>
 
     <!-- FORO -->
     <div class="page" id="page-foro">
       <div class="page-title">Foro de la comunidad</div>
-      <div class="page-sub">Compartí consejos con clientes y otros socios. <button class="refresh-btn" onclick="cargarForo()">↻ Actualizar</button></div>
+      <div class="page-sub">Compartí consejos con clientes y socios. <button class="refresh-btn" onclick="cargarForo()">↻ Actualizar</button></div>
       <div class="card">
         <div class="card-body">
-          <div style="margin-bottom:12px">
-            <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Título</label>
-            <input type="text" id="foro-titulo" placeholder="Título de tu publicación..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit"/>
-          </div>
-          <div style="margin-bottom:12px">
-            <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Mensaje</label>
-            <textarea id="foro-body" rows="3" placeholder="Escribí tu mensaje..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:none"></textarea>
-          </div>
+          <div class="form-group"><label>Título</label><input type="text" id="foro-titulo" placeholder="Título..."/></div>
+          <div class="form-group"><label>Mensaje</label><textarea id="foro-body" rows="3" placeholder="Escribí tu mensaje..."></textarea></div>
           <button class="btn btn-teal btn-sm" onclick="publicarForo()">Publicar</button>
         </div>
       </div>
@@ -144,7 +205,7 @@
     <!-- MI PERFIL -->
     <div class="page" id="page-mi-perfil">
       <div class="page-title">Mi perfil</div>
-      <div class="page-sub">Tus datos registrados en ChamBA.</div>
+      <div class="page-sub">Tus datos en ChamBA.</div>
       <div class="card"><div class="card-body"><div class="perfil-grid" id="perfil-grid"></div></div></div>
     </div>
 
@@ -153,6 +214,7 @@
 <script>
 const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
 let usuario = null;
+let trabajosDisponibles = [];
 let misTareas = [];
 
 window.onload = async () => {
@@ -160,43 +222,37 @@ window.onload = async () => {
   if (!u) return window.location.href = '/login';
   usuario = JSON.parse(u);
   if (usuario.tipo !== 'socio') return window.location.href = '/panel-cliente';
-
-  // Refrescar datos del usuario desde el backend para tener el ID actualizado
   try {
     const todos = await api('/api/usuarios');
     const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
-    if (fresco) {
-      const { password_hash, ...safe } = { ...fresco };
-      usuario = safe;
-      localStorage.setItem('chamba_user', JSON.stringify(safe));
-    }
-  } catch(e) { console.log('No se pudo refrescar usuario'); }
-
+    if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); }
+  } catch(e) {}
   document.getElementById('sidebar-user').textContent = usuario.nombre;
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
-
   if (usuario.estado === 'pendiente') {
     document.getElementById('pendiente-aviso').style.display = 'block';
-    document.getElementById('inicio-sub').textContent = 'Tu solicitud está pendiente de aprobación.';
+    document.getElementById('inicio-sub').textContent = 'Tu solicitud está pendiente.';
   } else {
     document.getElementById('inicio-aprobado').style.display = 'block';
-    document.getElementById('inicio-sub').textContent = 'Panel de socio ChamBA.';
-    await cargarTareas();
-    setInterval(cargarTareas, 30000);
+    document.getElementById('inicio-sub').textContent = 'Panel de socio · ' + (usuario.especialidad||'');
+    document.getElementById('mi-especialidad-label').textContent = usuario.especialidad || 'tu especialidad';
+    await Promise.all([cargarTrabajosDisponibles(), cargarMisTareas()]);
+    setInterval(() => { cargarTrabajosDisponibles(); cargarMisTareas(); }, 30000);
   }
   renderPerfil();
-  await cargarForo();
+  cargarForo();
 };
 
 function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
-
 function goTo(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
   if (page === 'foro') cargarForo();
-  if (page === 'mis-tareas') cargarTareas();
+  if (page === 'trabajos-disponibles') cargarTrabajosDisponibles();
+  if (page === 'mis-tareas') cargarMisTareas();
+  if (page === 'mi-saldo') renderSaldo();
 }
 
 async function api(path, method='GET', body=null) {
@@ -206,43 +262,204 @@ async function api(path, method='GET', body=null) {
   return r.json();
 }
 
-async function cargarTareas() {
-  try {
-    const todos = await api('/api/pedidos');
-    misTareas = Array.isArray(todos) ? todos.filter(p => p.profesional_id === usuario.id) : [];
-  } catch(e) { misTareas = []; }
-  renderTareas();
-}
-
 function badge(e) {
-  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado' };
+  const map = { nuevo:'badge-gray|Esperando ofertas', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-red|Cancelado' };
   const [cls, label] = (map[e] || 'badge-gray|' + e).split('|');
   return `<span class="badge ${cls}">${label}</span>`;
 }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'; }
+function fmt(n) { return '$' + Number(n||0).toLocaleString('es-AR'); }
 
-function renderTareas() {
-  document.getElementById('stat-tareas').textContent = misTareas.length;
-  document.getElementById('stat-completadas').textContent = misTareas.filter(t => t.estado === 'completado').length;
-  document.getElementById('stat-enproceso').textContent = misTareas.filter(t => t.estado === 'en_proceso').length;
+async function cargarTrabajosDisponibles() {
+  try {
+    const todos = await api('/api/pedidos');
+    trabajosDisponibles = Array.isArray(todos)
+      ? todos.filter(p => p.estado === 'nuevo' && p.servicio === usuario.especialidad)
+      : [];
+  } catch(e) { trabajosDisponibles = []; }
+  document.getElementById('stat-disponibles').textContent = trabajosDisponibles.length;
+  renderTrabajosDisponibles();
+}
 
-  const html = misTareas.length
-    ? misTareas.map(t => `
-      <div class="tarea-card ${t.estado === 'nuevo' ? 'nueva' : t.estado === 'en_proceso' ? 'en_proceso' : ''}">
-        <div class="tarea-header">
-          <div class="tarea-servicio">${t.servicio||'—'}</div>
-          ${badge(t.estado)}
+async function cargarMisTareas() {
+  try {
+    const todos = await api('/api/pedidos');
+    misTareas = Array.isArray(todos) ? todos.filter(p => p.profesional_id === usuario.id) : [];
+  } catch(e) { misTareas = []; }
+  document.getElementById('stat-mis-tareas').textContent = misTareas.length;
+  document.getElementById('stat-completados').textContent = misTareas.filter(t => t.estado === 'completado').length;
+  document.getElementById('stat-rep').textContent = usuario.promedio_estrellas ? usuario.promedio_estrellas + '⭐' : '—';
+  renderMisTareas();
+  renderSaldo();
+  // Mostrar tareas recientes en inicio
+  document.getElementById('inicio-tareas-recientes').innerHTML = misTareas.length
+    ? '<div style="font-size:15px;font-weight:600;margin-bottom:12px">Tareas recientes</div>' + misTareas.slice(0,2).map(t => renderTareaCard(t)).join('')
+    : '<div class="empty">No tenés tareas asignadas aún. Buscá trabajos disponibles.</div>';
+}
+
+function renderTrabajosDisponibles() {
+  document.getElementById('trabajos-disponibles-lista').innerHTML = trabajosDisponibles.length
+    ? trabajosDisponibles.map(t => `
+        <div class="trabajo-card nuevo">
+          <div class="trabajo-header">
+            <div class="trabajo-servicio">${t.servicio}</div>
+            <div style="font-size:12px;color:var(--text-soft)">${fmtDate(t.created_at)}</div>
+          </div>
+          <div class="trabajo-desc">${t.descripcion||''}</div>
+          ${t.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(t.precio_sugerido_ia)}</strong> (tu parte: <strong>${fmt(t.precio_sugerido_ia * 0.8)}</strong>, ChamBA: ${fmt(t.precio_sugerido_ia * 0.2)})</div>` : ''}
+          <div id="oferta-form-${t.id}" style="display:none" class="oferta-form">
+            <div class="oferta-form-title">Tu oferta</div>
+            <div class="form-group">
+              <label>Tu precio total (el cliente paga esto)</label>
+              <input type="number" id="precio-${t.id}" placeholder="Ej: 15000" oninput="calcularNeto('${t.id}')"/>
+              <div id="neto-${t.id}" style="font-size:12px;color:var(--teal-dark);margin-top:4px"></div>
+            </div>
+            <div class="form-group">
+              <label>Mensaje para el cliente (opcional)</label>
+              <textarea id="msg-${t.id}" rows="2" placeholder="Describí brevemente tu experiencia o propuesta..."></textarea>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-teal btn-sm" onclick="enviarOferta('${t.id}')">Enviar oferta</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('oferta-form-${t.id}').style.display='none'">Cancelar</button>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <button class="btn btn-teal btn-sm" onclick="toggleOfertaForm('${t.id}')">💼 Hacer oferta</button>
+          </div>
+        </div>`).join('')
+    : `<div class="empty">No hay trabajos de <strong>${usuario.especialidad||'tu especialidad'}</strong> disponibles ahora.<br>¡Volvé más tarde!</div>`;
+}
+
+function toggleOfertaForm(id) {
+  const form = document.getElementById('oferta-form-' + id);
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function calcularNeto(id) {
+  const precio = parseFloat(document.getElementById('precio-' + id).value) || 0;
+  const neto = Math.round(precio * 0.8);
+  const comision = Math.round(precio * 0.2);
+  document.getElementById('neto-' + id).textContent = precio > 0
+    ? `Vas a recibir: ${fmt(neto)} | ChamBA cobra: ${fmt(comision)} (20%)`
+    : '';
+}
+
+async function enviarOferta(pedidoId) {
+  const precio = parseFloat(document.getElementById('precio-' + pedidoId).value);
+  const mensaje = document.getElementById('msg-' + pedidoId).value.trim();
+  if (!precio || precio <= 0) return alert('Ingresá un precio válido.');
+  try {
+    await api('/api/ofertas', 'POST', {
+      pedido_id: pedidoId, socio_id: usuario.id, socio_nombre: usuario.nombre,
+      especialidad: usuario.especialidad, precio_ofertado: precio, mensaje
+    });
+    alert('✅ ¡Oferta enviada! El cliente va a poder verla y aceptarla.');
+    document.getElementById('oferta-form-' + pedidoId).style.display = 'none';
+  } catch(e) { alert('Error al enviar la oferta.'); }
+}
+
+function renderMisTareas() {
+  document.getElementById('mis-tareas-lista').innerHTML = misTareas.length
+    ? misTareas.map(t => renderTareaCard(t)).join('')
+    : '<div class="empty">No tenés tareas asignadas aún.</div>';
+  // Cargar chats de tareas en proceso
+  misTareas.filter(t => t.estado === 'en_proceso').forEach(t => cargarMensajes(t.id));
+}
+
+function renderTareaCard(t) {
+  const enProceso = t.estado === 'en_proceso';
+  return `
+    <div class="tarea-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="font-size:16px;font-weight:600">${t.servicio}</div>
+        ${badge(t.estado)}
+      </div>
+      <div style="font-size:14px;color:var(--teal-dark);margin-bottom:8px;line-height:1.5">${t.descripcion||''}</div>
+      ${enProceso ? `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div><div style="font-size:12px;color:var(--teal-dark)">Tu pago al completar</div><div class="tarea-precio">${fmt(t.precio_socio)}</div></div>
+          <div style="font-size:12px;color:var(--teal-dark);text-align:right">Comisión ChamBA<br><strong>${fmt(t.comision)}</strong></div>
         </div>
-        <div class="tarea-desc">${t.descripcion||'Sin descripción'}</div>
-        <div class="tarea-footer">
-          <div class="tarea-fecha">📅 ${fmtDate(t.created_at)}</div>
-          ${t.monto ? `<div style="font-weight:600;color:var(--teal)">💰 $${Number(t.monto).toLocaleString('es-AR')}</div>` : ''}
+        <div class="codigo-input-box">
+          <div style="font-size:14px;font-weight:600;color:var(--teal-dark);margin-bottom:4px">🔐 Ingresá el código del cliente</div>
+          <div style="font-size:12px;color:var(--text-mid);margin-bottom:10px">Pedíselo al cliente cuando termines el trabajo</div>
+          <div class="codigo-inputs">
+            <input class="codigo-digit" id="cod-${t.id}-0" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-1')" onkeydown="prevDigit(event,null,'cod-${t.id}-0')"/>
+            <input class="codigo-digit" id="cod-${t.id}-1" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-2')" onkeydown="prevDigit(event,'cod-${t.id}-0','cod-${t.id}-1')"/>
+            <input class="codigo-digit" id="cod-${t.id}-2" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-3')" onkeydown="prevDigit(event,'cod-${t.id}-1','cod-${t.id}-2')"/>
+            <input class="codigo-digit" id="cod-${t.id}-3" maxlength="1" oninput="nextDigit(this,null)" onkeydown="prevDigit(event,'cod-${t.id}-2','cod-${t.id}-3')"/>
+          </div>
+          <button class="btn btn-teal" onclick="verificarCodigo('${t.id}')">Verificar y cobrar</button>
+          <div id="cod-error-${t.id}" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
         </div>
-      </div>`).join('')
-    : '<div class="empty">No tenés tareas asignadas aún.<br>ChamBA te va a avisar cuando haya trabajo para vos.</div>';
+        <div style="margin-top:12px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--teal-dark)">💬 Chat con el cliente</div>
+          <div class="chat-box">
+            <div class="chat-messages" id="chat-${t.id}"></div>
+            <div class="chat-input-row">
+              <input class="chat-input" id="chat-input-${t.id}" placeholder="Escribí un mensaje..." onkeydown="if(event.key==='Enter')enviarMsg('${t.id}')"/>
+              <button class="btn btn-teal btn-sm" onclick="enviarMsg('${t.id}')">Enviar</button>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+      ${t.estado === 'completado' ? `<div style="color:var(--teal);font-weight:500;font-size:14px;margin-top:8px">✅ Trabajo completado · ${fmt(t.precio_socio)} acreditados</div>` : ''}
+      <div style="font-size:12px;color:var(--text-soft);margin-top:8px">📅 ${fmtDate(t.created_at)}</div>
+    </div>`;
+}
 
-  document.getElementById('inicio-tareas').innerHTML = html;
-  document.getElementById('tareas-lista').innerHTML = html;
+function nextDigit(current, nextId) {
+  if (current.value && nextId) document.getElementById(nextId)?.focus();
+}
+function prevDigit(e, prevId, currentId) {
+  if (e.key === 'Backspace' && !document.getElementById(currentId).value && prevId) {
+    document.getElementById(prevId).focus();
+  }
+}
+
+async function verificarCodigo(pedidoId) {
+  const digits = [0,1,2,3].map(i => document.getElementById(`cod-${pedidoId}-${i}`).value).join('');
+  if (digits.length < 4) return showCodError(pedidoId, 'Ingresá los 4 dígitos del código.');
+  try {
+    const r = await api('/api/pedidos/' + pedidoId + '/verificar-codigo', 'POST', { codigo: digits });
+    if (r.error) return showCodError(pedidoId, r.error);
+    alert('🎉 ' + r.mensaje);
+    await Promise.all([cargarMisTareas()]);
+    // Actualizar saldo
+    const users = await api('/api/usuarios');
+    const fresco = Array.isArray(users) ? users.find(x => x.email === usuario.email) : null;
+    if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); renderSaldo(); }
+  } catch(e) { showCodError(pedidoId, 'Error al verificar. Intentá de nuevo.'); }
+}
+
+function showCodError(pedidoId, msg) {
+  const el = document.getElementById('cod-error-' + pedidoId);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+async function cargarMensajes(pedidoId) {
+  try {
+    const msgs = await api('/api/mensajes/' + pedidoId);
+    const box = document.getElementById('chat-' + pedidoId);
+    if (!box) return;
+    box.innerHTML = Array.isArray(msgs) && msgs.length
+      ? msgs.map(m => `<div class="chat-msg ${m.autor === usuario.nombre ? 'yo' : 'otro'}"><div class="chat-msg-meta">${m.autor}</div>${m.contenido}</div>`).join('')
+      : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:14px">No hay mensajes aún</div>';
+    box.scrollTop = box.scrollHeight;
+  } catch(e) {}
+}
+
+async function enviarMsg(pedidoId) {
+  const input = document.getElementById('chat-input-' + pedidoId);
+  const contenido = input.value.trim(); if (!contenido) return;
+  input.value = '';
+  await api('/api/mensajes', 'POST', { pedido_id: pedidoId, autor: usuario.nombre, rol: 'socio', contenido });
+  cargarMensajes(pedidoId);
+}
+
+function renderSaldo() {
+  document.getElementById('saldo-disponible').textContent = fmt(usuario.saldo_disponible || 0);
+  document.getElementById('saldo-bloqueado').textContent = fmt(usuario.saldo_bloqueado || 0);
 }
 
 function renderPerfil() {
@@ -254,23 +471,16 @@ function renderPerfil() {
     <div><div class="perfil-label">DNI</div><div class="perfil-val">${usuario.dni||'—'}</div></div>
     <div><div class="perfil-label">Experiencia</div><div class="perfil-val">${usuario.experiencia||'—'}</div></div>
     <div><div class="perfil-label">Matrícula</div><div class="perfil-val">${usuario.matricula||'—'}</div></div>
+    <div><div class="perfil-label">Reputación</div><div class="perfil-val">${usuario.promedio_estrellas ? usuario.promedio_estrellas + ' ⭐ (' + usuario.total_calificaciones + ' reviews)' : 'Sin calificaciones aún'}</div></div>
+    <div><div class="perfil-label">Trabajos completados</div><div class="perfil-val">${usuario.trabajos_completados||0}</div></div>
     <div><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado==='aprobado'?'✅ Aprobado':'⏳ Pendiente'}</div></div>`;
 }
 
 async function cargarForo() {
   try {
     const posts = await api('/api/foro');
-    const container = document.getElementById('foro-posts');
-    container.innerHTML = Array.isArray(posts) && posts.length
-      ? posts.map(p => `
-          <div class="foro-post">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div>
-              <div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div>
-            </div>
-            <div style="font-size:15px;font-weight:600;margin-bottom:6px">${p.titulo}</div>
-            <div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div>
-          </div>`).join('')
+    document.getElementById('foro-posts').innerHTML = Array.isArray(posts) && posts.length
+      ? posts.map(p => `<div class="foro-post"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div></div><div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.titulo}</div><div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div></div>`).join('')
       : '<div class="empty">No hay publicaciones aún.</div>';
   } catch(e) {}
 }
@@ -279,7 +489,7 @@ async function publicarForo() {
   const titulo = document.getElementById('foro-titulo').value.trim();
   const contenido = document.getElementById('foro-body').value.trim();
   if (!titulo || !contenido) return;
-  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: usuario.tipo, titulo, contenido });
+  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'socio', titulo, contenido });
   document.getElementById('foro-titulo').value = '';
   document.getElementById('foro-body').value = '';
   cargarForo();
