@@ -452,14 +452,13 @@ async function aceptarOferta(ofertaId, pedidoId, precio) {
   showConfirm('💰', '¿Confirmás el pago?',
     `Vas a pagar ${fmt(precio)}. El dinero queda retenido en ChamBA hasta que el socio complete el trabajo y vos le entregues el código de verificación.\n\n(Los pagos reales se habilitarán próximamente)`,
     async () => {
+      console.log('[DEBUG] Aceptando oferta:', ofertaId, 'pedido:', pedidoId);
       const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
+      console.log('[DEBUG] Respuesta de aceptar:', r);
       if (r.error) return showInfo('❌', 'Error', r.error);
-      // Pequeña espera para asegurar que Supabase propague el cambio antes de releer (BUGFIX)
-      await new Promise(resolve => setTimeout(resolve, 600));
       await cargarTodo();
+      console.log('[DEBUG] misPedidos despues de recargar:', misPedidos);
       goTo('en-proceso', document.getElementById('nav-proceso'));
-      // Segunda recarga de seguridad
-      setTimeout(cargarTodo, 1500);
     }, '✅ Confirmar pago');
 }
 
