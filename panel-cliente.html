@@ -310,7 +310,10 @@ async function cargarTodo() {
     const todos = await api('/api/pedidos');
     misPedidos = Array.isArray(todos) ? todos.filter(p => p.usuario_id === usuario.id) : [];
 
-    // Cargar ofertas para pedidos nuevos
+    // Limpiar caché de ofertas completamente para evitar datos viejos (BUGFIX)
+    todasOfertas = {};
+
+    // Cargar ofertas SOLO para pedidos que siguen en estado 'nuevo'
     const pedidosNuevos = misPedidos.filter(p => p.estado === 'nuevo');
     for (const p of pedidosNuevos) {
       try { todasOfertas[p.id] = await api('/api/ofertas?pedido_id=' + p.id); } catch(e) { todasOfertas[p.id] = []; }
@@ -451,8 +454,12 @@ async function aceptarOferta(ofertaId, pedidoId, precio) {
     async () => {
       const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
       if (r.error) return showInfo('❌', 'Error', r.error);
+      // Pequeña espera para asegurar que Supabase propague el cambio antes de releer (BUGFIX)
+      await new Promise(resolve => setTimeout(resolve, 600));
       await cargarTodo();
       goTo('en-proceso', document.getElementById('nav-proceso'));
+      // Segunda recarga de seguridad
+      setTimeout(cargarTodo, 1500);
     }, '✅ Confirmar pago');
 }
 
