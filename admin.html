@@ -17,7 +17,6 @@
       --blue: #2563eb; --blue-light: #eff6ff;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
     #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--sidebar); }
     .login-box { background: #1a231f; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 40px; width: 100%; max-width: 380px; }
     .login-logo { font-size: 26px; font-weight: 600; color: #fff; margin-bottom: 8px; }
@@ -27,8 +26,8 @@
     .login-box input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 11px 14px; font-size: 14px; color: #fff; font-family: inherit; margin-bottom: 16px; }
     .login-box input:focus { outline: none; border-color: var(--teal); }
     .login-btn { width: 100%; background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; }
+    .login-btn:hover { background: var(--teal-dark); }
     .login-error { font-size: 13px; color: #f09595; margin-top: 12px; text-align: center; display: none; }
-
     #app { display: none; }
     .layout { display: flex; min-height: 100vh; }
     .sidebar { width: 220px; flex-shrink: 0; background: var(--sidebar); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; }
@@ -44,39 +43,33 @@
     .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
     .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
     .logout-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.3); border: none; background: none; font-family: inherit; width: 100%; }
-
     .main { margin-left: 220px; flex: 1; padding: 32px; }
     .page { display: none; }
     .page.active { display: block; }
     .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
-
-    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
     .metric { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
     .metric-label { font-size: 12px; color: var(--text-soft); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
     .metric-val { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
     .metric.teal .metric-val { color: var(--teal); }
     .metric.amber .metric-val { color: var(--amber); }
     .metric.blue .metric-val { color: var(--blue); }
-
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
     .card-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     .card-title { font-size: 15px; font-weight: 600; }
-
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
     th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); background: #fafafa; }
     td { padding: 13px 16px; border-bottom: 1px solid var(--border); color: var(--text-mid); vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #fafcfa; }
     .td-primary { color: var(--text); font-weight: 500; }
-
     .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
     .badge-green { background: var(--teal-light); color: var(--teal-dark); }
     .badge-red { background: var(--red-light); color: var(--red); }
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-blue { background: var(--blue-light); color: var(--blue); }
     .badge-gray { background: #f1f1f1; color: #666; }
-
     .btn { padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; border: none; transition: all 0.15s; }
     .btn-teal { background: var(--teal); color: #fff; }
     .btn-teal:hover { background: var(--teal-dark); }
@@ -85,43 +78,36 @@
     .btn-red { background: var(--red-light); color: var(--red); }
     .btn-red:hover { background: var(--red); color: #fff; }
     .btn-sm { padding: 5px 10px; font-size: 12px; }
-
-    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .filter-tab { padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text-mid); font-family: inherit; }
-    .filter-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
-    .search-input { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--text); background: #fff; width: 200px; }
-    .search-input:focus { outline: none; border-color: var(--teal); }
-
-    .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
-
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
     .modal-overlay.open { display: flex; }
-    .modal { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; }
+    .modal { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
     .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
     .modal-title { font-size: 17px; font-weight: 600; }
-    .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-soft); }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-soft); line-height: 1; }
     .modal-field { margin-bottom: 14px; }
-    .modal-field label { display: block; font-size: 11px; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .modal-field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-soft); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
     .modal-field .val { font-size: 15px; color: var(--text); line-height: 1.5; }
-    .modal-field select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 14px; }
     .modal-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
     .modal-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-
-    .chat-box { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-    .chat-messages { height: 220px; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
-    .chat-msg { max-width: 80%; padding: 9px 13px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
-    .chat-msg.admin { background: var(--teal); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
-    .chat-msg.otro { background: #fff; border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 3px; }
-    .chat-msg-meta { font-size: 11px; opacity: 0.6; margin-bottom: 3px; }
-    .chat-input-row { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: #fff; }
-    .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 14px; font-family: inherit; }
-    .chat-input:focus { outline: none; border-color: var(--teal); }
-
-    .tipo-badge-cliente { background: var(--blue-light); color: var(--blue); }
-    .tipo-badge-socio { background: var(--teal-light); color: var(--teal-dark); }
-
+    .search-input { padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--text); background: #fff; width: 220px; }
+    .search-input:focus { outline: none; border-color: var(--teal); }
+    .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-tab { padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text-mid); font-family: inherit; transition: all 0.15s; }
+    .filter-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+    .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
     .toast { position: fixed; bottom: 24px; right: 24px; z-index: 200; background: var(--sidebar); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
     .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* FORO ADMIN CON RESPUESTAS */
+    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+    .foro-respuesta { border-left: 3px solid var(--teal-mid); margin-left: 20px; margin-top: 10px; padding: 10px 14px; background: var(--bg); border-radius: 0 8px 8px 0; font-size: 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .foro-resp-autor { font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 4px; }
+    .foro-resp-form { margin-left: 20px; margin-top: 8px; display: none; }
+    .foro-resp-form input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-family: inherit; }
+    .tipo-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+    .tipo-cliente { background: #eff6ff; color: #2563eb; }
+    .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
+    .tipo-admin { background: #f1f1f1; color: #666; }
   </style>
 </head>
 <body>
@@ -130,10 +116,8 @@
   <div class="login-box">
     <div class="login-logo">Cham<span>BA</span></div>
     <div class="login-sub">Panel de administración</div>
-    <label>Usuario</label>
-    <input type="text" id="login-user" placeholder="admin"/>
-    <label>Contraseña</label>
-    <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <label>Usuario</label><input type="text" id="login-user" placeholder="admin"/>
+    <label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
     <button class="login-btn" onclick="doLogin()">Ingresar</button>
     <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
   </div>
@@ -151,7 +135,6 @@
         <button class="nav-item active" onclick="goTo('dashboard')"><span>📊</span> Dashboard</button>
         <button class="nav-item" onclick="goTo('pedidos')"><span>📋</span> Pedidos <span class="nav-badge" id="badge-pedidos" style="display:none">0</span></button>
         <button class="nav-item" onclick="goTo('pagos')"><span>💰</span> Pagos</button>
-
         <div class="nav-section">Usuarios</div>
         <button class="nav-item" onclick="goTo('clientes-reg')"><span>🏠</span> Clientes <span class="nav-badge" id="badge-clientes" style="display:none">0</span></button>
         <button class="nav-item" onclick="goTo('socios-reg')"><span>🔧</span> Socios <span class="nav-badge" id="badge-socios" style="display:none">0</span></button>
@@ -177,20 +160,18 @@
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title">Últimos pedidos</div><button class="btn btn-ghost btn-sm" onclick="goTo('pedidos')">Ver todos →</button></div>
-          <table><thead><tr><th>Servicio</th><th>Descripción</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
-          <tbody id="dash-pedidos"></tbody></table>
+          <table><thead><tr><th>Servicio</th><th>Descripción</th><th>Estado</th><th>Fecha</th><th></th></tr></thead><tbody id="dash-pedidos"></tbody></table>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title">Socios pendientes de aprobación</div><button class="btn btn-ghost btn-sm" onclick="goTo('socios-reg')">Ver todos →</button></div>
-          <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>Registrado</th><th></th></tr></thead>
-          <tbody id="dash-socios-pending"></tbody></table>
+          <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>Registrado</th><th></th></tr></thead><tbody id="dash-socios-pending"></tbody></table>
         </div>
       </div>
 
       <!-- PEDIDOS -->
       <div class="page" id="page-pedidos">
         <div class="page-title">Pedidos</div>
-        <div class="page-sub">Gestioná y asigná los pedidos de los clientes.</div>
+        <div class="page-sub">Visualizá todos los trabajos de la plataforma. El flujo lo gestionan automáticamente clientes y socios.</div>
         <div class="card">
           <div class="card-header">
             <div class="filter-tabs">
@@ -198,29 +179,25 @@
               <button class="filter-tab" onclick="filtrarPedidos('nuevo',this)">Nuevos</button>
               <button class="filter-tab" onclick="filtrarPedidos('en_proceso',this)">En proceso</button>
               <button class="filter-tab" onclick="filtrarPedidos('completado',this)">Completados</button>
+              <button class="filter-tab" onclick="filtrarPedidos('cancelado',this)">Cancelados</button>
             </div>
             <input class="search-input" placeholder="Buscar..." oninput="buscarPedidos(this.value)"/>
           </div>
-          <table><thead><tr><th>#</th><th>Servicio</th><th>Descripción</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
-          <tbody id="pedidos-tbody"></tbody></table>
+          <table><thead><tr><th>#</th><th>Servicio</th><th>Descripción</th><th>Estado</th><th>Fecha</th><th></th></tr></thead><tbody id="pedidos-tbody"></tbody></table>
         </div>
       </div>
 
-      <!-- CLIENTES REGISTRADOS -->
+      <!-- CLIENTES -->
       <div class="page" id="page-clientes-reg">
         <div class="page-title">Clientes</div>
         <div class="page-sub">Personas registradas como clientes en ChamBA.</div>
         <div class="card">
-          <div class="card-header">
-            <div class="card-title" id="clientes-reg-count">Clientes</div>
-            <input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('cliente', this.value)"/>
-          </div>
-          <table><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Registrado</th><th></th></tr></thead>
-          <tbody id="clientes-reg-tbody"></tbody></table>
+          <div class="card-header"><div class="card-title" id="clientes-reg-count">Clientes</div><input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('cliente', this.value)"/></div>
+          <table><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Registrado</th><th></th></tr></thead><tbody id="clientes-reg-tbody"></tbody></table>
         </div>
       </div>
 
-      <!-- SOCIOS REGISTRADOS -->
+      <!-- SOCIOS -->
       <div class="page" id="page-socios-reg">
         <div class="page-title">Socios</div>
         <div class="page-sub">Profesionales que solicitaron unirse a ChamBA.</div>
@@ -234,8 +211,7 @@
             </div>
             <input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('socio', this.value)"/>
           </div>
-          <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>DNI</th><th>Estado</th><th>Registrado</th><th></th></tr></thead>
-          <tbody id="socios-reg-tbody"></tbody></table>
+          <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>DNI</th><th>Reputación</th><th>Estado</th><th></th></tr></thead><tbody id="socios-reg-tbody"></tbody></table>
         </div>
       </div>
 
@@ -245,40 +221,33 @@
         <div class="page-sub">Seguimiento de ingresos de ChamBA.</div>
         <div class="metrics">
           <div class="metric teal"><div class="metric-label">Comisiones cobradas</div><div class="metric-val" id="p-cobrado">$0</div></div>
-          <div class="metric amber"><div class="metric-label">Pendiente de cobro</div><div class="metric-val" id="p-pendiente">$0</div></div>
+          <div class="metric amber"><div class="metric-label">Pendiente de liberar</div><div class="metric-val" id="p-pendiente">$0</div></div>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title">Pedidos con monto</div></div>
-          <table><thead><tr><th>Servicio</th><th>Total trabajo</th><th>Comisión (20%)</th><th>Estado</th></tr></thead>
-          <tbody id="pagos-tbody"></tbody></table>
+          <table><thead><tr><th>Servicio</th><th>Total trabajo</th><th>Comisión (20%)</th><th>Estado</th></tr></thead><tbody id="pagos-tbody"></tbody></table>
         </div>
       </div>
 
-
-      <!-- FORO ADMIN -->
+      <!-- FORO -->
       <div class="page" id="page-foro">
         <div class="page-title">Foro de la comunidad</div>
-        <div class="page-sub">Publicaciones de clientes y socios. Podés moderar y publicar como ChamBA.</div>
-        <div class="card">
-          <div class="card-body">
-            <div style="margin-bottom:12px">
-              <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Título</label>
-              <input type="text" id="foro-admin-titulo" placeholder="Título de tu publicación..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit"/>
-            </div>
-            <div style="margin-bottom:12px">
-              <label style="display:block;font-size:13px;font-weight:500;color:var(--text-mid);margin-bottom:5px">Mensaje</label>
-              <textarea id="foro-admin-body" rows="3" placeholder="Escribí tu mensaje..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:none"></textarea>
-            </div>
+        <div class="page-sub">Moderá publicaciones y respondé como ChamBA.</div>
+        <div class="card"><div class="card-header">
+          <div style="width:100%">
+            <div class="modal-field" style="margin-bottom:10px"><label>Título</label><input type="text" id="foro-admin-titulo" placeholder="Título..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px"/></div>
+            <div class="modal-field" style="margin-bottom:10px"><label>Mensaje</label><textarea id="foro-admin-body" rows="3" placeholder="Escribí como ChamBA..." style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:inherit;font-size:14px;resize:none"></textarea></div>
             <button class="btn btn-teal btn-sm" onclick="publicarForoAdmin()">Publicar como ChamBA</button>
           </div>
-        </div>
-        <div id="foro-admin-posts"><div class="loading">Cargando...</div></div>
+        </div></div>
+        <div id="foro-admin-posts"><div class="empty">Cargando...</div></div>
       </div>
+
     </main>
   </div>
 </div>
 
-<!-- MODAL PEDIDO -->
+<!-- MODAL PEDIDO (solo lectura + eliminar) -->
 <div class="modal-overlay" id="modal-pedido">
   <div class="modal">
     <div class="modal-header"><div class="modal-title">Detalle del pedido</div><button class="modal-close" onclick="closeModal('modal-pedido')">×</button></div>
@@ -303,7 +272,7 @@ const ADMINS = [
   { user: 'empleado1', pass: 'empleado123' }
 ];
 
-let pedidos = [], usuarios = [];
+let pedidos = [], usuarios = [], foroPosts = [];
 let filtroPedidos = 'todos', filtroSocios = 'todos';
 
 function doLogin() {
@@ -314,14 +283,9 @@ function doLogin() {
     document.getElementById('app').style.display = 'block';
     document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-AR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     cargarTodo();
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-  }
+  } else { document.getElementById('login-error').style.display = 'block'; }
 }
-function doLogout() {
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-}
+function doLogout() { document.getElementById('app').style.display='none'; document.getElementById('login-screen').style.display='flex'; }
 
 async function api(path, method='GET', body=null) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -331,10 +295,7 @@ async function api(path, method='GET', body=null) {
 }
 
 async function cargarTodo() {
-  [pedidos, usuarios] = await Promise.all([
-    api('/api/pedidos'),
-    api('/api/usuarios')
-  ]);
+  [pedidos, usuarios] = await Promise.all([api('/api/pedidos'), api('/api/usuarios')]);
   if (!Array.isArray(pedidos)) pedidos = [];
   if (!Array.isArray(usuarios)) usuarios = [];
   renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); updateBadges();
@@ -344,7 +305,7 @@ function goTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  event?.currentTarget?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.textContent.toLowerCase().includes(page==='dashboard'?'dashboard':page.slice(0,5))) n.classList.add('active'); });
   if (page === 'foro') cargarForo();
 }
 
@@ -352,14 +313,9 @@ function updateBadges() {
   const np = pedidos.filter(p => p.estado === 'nuevo').length;
   const nc = usuarios.filter(u => u.tipo === 'cliente').length;
   const ns = usuarios.filter(u => u.tipo === 'socio' && u.estado === 'pendiente').length;
-  set('badge-pedidos', np);
-  set('badge-clientes', nc);
-  set('badge-socios', ns);
+  set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns);
 }
-function set(id, val) {
-  const el = document.getElementById(id);
-  el.textContent = val; el.style.display = val ? 'inline' : 'none';
-}
+function set(id, val) { const el=document.getElementById(id); el.textContent=val; el.style.display=val?'inline':'none'; }
 
 function badge(e) {
   const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado', pendiente:'badge-amber|Pendiente', aprobado:'badge-green|Aprobado', rechazado:'badge-red|Rechazado' };
@@ -368,7 +324,6 @@ function badge(e) {
 }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'; }
 
-// DASHBOARD
 function renderDashboard() {
   const clientes = usuarios.filter(u => u.tipo === 'cliente');
   const socios = usuarios.filter(u => u.tipo === 'socio');
@@ -376,129 +331,71 @@ function renderDashboard() {
   document.getElementById('m-clientes').textContent = clientes.length;
   document.getElementById('m-socios').textContent = socios.filter(s => s.estado === 'aprobado').length;
   document.getElementById('m-pendientes').textContent = socios.filter(s => s.estado === 'pendiente').length;
-
-  document.getElementById('dash-pedidos').innerHTML = pedidos.slice(0,5).map(p =>
-    `<tr><td class="td-primary">${p.servicio||'—'}</td><td>${(p.descripcion||'').slice(0,40)}...</td><td>${badge(p.estado)}</td><td>${fmtDate(p.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verPedido('${p.id}')">Ver</button></td></tr>`
-  ).join('') || '<tr><td colspan="5" class="empty">No hay pedidos aún</td></tr>';
-
+  document.getElementById('dash-pedidos').innerHTML = pedidos.slice(0,5).map(p => `<tr><td class="td-primary">${p.servicio||'—'}</td><td>${(p.descripcion||'').slice(0,40)}...</td><td>${badge(p.estado)}</td><td>${fmtDate(p.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verPedido('${p.id}')">Ver</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">No hay pedidos aún</td></tr>';
   const pending = socios.filter(s => s.estado === 'pendiente');
-  document.getElementById('dash-socios-pending').innerHTML = pending.length
-    ? pending.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${fmtDate(s.created_at)}</td><td><button class="btn btn-teal btn-sm" onclick="verUsuario('${s.id}')">Revisar</button></td></tr>`).join('')
-    : '<tr><td colspan="4" class="empty">No hay socios pendientes ✅</td></tr>';
+  document.getElementById('dash-socios-pending').innerHTML = pending.length ? pending.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${fmtDate(s.created_at)}</td><td><button class="btn btn-teal btn-sm" onclick="verUsuario('${s.id}')">Revisar</button></td></tr>`).join('') : '<tr><td colspan="4" class="empty">No hay pendientes ✅</td></tr>';
 }
 
-// PEDIDOS
 function renderPedidos(lista) {
   const data = (lista || pedidos).filter(p => filtroPedidos === 'todos' || p.estado === filtroPedidos);
-  document.getElementById('pedidos-tbody').innerHTML = data.length
-    ? data.map(p => `<tr><td style="font-size:11px;color:var(--text-soft)">${p.id.slice(0,8)}</td><td class="td-primary">${p.servicio||'—'}</td><td>${(p.descripcion||'').slice(0,45)}${p.descripcion?.length>45?'...':''}</td><td>${badge(p.estado)}</td><td>${fmtDate(p.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verPedido('${p.id}')">Ver</button></td></tr>`).join('')
-    : '<tr><td colspan="6" class="empty">No hay pedidos</td></tr>';
+  document.getElementById('pedidos-tbody').innerHTML = data.length ? data.map(p => `<tr><td style="font-size:11px;color:var(--text-soft)">${p.id.slice(0,8)}</td><td class="td-primary">${p.servicio||'—'}</td><td>${(p.descripcion||'').slice(0,45)}${p.descripcion?.length>45?'...':''}</td><td>${badge(p.estado)}</td><td>${fmtDate(p.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verPedido('${p.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay pedidos</td></tr>';
 }
-function filtrarPedidos(f, btn) { filtroPedidos = f; document.querySelectorAll('#page-pedidos .filter-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderPedidos(); }
+function filtrarPedidos(f, btn) { filtroPedidos=f; document.querySelectorAll('#page-pedidos .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderPedidos(); }
 function buscarPedidos(q) { renderPedidos(q ? pedidos.filter(p => (p.servicio||'').toLowerCase().includes(q.toLowerCase())) : null); }
 
-// CLIENTES REG
 function renderClientesReg(lista) {
   const data = lista || usuarios.filter(u => u.tipo === 'cliente');
   document.getElementById('clientes-reg-count').textContent = `${data.length} clientes registrados`;
-  document.getElementById('clientes-reg-tbody').innerHTML = data.length
-    ? data.map(u => `<tr><td class="td-primary">${u.nombre}</td><td>${u.email}</td><td>${u.telefono||'—'}</td><td>${badge(u.estado)}</td><td>${fmtDate(u.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${u.id}')">Ver</button></td></tr>`).join('')
-    : '<tr><td colspan="6" class="empty">No hay clientes registrados aún</td></tr>';
+  document.getElementById('clientes-reg-tbody').innerHTML = data.length ? data.map(u => `<tr><td class="td-primary">${u.nombre}</td><td>${u.email}</td><td>${u.telefono||'—'}</td><td>${badge(u.estado)}</td><td>${fmtDate(u.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${u.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay clientes registrados aún</td></tr>';
 }
 
-// SOCIOS REG
 function renderSociosReg(lista) {
   const socios = usuarios.filter(u => u.tipo === 'socio');
   const data = (lista || socios).filter(s => filtroSocios === 'todos' || s.estado === filtroSocios);
-  document.getElementById('socios-reg-tbody').innerHTML = data.length
-    ? data.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${s.dni||'—'}</td><td>${badge(s.estado)}</td><td>${fmtDate(s.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${s.id}')">Ver</button></td></tr>`).join('')
-    : '<tr><td colspan="6" class="empty">No hay socios</td></tr>';
+  document.getElementById('socios-reg-tbody').innerHTML = data.length ? data.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${s.dni||'—'}</td><td>${s.promedio_estrellas ? s.promedio_estrellas+' ⭐' : '—'}</td><td>${badge(s.estado)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${s.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay socios</td></tr>';
 }
-function filtrarSocios(f, btn) { filtroSocios = f; document.querySelectorAll('#page-socios-reg .filter-tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderSociosReg(); }
+function filtrarSocios(f, btn) { filtroSocios=f; document.querySelectorAll('#page-socios-reg .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSociosReg(); }
 function buscarUsuarios(tipo, q) {
   const data = usuarios.filter(u => u.tipo === tipo && (u.nombre.toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase())));
   tipo === 'cliente' ? renderClientesReg(data) : renderSociosReg(data);
 }
 
-// PAGOS
 function renderPagos() {
-  const conMonto = pedidos.filter(p => p.monto > 0);
-  document.getElementById('p-cobrado').textContent = '$' + Math.round(pedidos.filter(p => p.estado==='completado'&&p.monto>0).reduce((s,p)=>s+p.monto*0.2,0)).toLocaleString('es-AR');
-  document.getElementById('p-pendiente').textContent = '$' + Math.round(pedidos.filter(p => p.estado==='en_proceso'&&p.monto>0).reduce((s,p)=>s+p.monto*0.2,0)).toLocaleString('es-AR');
-  document.getElementById('pagos-tbody').innerHTML = conMonto.length
-    ? conMonto.map(p => `<tr><td class="td-primary">${p.servicio||'—'}</td><td>$${Number(p.monto).toLocaleString('es-AR')}</td><td style="color:var(--teal);font-weight:500">$${Math.round(p.monto*0.2).toLocaleString('es-AR')}</td><td>${badge(p.estado)}</td></tr>`).join('')
-    : '<tr><td colspan="4" class="empty">No hay pagos</td></tr>';
+  const conMonto = pedidos.filter(p => p.precio_cliente > 0);
+  document.getElementById('p-cobrado').textContent = '$' + Math.round(pedidos.filter(p=>p.estado==='completado').reduce((s,p)=>s+(p.comision||0),0)).toLocaleString('es-AR');
+  document.getElementById('p-pendiente').textContent = '$' + Math.round(pedidos.filter(p=>p.estado==='en_proceso').reduce((s,p)=>s+(p.comision||0),0)).toLocaleString('es-AR');
+  document.getElementById('pagos-tbody').innerHTML = conMonto.length ? conMonto.map(p => `<tr><td class="td-primary">${p.servicio||'—'}</td><td>$${Number(p.precio_cliente).toLocaleString('es-AR')}</td><td style="color:var(--teal);font-weight:500">$${Number(p.comision||0).toLocaleString('es-AR')}</td><td>${badge(p.estado)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">No hay pagos</td></tr>';
 }
 
-// MODAL PEDIDO
-async function verPedido(id) {
+// MODAL PEDIDO — SOLO VISUALIZACIÓN + ELIMINAR (sin asignar/estado/monto)
+function verPedido(id) {
   const p = pedidos.find(x => x.id === id);
   if (!p) return;
-  const socios = usuarios.filter(u => u.tipo === 'socio' && u.estado === 'aprobado');
-  const prosList = socios.map(s => `<option value="${s.id}" ${p.profesional_id===s.id?'selected':''}>${s.nombre} (${s.especialidad})</option>`).join('');
-  let mensajes = [];
-  try { mensajes = await api(`/api/mensajes/${id}`); if (!Array.isArray(mensajes)) mensajes = []; } catch(e) {}
-
+  const socioAsignado = p.profesional_id ? usuarios.find(u => u.id === p.profesional_id) : null;
   document.getElementById('modal-pedido-content').innerHTML = `
     <div class="modal-field"><label>Servicio</label><div class="val">${p.servicio||'—'}</div></div>
     <div class="modal-field"><label>Descripción</label><div class="val">${p.descripcion||'—'}</div></div>
     <div class="modal-field"><label>Estado</label><div class="val">${badge(p.estado)}</div></div>
+    ${socioAsignado ? `<div class="modal-field"><label>Socio asignado</label><div class="val">${socioAsignado.nombre}</div></div>` : ''}
+    ${p.precio_cliente ? `<div class="modal-field"><label>Precio acordado</label><div class="val">$${Number(p.precio_cliente).toLocaleString('es-AR')} (comisión: $${Number(p.comision||0).toLocaleString('es-AR')})</div></div>` : ''}
     <div class="modal-field"><label>Fecha</label><div class="val">${fmtDate(p.created_at)}</div></div>
     <hr class="modal-divider">
-    <div class="modal-field"><label>Cambiar estado</label>
-      <select id="sel-estado">
-        <option value="nuevo" ${p.estado==='nuevo'?'selected':''}>Nuevo</option>
-        <option value="en_proceso" ${p.estado==='en_proceso'?'selected':''}>En proceso</option>
-        <option value="completado" ${p.estado==='completado'?'selected':''}>Completado</option>
-        <option value="cancelado" ${p.estado==='cancelado'?'selected':''}>Cancelado</option>
-      </select>
-    </div>
-    <div class="modal-field"><label>Asignar socio</label>
-      <select id="sel-pro"><option value="">Sin asignar</option>${prosList}</select>
-    </div>
-    <div class="modal-field"><label>Monto del trabajo ($)</label>
-      <input type="number" id="sel-monto" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px" value="${p.monto||0}"/>
-    </div>
+    <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">ℹ️ El flujo de este pedido (asignación, negociación, pago) lo gestionan automáticamente el cliente y el socio. Como admin solo podés visualizarlo o eliminarlo si es necesario.</div>
     <div class="modal-actions">
-      <button class="btn btn-teal" onclick="guardarPedido('${id}')">Guardar</button>
-      <button class="btn btn-red" onclick="eliminarPedido('${id}')">Eliminar</button>
-      <button class="btn btn-ghost" onclick="closeModal('modal-pedido')">Cancelar</button>
-    </div>
-    <hr class="modal-divider">
-    <div class="modal-field"><label>💬 Chat del pedido</label>
-      <div class="chat-box">
-        <div class="chat-messages" id="chat-msgs">
-          ${mensajes.length ? mensajes.map(m => `<div class="chat-msg ${m.rol==='admin'?'admin':'otro'}"><div class="chat-msg-meta">${m.autor} · ${fmtDate(m.created_at)}</div>${m.contenido}</div>`).join('') : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:20px">Sin mensajes</div>'}
-        </div>
-        <div class="chat-input-row">
-          <input class="chat-input" id="chat-input" placeholder="Escribí un mensaje..." onkeydown="if(event.key==='Enter')enviarMensaje('${id}')"/>
-          <button class="btn btn-teal" onclick="enviarMensaje('${id}')">Enviar</button>
-        </div>
-      </div>
+      <button class="btn btn-red" onclick="eliminarPedidoAdmin('${id}')">🗑️ Eliminar trabajo</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-pedido')">Cerrar</button>
     </div>`;
   openModal('modal-pedido');
 }
 
-async function guardarPedido(id) {
-  await api(`/api/pedidos/${id}`, 'PATCH', { estado: document.getElementById('sel-estado').value, profesional_id: document.getElementById('sel-pro').value || null, monto: parseFloat(document.getElementById('sel-monto').value)||0 });
-  await cargarTodo(); closeModal('modal-pedido'); toast('Pedido actualizado ✅');
-}
-async function eliminarPedido(id) {
-  if (!confirm('¿Eliminar este pedido?')) return;
-  await api(`/api/pedidos/${id}`, 'DELETE');
-  await cargarTodo(); closeModal('modal-pedido'); toast('Pedido eliminado');
-}
-async function enviarMensaje(pedidoId) {
-  const input = document.getElementById('chat-input');
-  const contenido = input.value.trim(); if (!contenido) return;
-  input.value = '';
-  await api('/api/mensajes', 'POST', { pedido_id: pedidoId, autor: 'Admin ChamBA', rol: 'admin', contenido });
-  const msgs = await api(`/api/mensajes/${pedidoId}`);
-  const box = document.getElementById('chat-msgs');
-  if (box && Array.isArray(msgs)) { box.innerHTML = msgs.map(m => `<div class="chat-msg ${m.rol==='admin'?'admin':'otro'}"><div class="chat-msg-meta">${m.autor}</div>${m.contenido}</div>`).join(''); box.scrollTop = box.scrollHeight; }
+async function eliminarPedidoAdmin(id) {
+  if (!confirm('¿Eliminar este trabajo? Esta acción no afecta la reputación de ningún socio.')) return;
+  await api(`/api/pedidos/${id}/eliminar-admin`, 'POST');
+  await cargarTodo();
+  closeModal('modal-pedido');
+  toast('Trabajo eliminado ✅ (sin afectar reputación)');
 }
 
-// MODAL USUARIO
 function verUsuario(id) {
   const u = usuarios.find(x => x.id === id);
   if (!u) return;
@@ -507,14 +404,14 @@ function verUsuario(id) {
     <div class="modal-field"><label>Nombre</label><div class="val">${u.nombre}</div></div>
     <div class="modal-field"><label>Email</label><div class="val">${u.email}</div></div>
     <div class="modal-field"><label>Teléfono</label><div class="val">${u.telefono||'—'}</div></div>
-    <div class="modal-field"><label>Tipo</label><div class="val"><span class="badge tipo-badge-${u.tipo}">${u.tipo === 'cliente' ? '🏠 Cliente' : '🔧 Socio'}</span></div></div>
     ${u.tipo === 'socio' ? `
     <hr class="modal-divider">
     <div class="modal-field"><label>Especialidad</label><div class="val">${u.especialidad||'—'}</div></div>
     <div class="modal-field"><label>DNI</label><div class="val">${u.dni||'—'}</div></div>
     <div class="modal-field"><label>Experiencia</label><div class="val">${u.experiencia||'—'}</div></div>
     <div class="modal-field"><label>Matrícula</label><div class="val">${u.matricula||'—'}</div></div>
-    <div class="modal-field"><label>Mensaje de solicitud</label><div class="val" style="line-height:1.6">${u.mensaje_solicitud||'—'}</div></div>
+    <div class="modal-field"><label>Reputación</label><div class="val">${u.promedio_estrellas ? u.promedio_estrellas+' ⭐ ('+(u.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
+    <div class="modal-field"><label>Trabajos completados</label><div class="val">${u.trabajos_completados||0}</div></div>
     ` : ''}
     <div class="modal-field"><label>Estado</label><div class="val">${badge(u.estado)}</div></div>
     <div class="modal-field"><label>Registrado</label><div class="val">${fmtDate(u.created_at)}</div></div>
@@ -528,46 +425,65 @@ function verUsuario(id) {
     </div>`;
   openModal('modal-usuario');
 }
-async function cambiarEstadoUsuario(id, estado) {
-  await api(`/api/usuarios/${id}`, 'PATCH', { estado });
-  await cargarTodo(); closeModal('modal-usuario');
-  toast(estado === 'aprobado' ? 'Usuario aprobado ✅' : 'Usuario rechazado');
-}
-async function eliminarUsuario(id) {
-  if (!confirm('¿Eliminar este usuario?')) return;
-  await api(`/api/usuarios/${id}`, 'DELETE');
-  await cargarTodo(); closeModal('modal-usuario'); toast('Usuario eliminado');
-}
+async function cambiarEstadoUsuario(id, estado) { await api(`/api/usuarios/${id}`,'PATCH',{estado}); await cargarTodo(); closeModal('modal-usuario'); toast(estado==='aprobado'?'Usuario aprobado ✅':'Usuario rechazado'); }
+async function eliminarUsuario(id) { if(!confirm('¿Eliminar este usuario?'))return; await api(`/api/usuarios/${id}`,'DELETE'); await cargarTodo(); closeModal('modal-usuario'); toast('Usuario eliminado'); }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target===m) m.classList.remove('open'); }));
 function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
-// FORO ADMIN
+// FORO CON RESPUESTAS
 async function cargarForo() {
   try {
-    const posts = await api('/api/foro');
-    const container = document.getElementById('foro-admin-posts');
-    if (!container) return;
-    container.innerHTML = Array.isArray(posts) && posts.length
-      ? posts.map(p => `
-          <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;background:#fff">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <div>
-                <span style="font-size:13px;font-weight:600">${p.autor_nombre}</span>
-                <span style="display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:6px;background:${p.autor_tipo==='admin'?'#f1f1f1':p.autor_tipo==='socio'?'#E1F5EE':'#eff6ff'};color:${p.autor_tipo==='admin'?'#666':p.autor_tipo==='socio'?'#0F6E56':'#2563eb'}">${p.autor_tipo}</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</span>
-                <button class="btn btn-red btn-sm" onclick="eliminarPost('${p.id}')">Eliminar</button>
-              </div>
-            </div>
-            <div style="font-size:15px;font-weight:600;margin-bottom:6px">${p.titulo}</div>
-            <div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div>
-          </div>`).join('')
-      : '<div class="empty">No hay publicaciones en el foro</div>';
-  } catch(e) { console.error(e); }
+    foroPosts = await api('/api/foro');
+    if (!Array.isArray(foroPosts)) foroPosts = [];
+    renderForoAdmin();
+  } catch(e) {}
+}
+
+function renderForoAdmin() {
+  const principales = foroPosts.filter(p => !p.parent_id);
+  const respuestas = foroPosts.filter(p => p.parent_id);
+  const container = document.getElementById('foro-admin-posts');
+  container.innerHTML = principales.length ? principales.map(p => {
+    const resps = respuestas.filter(r => r.parent_id === p.id);
+    return `<div class="foro-post">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</span>
+          <button class="btn btn-red btn-sm" onclick="eliminarPost('${p.id}')">Eliminar</button>
+        </div>
+      </div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">${p.titulo}</div>
+      <div style="font-size:14px;color:var(--text-mid);line-height:1.6;margin-bottom:10px">${p.contenido}</div>
+      ${resps.map(r => `<div class="foro-respuesta">
+        <div><div class="foro-resp-autor">${r.autor_nombre} <span class="tipo-chip tipo-${r.autor_tipo}">${r.autor_tipo}</span> · ${fmtDate(r.created_at)}</div>${r.contenido}</div>
+        <button class="btn btn-red btn-sm" onclick="eliminarPost('${r.id}')">×</button>
+      </div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="toggleRespForm('resp-form-${p.id}')">💬 Responder como ChamBA</button>
+      <div class="foro-resp-form" id="resp-form-${p.id}">
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <input type="text" id="resp-input-${p.id}" placeholder="Escribí tu respuesta..." onkeydown="if(event.key==='Enter')responderAdmin('${p.id}')"/>
+          <button class="btn btn-teal btn-sm" onclick="responderAdmin('${p.id}')">Enviar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty">No hay publicaciones en el foro</div>';
+}
+
+function toggleRespForm(id) { const el=document.getElementById(id); el.style.display = el.style.display==='none'||el.style.display===''?'block':'none'; }
+
+async function responderAdmin(parentId) {
+  const input = document.getElementById('resp-input-' + parentId);
+  const contenido = input.value.trim(); if (!contenido) return;
+  const parent = foroPosts.find(p => p.id === parentId);
+  await api('/api/foro', 'POST', { autor_id: null, autor_nombre: 'ChamBA', autor_tipo: 'admin', titulo: 'Re: ' + (parent?.titulo||''), contenido, parent_id: parentId });
+  input.value = '';
+  toggleRespForm('resp-form-' + parentId);
+  await cargarForo();
+  toast('Respuesta publicada ✅');
 }
 
 async function publicarForoAdmin() {
@@ -577,14 +493,14 @@ async function publicarForoAdmin() {
   await api('/api/foro', 'POST', { autor_id: null, autor_nombre: 'ChamBA', autor_tipo: 'admin', titulo, contenido });
   document.getElementById('foro-admin-titulo').value = '';
   document.getElementById('foro-admin-body').value = '';
-  cargarForo();
+  await cargarForo();
   toast('Publicado en el foro ✅');
 }
 
 async function eliminarPost(id) {
   if (!confirm('¿Eliminar esta publicación?')) return;
   await api(`/api/foro/${id}`, 'DELETE');
-  cargarForo();
+  await cargarForo();
   toast('Publicación eliminada');
 }
 </script>
