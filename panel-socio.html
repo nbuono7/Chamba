@@ -481,14 +481,13 @@ async function enviarOferta(pedidoId) {
 
 async function aceptarContraoferta(ofertaId) {
   showConfirm('✅','¿Aceptás el precio?','El cliente recibirá el código de verificación una vez que confirme el pago.', async () => {
+    console.log('[DEBUG] Aceptando oferta:', ofertaId);
     const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: null });
+    console.log('[DEBUG] Respuesta de aceptar:', r);
     if (r.error) return showInfo('❌','Error',r.error);
-    // Pequeña espera para asegurar que Supabase propague el cambio antes de releer (BUGFIX)
-    await new Promise(resolve => setTimeout(resolve, 600));
     await cargarTodo();
+    console.log('[DEBUG] misTareas despues de recargar:', misTareas);
     goTo('en-proceso', document.getElementById('nav-proceso'));
-    // Segunda recarga de seguridad por si la primera trajo datos viejos
-    setTimeout(cargarTodo, 1500);
   });
 }
 
@@ -523,21 +522,14 @@ async function verificarCodigo(tareaId) {
   if (digits.length < 4) return showCodErr(tareaId, 'Ingresá los 4 dígitos.');
   try {
     const r = await api('/api/pedidos/' + tareaId + '/verificar-codigo', 'POST', { codigo: digits });
+    console.log('[DEBUG] Respuesta verificar-codigo:', r);
     if (r.error) return showCodErr(tareaId, r.error);
     showInfo('🎉','¡Código verificado!', r.mensaje);
-    // Espera para asegurar que Supabase propague el saldo actualizado (BUGFIX)
-    await new Promise(resolve => setTimeout(resolve, 700));
     const users = await api('/api/usuarios');
     const fresco = Array.isArray(users) ? users.find(x => x.email === usuario.email) : null;
     if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); }
     await cargarTodo();
     renderSaldo();
-    // Segunda verificación de seguridad del saldo
-    setTimeout(async () => {
-      const users2 = await api('/api/usuarios');
-      const fresco2 = Array.isArray(users2) ? users2.find(x => x.email === usuario.email) : null;
-      if (fresco2) { delete fresco2.password_hash; usuario = fresco2; localStorage.setItem('chamba_user', JSON.stringify(fresco2)); renderSaldo(); }
-    }, 2000);
   } catch(e) { showCodErr(tareaId, 'Error al verificar. Intentá de nuevo.'); }
 }
 function showCodErr(id, msg) { const el=document.getElementById('cod-err-'+id); if(el){el.textContent=msg;el.style.display='block';} }
