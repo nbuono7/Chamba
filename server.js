@@ -21,14 +21,6 @@ const sb = async (path, method='GET', body=null) => {
   return r.json();
 };
 
-// Filtro anti-contacto: bloquea teléfonos y emails en mensajes pre-pago
-function filtrarContacto(texto) {
-  const telRegex = /(\+?54\s?)?(\d[\s\-]?){8,12}/g;
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-  const wppRegex = /whatsapp|wpp|wa\.me|telegram|instagram|@[a-z]/gi;
-  return texto.replace(telRegex, '***').replace(emailRegex, '***').replace(wppRegex, '***');
-}
-
 app.get('/', (req, res) => res.json({ status: 'Chamba API ✅' }));
 
 // ── IA ──
@@ -123,9 +115,18 @@ app.patch('/api/pedidos/:id', async (req, res) => {
   res.json(await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', req.body));
 });
 
+// Eliminar pedido — usado por cliente (cancelados) y por ADMIN (sin penalizar a nadie)
 app.delete('/api/pedidos/:id', async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
   res.json({ ok: true });
+});
+
+// Endpoint específico para que el ADMIN elimine un trabajo sin afectar reputación de nadie
+app.post('/api/pedidos/:id/eliminar-admin', async (req, res) => {
+  // Marca ofertas relacionadas como rechazadas SIN penalizar (no pasa por /rechazar)
+  await sb(`ofertas?pedido_id=eq.${req.params.id}`, 'PATCH', { estado: 'rechazada' });
+  await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
+  res.json({ ok: true, mensaje: 'Trabajo eliminado por administración. No afecta reputación.' });
 });
 
 // ── OFERTAS ──
@@ -136,7 +137,7 @@ app.get('/api/ofertas', async (req, res) => {
 });
 
 app.post('/api/ofertas', async (req, res) => {
-  const { pedido_id, socio_id, socio_nombre, especialidad, precio_ofertado, mensaje } = req.body;
+  const { pedido_id, socio_id, socio_nombre, especialidad, precio_ofertado } = req.body;
   const precio_neto = Math.round(precio_ofertado * (1 - COMISION));
   const comision = Math.round(precio_ofertado * COMISION);
   const prev = await sb(`ofertas?pedido_id=eq.${pedido_id}&socio_id=eq.${socio_id}&select=id`);
@@ -146,18 +147,14 @@ app.post('/api/ofertas', async (req, res) => {
   res.json(await sb('ofertas', 'POST', { pedido_id, socio_id, socio_nombre, especialidad, precio_ofertado, precio_neto, comision, ultima_oferta_de: 'socio' }));
 });
 
-// Contraoferta (solo precios, sin texto)
 app.post('/api/ofertas/:id/contraoferta', async (req, res) => {
   const { nuevo_precio, rol } = req.body;
   if (!nuevo_precio || nuevo_precio <= 0) return res.status(400).json({ error: 'Precio inválido.' });
   const precio_neto = Math.round(nuevo_precio * 0.8);
   const comision = Math.round(nuevo_precio * 0.2);
-  res.json(await sb(`ofertas?id=eq.${req.params.id}`, 'PATCH', {
-    precio_ofertado: nuevo_precio, precio_neto, comision, estado: 'negociando', ultima_oferta_de: rol
-  }));
+  res.json(await sb(`ofertas?id=eq.${req.params.id}`, 'PATCH', { precio_ofertado: nuevo_precio, precio_neto, comision, estado: 'negociando', ultima_oferta_de: rol }));
 });
 
-// Aceptar oferta → genera código, bloquea dinero, habilita chat
 app.post('/api/ofertas/:id/aceptar', async (req, res) => {
   const oferta = await sb(`ofertas?id=eq.${req.params.id}&select=*`);
   if (!oferta.length) return res.status(404).json({ error: 'Oferta no encontrada' });
@@ -173,7 +170,7 @@ app.post('/api/ofertas/:id/aceptar', async (req, res) => {
   res.json({ ok: true, codigo, precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto, comision: o.comision });
 });
 
-// Rechazar trabajo (socio) → penaliza reputación
+// Rechazar trabajo (SOLO el socio puede hacer esto) → penaliza reputación
 app.post('/api/ofertas/:id/rechazar', async (req, res) => {
   const oferta = await sb(`ofertas?id=eq.${req.params.id}&select=*`);
   if (!oferta.length) return res.status(404).json({ error: 'Oferta no encontrada' });
@@ -187,7 +184,6 @@ app.post('/api/ofertas/:id/rechazar', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Buscar otro socio (cliente cancela oferta aceptada y vuelve a buscar)
 app.post('/api/pedidos/:id/buscar-otro-socio', async (req, res) => {
   await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', {
     profesional_id: null, estado: 'nuevo', estado_pago: 'sin_pagar',
@@ -198,7 +194,6 @@ app.post('/api/pedidos/:id/buscar-otro-socio', async (req, res) => {
   res.json({ ok: true });
 });
 
-// Verificar código con límite de 4 intentos
 app.post('/api/pedidos/:id/verificar-codigo', async (req, res) => {
   const { codigo } = req.body;
   const pedidos = await sb(`pedidos?id=eq.${req.params.id}&select=*`);
@@ -216,11 +211,8 @@ app.post('/api/pedidos/:id/verificar-codigo', async (req, res) => {
   res.json({ ok: true, mensaje: '¡Código verificado! El dinero fue liberado a tu cuenta.' });
 });
 
-// ── MENSAJES (solo permitidos si chat_habilitado) ──
-app.get('/api/mensajes/:pedido_id', async (req, res) => {
-  res.json(await sb(`mensajes?pedido_id=eq.${req.params.pedido_id}&select=*&order=created_at.asc`));
-});
-
+// ── MENSAJES (solo si chat_habilitado) ──
+app.get('/api/mensajes/:pedido_id', async (req, res) => res.json(await sb(`mensajes?pedido_id=eq.${req.params.pedido_id}&select=*&order=created_at.asc`)));
 app.post('/api/mensajes', async (req, res) => {
   const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado`);
   if (!pedido.length || !pedido[0].chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
@@ -244,12 +236,10 @@ app.post('/api/calificaciones', async (req, res) => {
   res.json(data);
 });
 
-app.get('/api/calificaciones/:socio_id', async (req, res) => {
-  res.json(await sb(`calificaciones?socio_id=eq.${req.params.socio_id}&select=*&order=created_at.desc`));
-});
+app.get('/api/calificaciones/:socio_id', async (req, res) => res.json(await sb(`calificaciones?socio_id=eq.${req.params.socio_id}&select=*&order=created_at.desc`)));
 
-// ── FORO ──
-app.get('/api/foro', async (req, res) => res.json(await sb('foro?select=*&order=created_at.desc')));
+// ── FORO (con soporte para respuestas vía parent_id) ──
+app.get('/api/foro', async (req, res) => res.json(await sb('foro?select=*&order=created_at.asc')));
 app.post('/api/foro', async (req, res) => res.json(await sb('foro', 'POST', req.body)));
 app.delete('/api/foro/:id', async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/foro?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
