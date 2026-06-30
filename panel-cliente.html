@@ -59,22 +59,18 @@
     .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
     .refresh-btn { font-size: 12px; color: var(--teal); cursor: pointer; background: none; border: none; font-family: inherit; }
 
-    /* TRABAJO CARD */
     .trabajo-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; background: #fff; position: relative; }
     .trabajo-card.con-ofertas { border-color: var(--teal-mid); }
     .trabajo-card.en-proceso { border-color: var(--teal); background: var(--teal-light); }
-    .trabajo-card.cancelado { opacity: 0.7; border-color: var(--red); }
     .trabajo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .trabajo-servicio { font-size: 16px; font-weight: 600; }
     .trabajo-desc { font-size: 14px; color: var(--text-mid); margin-bottom: 10px; line-height: 1.5; }
     .trabajo-ia { background: var(--teal-light); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; color: var(--teal-dark); }
     .trabajo-footer { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
 
-    /* WASTED */
-    .wasted-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); border-radius: var(--radius); z-index: 2; flex-direction: column; gap: 12px; }
-    .wasted-text { font-size: 42px; font-weight: 900; color: var(--red); letter-spacing: 4px; text-transform: uppercase; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; font-family: 'Impact', sans-serif; }
+    .wasted-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.65); border-radius: var(--radius); z-index: 2; flex-direction: column; gap: 14px; }
+    .wasted-text { font-size: 44px; font-weight: 900; color: var(--red); letter-spacing: 5px; text-transform: uppercase; text-shadow: 3px 3px 0 #000, -1px -1px 0 #000; font-family: 'Impact', sans-serif; }
 
-    /* OFERTA CARD */
     .oferta-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fafafa; }
     .oferta-card.mejor { border-color: var(--teal); background: var(--teal-light); }
     .oferta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -83,18 +79,14 @@
     .oferta-rep { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
     .oferta-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
-    /* NEGOCIACIÓN */
     .neg-box { background: #fff8e1; border: 1px solid #fbbf24; border-radius: 10px; padding: 14px; margin-top: 10px; }
-    .neg-title { font-size: 13px; font-weight: 600; color: var(--amber); margin-bottom: 10px; }
-    .neg-precio-input { display: flex; gap: 8px; align-items: center; }
+    .neg-precio-input { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
     .neg-precio-input input { flex: 1; border: 1px solid #fbbf24; border-radius: 8px; padding: 8px 12px; font-size: 15px; font-family: inherit; font-weight: 600; }
 
-    /* CÓDIGO */
-    .codigo-box { background: var(--teal-light); border: 2px solid var(--teal); border-radius: 12px; padding: 20px; text-align: center; margin-top: 12px; }
+    .codigo-box { background: #fff; border: 2px solid var(--teal); border-radius: 12px; padding: 20px; text-align: center; margin: 12px 0; }
     .codigo-num { font-size: 52px; font-weight: 700; letter-spacing: 10px; color: var(--teal-dark); font-family: monospace; }
-    .codigo-hint { font-size: 13px; color: var(--teal-dark); margin-top: 6px; }
+    .codigo-advertencia { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #854f0b; margin-top: 10px; }
 
-    /* CHAT */
     .chat-box { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 12px; }
     .chat-messages { height: 200px; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #fafafa; }
     .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
@@ -105,16 +97,29 @@
     .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
     .chat-input:focus { outline: none; border-color: var(--teal); }
 
-    /* CALIFICACIÓN */
     .stars-input { display: flex; gap: 6px; margin: 8px 0; }
     .star-btn { font-size: 28px; cursor: pointer; background: none; border: none; filter: grayscale(1); transition: filter 0.1s; }
     .star-btn.activa { filter: grayscale(0); }
 
-    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fff; }
+    /* FORO CON RESPUESTAS */
+    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+    .foro-respuesta { border-left: 3px solid var(--teal-mid); margin-left: 20px; margin-top: 10px; padding: 10px 14px; background: var(--bg); border-radius: 0 8px 8px 0; font-size: 14px; }
+    .foro-resp-autor { font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 4px; }
+    .foro-resp-form { margin-left: 20px; margin-top: 8px; display: none; }
+    .foro-resp-form input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-family: inherit; }
     .tipo-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
     .tipo-cliente { background: #eff6ff; color: #2563eb; }
     .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
     .tipo-admin { background: #f1f1f1; color: #666; }
+
+    /* MODAL PROPIO */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 400px; text-align: center; }
+    .modal-icon { font-size: 40px; margin-bottom: 12px; }
+    .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .modal-msg { font-size: 14px; color: var(--text-mid); margin-bottom: 20px; line-height: 1.6; }
+    .modal-btns { display: flex; gap: 10px; justify-content: center; }
 
     @media(max-width:768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 16px; } }
   </style>
@@ -131,9 +136,9 @@
       <button class="nav-item active" onclick="goTo('inicio',this)">🏠 Inicio</button>
       <button class="nav-item" onclick="goTo('nuevo-pedido',this)">➕ Publicar trabajo</button>
       <div class="nav-section">Mis trabajos</div>
-      <button class="nav-item" onclick="goTo('esperando-ofertas',this)">🔍 Esperando ofertas <span class="nav-badge" id="badge-esperando" style="display:none">0</span></button>
-      <button class="nav-item" onclick="goTo('en-negociacion',this)">💬 En negociación <span class="nav-badge" id="badge-negociacion" style="display:none">0</span></button>
-      <button class="nav-item" onclick="goTo('en-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-esperando" onclick="goTo('esperando-ofertas',this)">🔍 Esperando ofertas <span class="nav-badge" id="badge-esperando" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-negociacion" onclick="goTo('en-negociacion',this)">💬 En negociación <span class="nav-badge" id="badge-negociacion" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-proceso" onclick="goTo('en-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
       <button class="nav-item" onclick="goTo('completados',this)">✅ Completados</button>
       <div class="nav-section">Comunidad</div>
       <button class="nav-item" onclick="goTo('foro',this)">💬 Foro</button>
@@ -160,50 +165,38 @@
     <!-- NUEVO PEDIDO -->
     <div class="page" id="page-nuevo-pedido">
       <div class="page-title">Publicar un trabajo</div>
-      <div class="page-sub">Describí lo que necesitás y los socios capacitados te enviarán sus ofertas de precio.</div>
-      <div class="card">
-        <div class="card-body">
-          <div class="alert alert-success" id="pedido-ok">✅ ¡Trabajo publicado! Los socios ya pueden ver tu solicitud y enviarte ofertas.</div>
-          <div class="alert alert-error" id="pedido-err"></div>
-          <div class="form-group">
-            <label>Tipo de servicio</label>
-            <select id="p-servicio">
-              <option value="">Elegí el servicio</option>
-              <option>Plomería</option><option>Electricidad</option><option>Gas</option>
-              <option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Descripción del problema</label>
-            <textarea id="p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea>
-          </div>
-          <div id="ia-sugerencia" style="display:none" class="trabajo-ia"></div>
-          <div style="display:flex;gap:8px;margin-bottom:16px">
-            <button class="btn btn-ghost btn-sm" onclick="consultarIA()">🤖 Consultar precio a la IA</button>
-          </div>
-          <button class="btn btn-teal" onclick="publicarTrabajo()">Publicar trabajo</button>
+      <div class="page-sub">Describí lo que necesitás y los socios capacitados te enviarán ofertas de precio.</div>
+      <div class="card"><div class="card-body">
+        <div class="alert alert-success" id="pedido-ok">✅ ¡Trabajo publicado! Los socios ya pueden ver tu solicitud.</div>
+        <div class="alert alert-error" id="pedido-err"></div>
+        <div class="form-group"><label>Tipo de servicio</label>
+          <select id="p-servicio"><option value="">Elegí el servicio</option><option>Plomería</option><option>Electricidad</option><option>Gas</option><option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option></select>
         </div>
-      </div>
+        <div class="form-group"><label>Descripción del problema</label><textarea id="p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
+        <div id="ia-sugerencia" style="display:none" class="trabajo-ia"></div>
+        <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="consultarIA()">🤖 Consultar precio a la IA</button></div>
+        <button class="btn btn-teal" onclick="publicarTrabajo()">Publicar trabajo</button>
+      </div></div>
     </div>
 
     <!-- ESPERANDO OFERTAS -->
     <div class="page" id="page-esperando-ofertas">
       <div class="page-title">Esperando ofertas</div>
-      <div class="page-sub">Trabajos publicados que aún no tienen ofertas aceptadas. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div class="page-sub">Trabajos publicados sin ofertas aún. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
       <div id="lista-esperando"><div class="empty">Cargando...</div></div>
     </div>
 
     <!-- EN NEGOCIACIÓN -->
     <div class="page" id="page-en-negociacion">
       <div class="page-title">En negociación</div>
-      <div class="page-sub">Trabajos con ofertas recibidas donde estás negociando precio. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div class="page-sub">Trabajos con ofertas recibidas. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
       <div id="lista-negociacion"><div class="empty">Cargando...</div></div>
     </div>
 
     <!-- EN PROCESO -->
     <div class="page" id="page-en-proceso">
       <div class="page-title">En proceso</div>
-      <div class="page-sub">Trabajos pagados que están siendo realizados. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div class="page-sub">Trabajos pagados en ejecución. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
       <div id="lista-proceso"><div class="empty">Cargando...</div></div>
     </div>
 
@@ -219,7 +212,7 @@
       <div class="page-title">Foro de la comunidad</div>
       <div class="page-sub">Preguntá y compartí experiencias. <button class="refresh-btn" onclick="cargarForo()">↻ Actualizar</button></div>
       <div class="card"><div class="card-body">
-        <div class="form-group"><label>Título</label><input type="text" id="foro-titulo" placeholder="Título..."/></div>
+        <div class="form-group"><label>Título</label><input type="text" id="foro-titulo" placeholder="Título de tu pregunta o comentario..."/></div>
         <div class="form-group"><label>Mensaje</label><textarea id="foro-body" rows="3" placeholder="Escribí tu mensaje..."></textarea></div>
         <button class="btn btn-teal btn-sm" onclick="publicarForo()">Publicar</button>
       </div></div>
@@ -228,6 +221,17 @@
 
   </main>
 </div>
+
+<!-- MODAL PROPIO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
+
 <script>
 const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
 let usuario = null;
@@ -235,6 +239,31 @@ let misPedidos = [];
 let todasOfertas = {};
 let iaSugerencia = null;
 let estrellasSeleccionadas = 0;
+let foroPosts = [];
+
+// ── MODAL PROPIO (reemplaza alert/confirm) ──
+function showModal(icon, title, msg, btns) {
+  document.getElementById('modal-icon').textContent = icon;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('modal-btns').innerHTML = '';
+  btns.forEach(b => {
+    const el = document.createElement('button');
+    el.className = 'btn ' + (b.class || 'btn-teal');
+    el.textContent = b.label;
+    el.onclick = () => { closeModal(); b.action && b.action(); };
+    document.getElementById('modal-btns').appendChild(el);
+  });
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function showInfo(icon, title, msg) { showModal(icon, title, msg, [{ label: 'OK' }]); }
+function showConfirm(icon, title, msg, onOk, labelOk='Confirmar', labelCancel='Cancelar') {
+  showModal(icon, title, msg, [
+    { label: labelOk, action: onOk },
+    { label: labelCancel, class: 'btn-ghost' }
+  ]);
+}
 
 window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
@@ -258,6 +287,9 @@ function goTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
+  // Limpiar badge al entrar
+  const badgeMap = { 'esperando-ofertas': 'badge-esperando', 'en-negociacion': 'badge-negociacion', 'en-proceso': 'badge-proceso' };
+  if (badgeMap[page]) document.getElementById(badgeMap[page]).style.display = 'none';
   if (page === 'foro') cargarForo();
 }
 
@@ -270,19 +302,18 @@ async function api(path, method='GET', body=null) {
 
 function fmt(n) { return '$' + Number(n||0).toLocaleString('es-AR'); }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'; }
-function starsHtml(n) { return n ? '⭐'.repeat(Math.round(n)) + ' ' + n : 'Sin calificaciones'; }
+function starsHtml(n) { return n ? '⭐'.repeat(Math.min(5, Math.round(n))) + ' ' + n : 'Sin calificaciones'; }
 
 async function cargarTodo() {
   try {
+    // Cargar TODOS los pedidos y filtrar en el cliente por usuario_id
     const todos = await api('/api/pedidos');
     misPedidos = Array.isArray(todos) ? todos.filter(p => p.usuario_id === usuario.id) : [];
-    // Cargar ofertas para pedidos activos
-    for (const p of misPedidos.filter(p => ['nuevo','cancelado'].includes(p.estado) || p._tieneOfertas)) {
-      try { todasOfertas[p.id] = await api('/api/ofertas?pedido_id=' + p.id); } catch(e) {}
-    }
-    // Detectar pedidos con ofertas
-    for (const p of misPedidos.filter(p => p.estado === 'nuevo')) {
-      if (!todasOfertas[p.id]) { try { todasOfertas[p.id] = await api('/api/ofertas?pedido_id=' + p.id); } catch(e) {} }
+
+    // Cargar ofertas para pedidos nuevos
+    const pedidosNuevos = misPedidos.filter(p => p.estado === 'nuevo');
+    for (const p of pedidosNuevos) {
+      try { todasOfertas[p.id] = await api('/api/ofertas?pedido_id=' + p.id); } catch(e) { todasOfertas[p.id] = []; }
     }
   } catch(e) { misPedidos = []; }
   renderTodo();
@@ -300,185 +331,153 @@ function renderTodo() {
   document.getElementById('stat-proceso').textContent = proceso.length;
   document.getElementById('stat-completados').textContent = completados.length;
 
-  const be = document.getElementById('badge-esperando');
-  const bn = document.getElementById('badge-negociacion');
-  const bp = document.getElementById('badge-proceso');
-  be.textContent = esperando.length; be.style.display = esperando.length ? 'inline' : 'none';
-  bn.textContent = negociacion.length; bn.style.display = negociacion.length ? 'inline' : 'none';
-  bp.textContent = proceso.length; bp.style.display = proceso.length ? 'inline' : 'none';
+  // Badges solo si hay novedades y el usuario NO está en esa sección
+  setBadge('badge-esperando', esperando.length, 'page-esperando-ofertas');
+  setBadge('badge-negociacion', negociacion.length, 'page-en-negociacion');
+  setBadge('badge-proceso', proceso.length, 'page-en-proceso');
 
   document.getElementById('lista-esperando').innerHTML = [...esperando, ...cancelados].map(p => renderCardEsperando(p)).join('') || '<div class="empty">No tenés trabajos esperando ofertas.</div>';
   document.getElementById('lista-negociacion').innerHTML = negociacion.map(p => renderCardNegociacion(p)).join('') || '<div class="empty">No tenés trabajos en negociación.</div>';
   document.getElementById('lista-proceso').innerHTML = proceso.map(p => renderCardProceso(p)).join('') || '<div class="empty">No tenés trabajos en proceso.</div>';
   document.getElementById('lista-completados').innerHTML = completados.map(p => renderCardCompletado(p)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
 
-  // Cargar mensajes de trabajos en proceso
   proceso.forEach(p => cargarMensajes(p.id));
+}
+
+function setBadge(id, count, pageId) {
+  const el = document.getElementById(id);
+  const pageActiva = document.getElementById(pageId)?.classList.contains('active');
+  el.textContent = count;
+  el.style.display = (count > 0 && !pageActiva) ? 'inline' : 'none';
 }
 
 function renderCardEsperando(p) {
   const cancelado = p.estado === 'cancelado';
-  return `
-    <div class="trabajo-card ${cancelado ? 'cancelado' : ''}" style="position:relative">
-      ${cancelado ? `<div class="wasted-overlay"><div class="wasted-text">CANCELADO</div><button class="btn btn-red btn-sm" onclick="eliminarPedido('${p.id}')">Eliminar</button></div>` : ''}
-      <div class="trabajo-header">
-        <div class="trabajo-servicio">${p.servicio}</div>
-        <span class="badge badge-gray">Esperando ofertas</span>
-      </div>
-      <div class="trabajo-desc">${p.descripcion||''}</div>
-      ${p.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(p.precio_sugerido_ia)}</strong></div>` : ''}
-      <div class="trabajo-footer">
-        <span style="font-size:12px;color:var(--text-soft)">📅 ${fmtDate(p.created_at)}</span>
-        ${!cancelado ? `<button class="btn btn-red btn-sm" onclick="cancelarPedido('${p.id}')">Eliminar solicitud</button>` : ''}
-      </div>
-    </div>`;
+  return `<div class="trabajo-card" style="position:relative">
+    ${cancelado ? `<div class="wasted-overlay"><div class="wasted-text">CANCELADO</div><button class="btn btn-red btn-sm" onclick="eliminarPedido('${p.id}')">Eliminar</button></div>` : ''}
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-gray">Esperando ofertas</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    ${p.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(p.precio_sugerido_ia)}</strong></div>` : ''}
+    <div class="trabajo-footer">
+      <span style="font-size:12px;color:var(--text-soft)">📅 ${fmtDate(p.created_at)}</span>
+      ${!cancelado ? `<button class="btn btn-red btn-sm" onclick="cancelarPedido('${p.id}')">Eliminar solicitud</button>` : ''}
+    </div>
+  </div>`;
 }
 
 function renderCardNegociacion(p) {
   const ofertas = (todasOfertas[p.id] || []).filter(o => o.estado !== 'rechazada');
-  const sorted = ofertas.sort((a,b) => {
-    const ra = a.rep_promedio||0, rb = b.rep_promedio||0;
-    if (rb !== ra) return rb - ra;
-    return a.precio_ofertado - b.precio_ofertado;
-  });
-  return `
-    <div class="trabajo-card con-ofertas">
-      <div class="trabajo-header">
-        <div class="trabajo-servicio">${p.servicio}</div>
-        <span class="badge badge-amber">${ofertas.length} oferta${ofertas.length !== 1 ? 's' : ''}</span>
-      </div>
-      <div class="trabajo-desc">${p.descripcion||''}</div>
-      ${p.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(p.precio_sugerido_ia)}</strong></div>` : ''}
-      <div style="margin-top:12px">
-        ${sorted.map((o, i) => `
-          <div class="oferta-card ${i===0?'mejor':''}">
-            ${i===0 ? '<div style="font-size:11px;font-weight:600;color:var(--teal);margin-bottom:6px">⭐ MEJOR OFERTA</div>' : ''}
-            <div class="oferta-header">
-              <div>
-                <div class="oferta-socio">${o.socio_nombre}</div>
-                <div class="oferta-rep">${starsHtml(o.rep_promedio)} · ${o.trabajos_completados||0} trabajos</div>
-              </div>
-              <div class="oferta-precio">${fmt(o.precio_ofertado)}</div>
+  const sorted = [...ofertas].sort((a,b) => (b.rep_promedio||0) - (a.rep_promedio||0) || a.precio_ofertado - b.precio_ofertado);
+  return `<div class="trabajo-card con-ofertas">
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-amber">${ofertas.length} oferta${ofertas.length!==1?'s':''}</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    ${p.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(p.precio_sugerido_ia)}</strong></div>` : ''}
+    <div style="margin-top:12px">
+      ${sorted.map((o,i) => `
+        <div class="oferta-card ${i===0?'mejor':''}">
+          ${i===0 ? '<div style="font-size:11px;font-weight:600;color:var(--teal);margin-bottom:6px">⭐ MEJOR OFERTA</div>' : ''}
+          <div class="oferta-header">
+            <div><div class="oferta-socio">${o.socio_nombre}</div><div class="oferta-rep">${starsHtml(o.rep_promedio)} · ${o.trabajos_completados||0} trabajos</div></div>
+            <div class="oferta-precio">${fmt(o.precio_ofertado)}</div>
+          </div>
+          ${o.ultima_oferta_de==='cliente' ? `<div style="font-size:12px;color:var(--amber);font-weight:500;margin-top:4px">⏳ Esperando respuesta del socio a tu contraoferta</div>` : ''}
+          ${o.ultima_oferta_de!=='cliente' ? `<div class="oferta-btns">
+            <button class="btn btn-teal btn-sm" onclick="aceptarOferta('${o.id}','${p.id}',${o.precio_ofertado})">✅ Aceptar ${fmt(o.precio_ofertado)}</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleNeg('neg-${o.id}')">💬 Contraofertrar</button>
+            <button class="btn btn-red btn-sm" onclick="buscarOtroSocio('${p.id}')">🔄 Buscar otro socio</button>
+          </div>
+          <div id="neg-${o.id}" style="display:none" class="neg-box">
+            <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:8px">Tu contraoferta (solo precio)</div>
+            <div class="neg-precio-input">
+              <input type="number" id="neg-val-${o.id}" placeholder="Tu precio máximo..."/>
+              <button class="btn btn-teal btn-sm" onclick="enviarContraoferta('${o.id}')">Enviar</button>
             </div>
-            ${o.ultima_oferta_de === 'cliente' ? `<div style="font-size:12px;color:var(--amber);font-weight:500;margin-top:4px">⏳ Esperando respuesta del socio a tu contraoferta de ${fmt(o.precio_ofertado)}</div>` : ''}
-            <div class="oferta-btns">
-              ${o.estado !== 'aceptada' && o.ultima_oferta_de !== 'cliente' ? `
-                <button class="btn btn-teal btn-sm" onclick="aceptarOferta('${o.id}','${p.id}')">✅ Aceptar ${fmt(o.precio_ofertado)}</button>
-                <button class="btn btn-ghost btn-sm" onclick="toggleNeg('neg-${o.id}')">💬 Contraofertrar</button>
-                <button class="btn btn-red btn-sm" onclick="buscarOtroSocio('${p.id}')">🔄 Buscar otro socio</button>
-              ` : ''}
-            </div>
-            <div id="neg-${o.id}" style="display:none" class="neg-box">
-              <div class="neg-title">Tu contraoferta (solo precio)</div>
-              <div class="neg-precio-input">
-                <input type="number" id="neg-val-${o.id}" placeholder="Tu precio máximo..." />
-                <button class="btn btn-teal btn-sm" onclick="enviarContraoferta('${o.id}')">Enviar</button>
-              </div>
-            </div>
-          </div>`).join('')}
-      </div>
-      <div class="trabajo-footer">
-        <span style="font-size:12px;color:var(--text-soft)">📅 ${fmtDate(p.created_at)}</span>
-        <button class="btn btn-red btn-sm" onclick="cancelarPedido('${p.id}')">Eliminar solicitud</button>
-      </div>
-    </div>`;
+          </div>` : ''}
+        </div>`).join('')}
+    </div>
+    <div class="trabajo-footer">
+      <span style="font-size:12px;color:var(--text-soft)">📅 ${fmtDate(p.created_at)}</span>
+      <button class="btn btn-red btn-sm" onclick="cancelarPedido('${p.id}')">Eliminar solicitud</button>
+    </div>
+  </div>`;
 }
 
 function renderCardProceso(p) {
-  return `
-    <div class="trabajo-card en-proceso">
-      <div class="trabajo-header">
-        <div class="trabajo-servicio">${p.servicio}</div>
-        <span class="badge badge-amber">En proceso</span>
+  return `<div class="trabajo-card en-proceso">
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-amber">⚙️ En proceso</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+      <div><div style="font-size:12px;color:var(--teal-dark)">Precio acordado</div><div style="font-size:20px;font-weight:700;color:var(--teal-dark)">${fmt(p.precio_cliente)}</div></div>
+      <div><div style="font-size:12px;color:var(--teal-dark)">Comisión ChamBA</div><div style="font-size:14px;font-weight:600;color:var(--teal-dark)">${fmt(p.comision)}</div></div>
+    </div>
+    ${p.codigo_verificacion && !p.codigo_usado ? `
+      <div class="codigo-box">
+        <div style="font-size:13px;font-weight:600;color:var(--teal-dark);margin-bottom:6px">🔐 Tu código de verificación</div>
+        <div class="codigo-num">${p.codigo_verificacion}</div>
       </div>
-      <div class="trabajo-desc">${p.descripcion||''}</div>
-      <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
-        <div><div style="font-size:12px;color:var(--teal-dark)">Precio acordado</div><div style="font-size:20px;font-weight:700;color:var(--teal-dark)">${fmt(p.precio_cliente)}</div></div>
-        <div><div style="font-size:12px;color:var(--teal-dark)">Comisión ChamBA</div><div style="font-size:14px;font-weight:600;color:var(--teal-dark)">${fmt(p.comision)}</div></div>
-      </div>
-      ${p.codigo_verificacion && !p.codigo_usado ? `
-        <div class="codigo-box">
-          <div style="font-size:13px;font-weight:600;color:var(--teal-dark);margin-bottom:6px">🔐 Tu código de verificación</div>
-          <div class="codigo-num">${p.codigo_verificacion}</div>
-          <div class="codigo-hint">Dáselo al socio cuando termine el trabajo para desbloquear el pago</div>
-        </div>` : ''}
-      ${p.codigo_usado ? '<div style="background:var(--teal);color:#fff;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:500;margin-top:10px">✅ Código verificado — el socio cobró su pago</div>' : ''}
-      <div style="margin-top:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:6px">💬 Chat con el socio</div>
-        <div class="chat-box">
-          <div class="chat-messages" id="chat-${p.id}"><div style="text-align:center;color:var(--text-soft);font-size:13px;padding:14px">Cargando mensajes...</div></div>
-          <div class="chat-input-row">
-            <input class="chat-input" id="chat-in-${p.id}" placeholder="Coordiná día, hora y lugar..." onkeydown="if(event.key==='Enter')enviarMsg('${p.id}')"/>
-            <button class="btn btn-teal btn-sm" onclick="enviarMsg('${p.id}')">Enviar</button>
-          </div>
+      <div class="codigo-advertencia">⚠️ <strong>Importante:</strong> Entregá este código al socio únicamente cuando haya <strong>terminado el trabajo</strong>. El código desbloquea su pago.</div>` : ''}
+    ${p.codigo_usado ? '<div style="background:var(--teal);color:#fff;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:500;margin:10px 0">✅ Código verificado — el socio cobró su pago</div>' : ''}
+    <div style="margin-top:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">💬 Chat con el socio</div>
+      <div class="chat-box">
+        <div class="chat-messages" id="chat-${p.id}"><div style="text-align:center;color:var(--text-soft);font-size:13px;padding:14px">Cargando...</div></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-in-${p.id}" placeholder="Coordiná día, hora y lugar..." onkeydown="if(event.key==='Enter')enviarMsg('${p.id}')"/>
+          <button class="btn btn-teal btn-sm" onclick="enviarMsg('${p.id}')">Enviar</button>
         </div>
       </div>
-    </div>`;
+    </div>
+  </div>`;
 }
 
 function renderCardCompletado(p) {
-  return `
-    <div class="trabajo-card">
-      <div class="trabajo-header">
-        <div class="trabajo-servicio">${p.servicio}</div>
-        <span class="badge badge-green">Completado</span>
-      </div>
-      <div class="trabajo-desc">${p.descripcion||''}</div>
-      <div style="font-size:14px;color:var(--teal-dark);font-weight:500;margin-bottom:10px">Precio final: ${fmt(p.precio_cliente)} · ${fmtDate(p.created_at)}</div>
-      ${!p._calificado && p.profesional_id ? `
-        <div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px">
-          <div style="font-size:14px;font-weight:600;margin-bottom:8px">⭐ Calificá al socio</div>
-          <div class="stars-input" id="stars-${p.id}">
-            ${[1,2,3,4,5].map(n => `<button class="star-btn" onclick="selStar('${p.id}',${n})">⭐</button>`).join('')}
-          </div>
-          <button class="btn btn-teal btn-sm" style="margin-top:8px" onclick="calificar('${p.id}','${p.profesional_id}')">Enviar calificación</button>
-        </div>` : '<div style="color:var(--text-soft);font-size:13px">✅ Ya calificaste este trabajo</div>'}
-    </div>`;
+  return `<div class="trabajo-card">
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-green">✅ Completado</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    <div style="font-size:14px;color:var(--teal-dark);font-weight:500;margin-bottom:10px">Precio final: ${fmt(p.precio_cliente)} · ${fmtDate(p.created_at)}</div>
+    ${p.profesional_id ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">⭐ Calificá al socio</div>
+      <div class="stars-input" id="stars-${p.id}">${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="selStar('${p.id}',${n})">⭐</button>`).join('')}</div>
+      <button class="btn btn-teal btn-sm" style="margin-top:8px" onclick="calificar('${p.id}','${p.profesional_id}')">Enviar calificación</button>
+    </div>` : ''}
+  </div>`;
 }
 
-function toggleNeg(id) {
-  const el = document.getElementById(id);
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
+function toggleNeg(id) { const el=document.getElementById(id); el.style.display=el.style.display==='none'?'block':'none'; }
 
-async function aceptarOferta(ofertaId, pedidoId) {
-  const oferta = (todasOfertas[pedidoId]||[]).find(o => o.id === ofertaId);
-  if (!oferta) return;
-  if (!confirm(`¿Confirmás el pago de ${fmt(oferta.precio_ofertado)}?\n\nEsto desbloqueará el código de verificación y el chat con el socio.\n\n(NOTA: Los pagos reales se habilitarán próximamente)`)) return;
-  try {
-    const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
-    if (r.error) return alert(r.error);
-    alert(`✅ ¡Trabajo asignado!\n\nTu código de verificación: ${r.codigo}\n\nGuardalo — se lo das al socio cuando termine el trabajo para desbloquear su pago.`);
-    await cargarTodo();
-    goTo('en-proceso', document.querySelector('[onclick*="en-proceso"]'));
-  } catch(e) { alert('Error al aceptar la oferta.'); }
+async function aceptarOferta(ofertaId, pedidoId, precio) {
+  showConfirm('💰', '¿Confirmás el pago?',
+    `Vas a pagar ${fmt(precio)}. El dinero queda retenido en ChamBA hasta que el socio complete el trabajo y vos le entregues el código de verificación.\n\n(Los pagos reales se habilitarán próximamente)`,
+    async () => {
+      const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
+      if (r.error) return showInfo('❌', 'Error', r.error);
+      await cargarTodo();
+      goTo('en-proceso', document.getElementById('nav-proceso'));
+    }, '✅ Confirmar pago');
 }
 
 async function enviarContraoferta(ofertaId) {
   const precio = parseFloat(document.getElementById('neg-val-' + ofertaId).value);
-  if (!precio || precio <= 0) return alert('Ingresá un precio válido.');
+  if (!precio || precio <= 0) return showInfo('⚠️', 'Precio inválido', 'Ingresá un precio válido.');
   await api('/api/ofertas/' + ofertaId + '/contraoferta', 'POST', { nuevo_precio: precio, rol: 'cliente' });
   document.getElementById('neg-' + ofertaId).style.display = 'none';
-  alert('Contraoferta enviada. El socio la verá y podrá responder.');
+  showInfo('✅', 'Contraoferta enviada', 'El socio verá tu propuesta y podrá aceptarla o responder con otro precio.');
   await cargarTodo();
 }
 
 async function buscarOtroSocio(pedidoId) {
-  if (!confirm('¿Querés cancelar todas las ofertas y buscar otro socio?')) return;
-  await api('/api/pedidos/' + pedidoId + '/buscar-otro-socio', 'POST');
-  await cargarTodo();
+  showConfirm('🔄', '¿Buscar otro socio?', 'Se cancelarán todas las ofertas actuales y el trabajo volverá a estar disponible para otros socios.',
+    async () => { await api('/api/pedidos/' + pedidoId + '/buscar-otro-socio', 'POST'); await cargarTodo(); });
 }
 
 async function cancelarPedido(pedidoId) {
-  if (!confirm('¿Seguro que querés eliminar esta solicitud? Los socios que ofertaron verán que fue cancelada.')) return;
-  await api('/api/pedidos/' + pedidoId, 'PATCH', { estado: 'cancelado' });
-  await cargarTodo();
+  showConfirm('🗑️', '¿Eliminar solicitud?', 'Los socios que ofertaron verán que el trabajo fue cancelado.',
+    async () => { await api('/api/pedidos/' + pedidoId, 'PATCH', { estado: 'cancelado' }); await cargarTodo(); }, 'Sí, eliminar');
 }
 
 async function eliminarPedido(pedidoId) {
-  if (!confirm('¿Eliminás este trabajo cancelado de tu vista?')) return;
-  await api('/api/pedidos/' + pedidoId, 'DELETE');
-  await cargarTodo();
+  showConfirm('🗑️', '¿Eliminar de tu vista?', 'El trabajo cancelado desaparecerá de tu lista.',
+    async () => { await api('/api/pedidos/' + pedidoId, 'DELETE'); await cargarTodo(); }, 'Sí, eliminar');
 }
 
 async function cargarMensajes(pedidoId) {
@@ -487,7 +486,7 @@ async function cargarMensajes(pedidoId) {
     const box = document.getElementById('chat-' + pedidoId);
     if (!box) return;
     box.innerHTML = Array.isArray(msgs) && msgs.length
-      ? msgs.map(m => `<div class="chat-msg ${m.autor===usuario.nombre?'yo':'otro'}"><div class="chat-msg-meta">${m.autor}</div>${m.contenido}</div>`).join('')
+      ? msgs.map(m=>`<div class="chat-msg ${m.autor===usuario.nombre?'yo':'otro'}"><div class="chat-msg-meta">${m.autor}</div>${m.contenido}</div>`).join('')
       : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:14px">Chat habilitado — coordiná con el socio</div>';
     box.scrollTop = box.scrollHeight;
   } catch(e) {}
@@ -498,32 +497,32 @@ async function enviarMsg(pedidoId) {
   const contenido = input.value.trim(); if (!contenido) return;
   input.value = '';
   const r = await api('/api/mensajes', 'POST', { pedido_id: pedidoId, autor: usuario.nombre, rol: 'cliente', contenido });
-  if (r.error) { alert(r.error); return; }
+  if (r.error) { showInfo('❌', 'Error', r.error); return; }
   cargarMensajes(pedidoId);
 }
 
 function selStar(pedidoId, n) {
   estrellasSeleccionadas = n;
-  document.querySelectorAll(`#stars-${pedidoId} .star-btn`).forEach((btn, i) => btn.classList.toggle('activa', i < n));
+  document.querySelectorAll(`#stars-${pedidoId} .star-btn`).forEach((btn,i) => btn.classList.toggle('activa', i<n));
 }
 
 async function calificar(pedidoId, socioId) {
-  if (!estrellasSeleccionadas) return alert('Elegí una calificación de 1 a 5 estrellas.');
+  if (!estrellasSeleccionadas) return showInfo('⚠️', 'Falta calificación', 'Elegí entre 1 y 5 estrellas.');
   await api('/api/calificaciones', 'POST', { pedido_id: pedidoId, socio_id: socioId, cliente_id: usuario.id, estrellas: estrellasSeleccionadas });
-  alert('¡Gracias por tu calificación!');
+  showInfo('⭐', '¡Gracias!', 'Tu calificación fue enviada.');
   await cargarTodo();
 }
 
 async function consultarIA() {
   const servicio = document.getElementById('p-servicio').value;
   const desc = document.getElementById('p-desc').value.trim();
-  if (!servicio || !desc) return alert('Completá el servicio y la descripción primero.');
+  if (!servicio || !desc) return showInfo('⚠️', 'Falta información', 'Completá el servicio y la descripción primero.');
   const box = document.getElementById('ia-sugerencia');
   box.style.display = 'block'; box.innerHTML = '🤖 Consultando a la IA...';
   try {
     const r = await api('/api/analizar', 'POST', { servicio, descripcion: desc, fotos: [] });
     iaSugerencia = r;
-    box.innerHTML = `🤖 <strong>Precio sugerido: ${fmt(r.precio_cliente)}</strong> · Rango: ${fmt(r.precio_min)} – ${fmt(r.precio_max)}<br><span style="font-size:12px;color:var(--teal-dark)">El socio recibiría ${fmt(r.precio_socio)} (ChamBA cobra ${fmt(r.comision_chamba)} de comisión)</span>`;
+    box.innerHTML = `🤖 <strong>Precio sugerido: ${fmt(r.precio_cliente)}</strong> · Rango: ${fmt(r.precio_min)} – ${fmt(r.precio_max)}<br><span style="font-size:12px">El socio recibiría ${fmt(r.precio_socio)} · ChamBA cobra ${fmt(r.comision_chamba)} (20%)</span>`;
   } catch(e) { box.innerHTML = '⚠️ No se pudo consultar la IA.'; }
 }
 
@@ -532,7 +531,7 @@ async function publicarTrabajo() {
   const descripcion = document.getElementById('p-desc').value.trim();
   document.getElementById('pedido-ok').style.display = 'none';
   document.getElementById('pedido-err').style.display = 'none';
-  if (!servicio || !descripcion) { const e = document.getElementById('pedido-err'); e.textContent = 'Completá todos los campos.'; e.style.display = 'block'; return; }
+  if (!servicio || !descripcion) { const e=document.getElementById('pedido-err'); e.textContent='Completá todos los campos.'; e.style.display='block'; return; }
   const body = { servicio, descripcion, usuario_id: usuario.id, estado: 'nuevo' };
   if (iaSugerencia) body.precio_sugerido_ia = iaSugerencia.precio_cliente;
   try {
@@ -544,16 +543,56 @@ async function publicarTrabajo() {
     document.getElementById('ia-sugerencia').style.display = 'none';
     iaSugerencia = null;
     await cargarTodo();
-  } catch(e) { const el = document.getElementById('pedido-err'); el.textContent = e.message||'Error al publicar.'; el.style.display = 'block'; }
+  } catch(e) { const el=document.getElementById('pedido-err'); el.textContent=e.message||'Error al publicar.'; el.style.display='block'; }
 }
 
+// ── FORO CON RESPUESTAS ──
 async function cargarForo() {
   try {
     const posts = await api('/api/foro');
-    document.getElementById('foro-posts').innerHTML = Array.isArray(posts) && posts.length
-      ? posts.map(p => `<div class="foro-post"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div></div><div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.titulo}</div><div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div></div>`).join('')
-      : '<div class="empty">No hay publicaciones aún.</div>';
+    foroPosts = Array.isArray(posts) ? posts : [];
+    renderForo();
   } catch(e) {}
+}
+
+function renderForo() {
+  // Agrupar: posts principales (sin parent) y respuestas (con parent_id)
+  const principales = foroPosts.filter(p => !p.parent_id);
+  const respuestas = foroPosts.filter(p => p.parent_id);
+
+  document.getElementById('foro-posts').innerHTML = principales.length
+    ? principales.map(p => {
+        const resps = respuestas.filter(r => r.parent_id === p.id);
+        return `<div class="foro-post">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div>
+            <div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div>
+          </div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.titulo}</div>
+          <div style="font-size:14px;color:var(--text-mid);line-height:1.6;margin-bottom:10px">${p.contenido}</div>
+          ${resps.map(r => `<div class="foro-respuesta"><div class="foro-resp-autor">${r.autor_nombre} <span class="tipo-chip tipo-${r.autor_tipo}">${r.autor_tipo}</span> · ${fmtDate(r.created_at)}</div>${r.contenido}</div>`).join('')}
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="toggleRespForm('resp-form-${p.id}')">💬 Responder</button>
+          <div class="foro-resp-form" id="resp-form-${p.id}">
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <input type="text" id="resp-input-${p.id}" placeholder="Escribí tu respuesta..." onkeydown="if(event.key==='Enter')responder('${p.id}')"/>
+              <button class="btn btn-teal btn-sm" onclick="responder('${p.id}')">Enviar</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">No hay publicaciones aún. ¡Sé el primero!</div>';
+}
+
+function toggleRespForm(id) { const el=document.getElementById(id); el.style.display=el.style.display==='none'||el.style.display===''?'block':'none'; }
+
+async function responder(parentId) {
+  const input = document.getElementById('resp-input-' + parentId);
+  const contenido = input.value.trim(); if (!contenido) return;
+  const parent = foroPosts.find(p => p.id === parentId);
+  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'cliente', titulo: 'Re: ' + (parent?.titulo||''), contenido, parent_id: parentId });
+  input.value = '';
+  toggleRespForm('resp-form-' + parentId);
+  await cargarForo();
 }
 
 async function publicarForo() {
@@ -563,7 +602,7 @@ async function publicarForo() {
   await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'cliente', titulo, contenido });
   document.getElementById('foro-titulo').value = '';
   document.getElementById('foro-body').value = '';
-  cargarForo();
+  await cargarForo();
 }
 </script>
 </body>
