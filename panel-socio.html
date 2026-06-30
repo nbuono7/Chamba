@@ -56,41 +56,34 @@
     .form-group input, .form-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; }
     .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
 
-    /* TRABAJO DISPONIBLE */
     .trabajo-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; background: #fff; position: relative; }
     .trabajo-card.nuevo { border-left: 4px solid var(--teal); }
     .trabajo-card.asignado { border-color: var(--teal); background: var(--teal-light); }
-    .trabajo-card.cancelado { opacity: 0.7; }
     .trabajo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
     .trabajo-servicio { font-size: 16px; font-weight: 600; }
     .trabajo-desc { font-size: 14px; color: var(--text-mid); margin-bottom: 10px; line-height: 1.5; }
     .trabajo-ia { background: var(--teal-light); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 13px; color: var(--teal-dark); }
 
-    /* OFERTA FORM */
     .oferta-form { background: #f9faf9; border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 10px; }
     .oferta-preview { background: var(--teal-light); border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 13px; color: var(--teal-dark); display: none; }
 
-    /* NEGOCIACIÓN */
     .neg-box { background: #fff8e1; border: 1px solid #fbbf24; border-radius: 10px; padding: 14px; margin-top: 10px; }
     .neg-precio-input { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
     .neg-precio-input input { flex: 1; border: 1px solid #fbbf24; border-radius: 8px; padding: 8px 12px; font-size: 15px; font-family: inherit; font-weight: 600; }
 
-    /* WASTED */
-    .wasted-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); border-radius: var(--radius); z-index: 2; flex-direction: column; gap: 12px; }
-    .wasted-text { font-size: 42px; font-weight: 900; color: var(--red); letter-spacing: 4px; text-transform: uppercase; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000; font-family: 'Impact', sans-serif; }
+    .wasted-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.65); border-radius: var(--radius); z-index: 2; flex-direction: column; gap: 14px; }
+    .wasted-text { font-size: 44px; font-weight: 900; color: var(--red); letter-spacing: 5px; text-transform: uppercase; text-shadow: 3px 3px 0 #000, -1px -1px 0 #000; font-family: 'Impact', sans-serif; }
 
-    /* CÓDIGO */
     .codigo-inputs { display: flex; gap: 10px; justify-content: center; margin: 12px 0; }
     .codigo-digit { width: 52px; height: 60px; border: 2px solid var(--border); border-radius: 10px; text-align: center; font-size: 28px; font-family: monospace; font-weight: 700; }
     .codigo-digit:focus { outline: none; border-color: var(--teal); }
+    .codigo-advertencia { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #854f0b; margin-top: 12px; }
 
-    /* SALDO */
     .saldo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
     .saldo-box { background: var(--sidebar); border-radius: var(--radius); padding: 20px; color: #fff; }
     .saldo-label { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
     .saldo-amount { font-size: 28px; font-weight: 600; }
 
-    /* CHAT */
     .chat-box { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 12px; }
     .chat-messages { height: 180px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #fafafa; }
     .chat-msg { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
@@ -105,11 +98,24 @@
     .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; margin-bottom: 3px; }
     .perfil-val { font-size: 15px; color: var(--text); }
     .pendiente-aviso { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: var(--radius); padding: 28px; text-align: center; }
-    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fff; }
+
+    .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
+    .foro-respuesta { border-left: 3px solid var(--teal-mid); margin-left: 20px; margin-top: 10px; padding: 10px 14px; background: var(--bg); border-radius: 0 8px 8px 0; font-size: 14px; }
+    .foro-resp-autor { font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 4px; }
+    .foro-resp-form { margin-left: 20px; margin-top: 8px; display: none; }
+    .foro-resp-form input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-family: inherit; }
     .tipo-chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
     .tipo-cliente { background: #eff6ff; color: #2563eb; }
     .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
     .tipo-admin { background: #f1f1f1; color: #666; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal-box { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 400px; text-align: center; }
+    .modal-icon { font-size: 40px; margin-bottom: 12px; }
+    .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .modal-msg { font-size: 14px; color: var(--text-mid); margin-bottom: 20px; line-height: 1.6; white-space: pre-line; }
+    .modal-btns { display: flex; gap: 10px; justify-content: center; }
 
     @media(max-width:768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 16px; } .perfil-grid, .saldo-grid { grid-template-columns: 1fr; } }
   </style>
@@ -126,9 +132,9 @@
       <div class="nav-section">General</div>
       <button class="nav-item active" onclick="goTo('inicio',this)">🏠 Inicio</button>
       <div class="nav-section">Trabajos</div>
-      <button class="nav-item" onclick="goTo('disponibles',this)">🔍 Disponibles <span class="nav-badge" id="badge-disponibles" style="display:none">0</span></button>
-      <button class="nav-item" onclick="goTo('mis-ofertas',this)">📤 Mis ofertas <span class="nav-badge" id="badge-ofertas" style="display:none">0</span></button>
-      <button class="nav-item" onclick="goTo('en-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-disponibles" onclick="goTo('disponibles',this)">🔍 Disponibles <span class="nav-badge" id="badge-disponibles" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-ofertas" onclick="goTo('mis-ofertas',this)">📤 Mis ofertas <span class="nav-badge" id="badge-ofertas" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-proceso" onclick="goTo('en-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
       <button class="nav-item" onclick="goTo('completados',this)">✅ Completados</button>
       <div class="nav-section">Mi cuenta</div>
       <button class="nav-item" onclick="goTo('mi-saldo',this)">💰 Mi saldo</button>
@@ -149,11 +155,11 @@
         <div class="pendiente-aviso">
           <div style="font-size:40px;margin-bottom:12px">⏳</div>
           <div style="font-size:18px;font-weight:600;color:var(--amber);margin-bottom:8px">Tu solicitud está siendo revisada</div>
-          <div style="font-size:14px;color:#854f0b;line-height:1.6">Nuestro equipo va a revisar tu perfil. Te avisamos en las próximas 48hs.</div>
+          <div style="font-size:14px;color:#854f0b;line-height:1.6">Te avisamos en las próximas 48hs.</div>
         </div>
       </div>
       <div id="inicio-aprobado" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
           <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('disponibles')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">🔍</div><div style="font-size:22px;font-weight:600" id="stat-disponibles">—</div><div style="font-size:12px;color:var(--text-soft)">Disponibles</div></div></div>
           <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('mis-ofertas')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">📤</div><div style="font-size:22px;font-weight:600" id="stat-mis-ofertas">—</div><div style="font-size:12px;color:var(--text-soft)">Mis ofertas</div></div></div>
           <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('en-proceso')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">⚙️</div><div style="font-size:22px;font-weight:600" id="stat-proceso">—</div><div style="font-size:12px;color:var(--text-soft)">En proceso</div></div></div>
@@ -162,24 +168,24 @@
       </div>
     </div>
 
-    <!-- TRABAJOS DISPONIBLES -->
+    <!-- DISPONIBLES -->
     <div class="page" id="page-disponibles">
       <div class="page-title">Trabajos disponibles</div>
-      <div class="page-sub">Solo ves trabajos de tu especialidad: <strong id="mi-especialidad"></strong>. <button class="refresh-btn" onclick="cargarTrabajosDisponibles()">↻ Actualizar</button></div>
+      <div class="page-sub">Solo ves trabajos de tu especialidad: <strong id="mi-especialidad"></strong>. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
       <div id="lista-disponibles"><div class="empty">Cargando...</div></div>
     </div>
 
     <!-- MIS OFERTAS -->
     <div class="page" id="page-mis-ofertas">
       <div class="page-title">Mis ofertas</div>
-      <div class="page-sub">Trabajos donde ya enviaste una oferta. <button class="refresh-btn" onclick="cargarMisOfertas()">↻ Actualizar</button></div>
+      <div class="page-sub">Trabajos donde ya enviaste una oferta. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
       <div id="lista-mis-ofertas"><div class="empty">Cargando...</div></div>
     </div>
 
     <!-- EN PROCESO -->
     <div class="page" id="page-en-proceso">
       <div class="page-title">En proceso</div>
-      <div class="page-sub">Trabajos que ganaste y estás realizando. <button class="refresh-btn" onclick="cargarMisTareas()">↻ Actualizar</button></div>
+      <div class="page-sub">Trabajos que ganaste y estás realizando. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
       <div id="lista-proceso"><div class="empty">Cargando...</div></div>
     </div>
 
@@ -201,7 +207,7 @@
       <div class="card"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:8px">Retirar dinero</div>
         <p style="font-size:14px;color:var(--text-mid);margin-bottom:16px">Los retiros se procesarán por transferencia bancaria en 1-3 días hábiles.</p>
-        <button class="btn btn-teal" onclick="alert('Próximamente: retiros por transferencia y Mercado Pago.')">Solicitar retiro</button>
+        <button class="btn btn-teal" onclick="showInfo('🚧','Próximamente','Los retiros estarán disponibles cuando integremos los pagos.')">Solicitar retiro</button>
       </div></div>
     </div>
 
@@ -226,13 +232,44 @@
 
   </main>
 </div>
+
+<!-- MODAL PROPIO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
+
 <script>
 const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
 let usuario = null;
 let trabajosDisponibles = [];
 let misOfertas = [];
 let misTareas = [];
-let pedidosPorId = {};
+let pedidosCache = {};
+
+function showModal(icon, title, msg, btns) {
+  document.getElementById('modal-icon').textContent = icon;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('modal-btns').innerHTML = '';
+  btns.forEach(b => {
+    const el = document.createElement('button');
+    el.className = 'btn ' + (b.class || 'btn-teal');
+    el.textContent = b.label;
+    el.onclick = () => { closeModal(); b.action && b.action(); };
+    document.getElementById('modal-btns').appendChild(el);
+  });
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+function showInfo(icon, title, msg) { showModal(icon, title, msg, [{ label: 'OK' }]); }
+function showConfirm(icon, title, msg, onOk, labelOk='Confirmar') {
+  showModal(icon, title, msg, [{ label: labelOk, action: onOk }, { label: 'Cancelar', class: 'btn-ghost' }]);
+}
 
 window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
@@ -266,11 +303,9 @@ function goTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
+  const badgeMap = { 'disponibles': 'badge-disponibles', 'mis-ofertas': 'badge-ofertas', 'en-proceso': 'badge-proceso' };
+  if (badgeMap[page]) document.getElementById(badgeMap[page]).style.display = 'none';
   if (page === 'foro') cargarForo();
-  if (page === 'disponibles') cargarTrabajosDisponibles();
-  if (page === 'mis-ofertas') cargarMisOfertas();
-  if (page === 'en-proceso') cargarMisTareas();
-  if (page === 'mi-saldo') renderSaldo();
 }
 
 async function api(path, method='GET', body=null) {
@@ -284,242 +319,200 @@ function fmt(n) { return '$' + Number(n||0).toLocaleString('es-AR'); }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'; }
 
 async function cargarTodo() {
-  await Promise.all([cargarTrabajosDisponibles(), cargarMisOfertas(), cargarMisTareas()]);
-  document.getElementById('stat-rep').textContent = usuario.promedio_estrellas ? usuario.promedio_estrellas + '⭐' : '—';
-  renderSaldo();
-}
-
-async function cargarTrabajosDisponibles() {
   try {
-    const todos = await api('/api/pedidos');
-    trabajosDisponibles = Array.isArray(todos)
-      ? todos.filter(p => p.estado === 'nuevo' && p.servicio === usuario.especialidad)
-      : [];
-  } catch(e) { trabajosDisponibles = []; }
-  const n = trabajosDisponibles.length;
-  document.getElementById('stat-disponibles').textContent = n;
-  const b = document.getElementById('badge-disponibles');
-  b.textContent = n; b.style.display = n ? 'inline' : 'none';
-  document.getElementById('lista-disponibles').innerHTML = trabajosDisponibles.length
-    ? trabajosDisponibles.map(t => renderCardDisponible(t)).join('')
-    : `<div class="empty">No hay trabajos de <strong>${usuario.especialidad||'tu especialidad'}</strong> disponibles ahora.</div>`;
-}
-
-async function cargarMisOfertas() {
-  try {
-    const ofertas = await api('/api/ofertas?socio_id=' + usuario.id);
+    const [todosPedidos, ofertas] = await Promise.all([api('/api/pedidos'), api('/api/ofertas?socio_id=' + usuario.id)]);
+    const lista = Array.isArray(todosPedidos) ? todosPedidos : [];
+    lista.forEach(p => pedidosCache[p.id] = p);
     misOfertas = Array.isArray(ofertas) ? ofertas : [];
-    // Cargar pedidos asociados
-    for (const o of misOfertas) {
-      if (!pedidosPorId[o.pedido_id]) {
-        try {
-          const todos = await api('/api/pedidos');
-          if (Array.isArray(todos)) todos.forEach(p => { pedidosPorId[p.id] = p; });
-        } catch(e) {}
-      }
-    }
-  } catch(e) { misOfertas = []; }
-  const activas = misOfertas.filter(o => o.estado !== 'rechazada' && o.estado !== 'aceptada');
-  document.getElementById('stat-mis-ofertas').textContent = activas.length;
-  const b = document.getElementById('badge-ofertas');
-  b.textContent = activas.length; b.style.display = activas.length ? 'inline' : 'none';
-  renderMisOfertas();
-}
 
-async function cargarMisTareas() {
-  try {
-    const todos = await api('/api/pedidos');
-    misTareas = Array.isArray(todos) ? todos.filter(p => p.profesional_id === usuario.id) : [];
-  } catch(e) { misTareas = []; }
+    // IDs de pedidos donde ya oferté (y no fueron rechazados/cancelados)
+    const idsConOferta = new Set(misOfertas.filter(o => o.estado !== 'rechazada').map(o => o.pedido_id));
+
+    // Disponibles: trabajos nuevos de mi especialidad donde NO oferté
+    trabajosDisponibles = lista.filter(p => p.estado === 'nuevo' && p.servicio === usuario.especialidad && !idsConOferta.has(p.id));
+
+    // Mis tareas (asignadas a mí)
+    misTareas = lista.filter(p => p.profesional_id === usuario.id);
+  } catch(e) {}
+
+  const n1 = trabajosDisponibles.length;
+  const activas = misOfertas.filter(o => o.estado !== 'rechazada' && o.estado !== 'aceptada' && pedidosCache[o.pedido_id]?.estado !== 'cancelado');
+  const n2 = activas.length;
   const enProceso = misTareas.filter(t => t.estado === 'en_proceso');
-  document.getElementById('stat-proceso').textContent = enProceso.length;
-  const b = document.getElementById('badge-proceso');
-  b.textContent = enProceso.length; b.style.display = enProceso.length ? 'inline' : 'none';
+  const n3 = enProceso.length;
+
+  document.getElementById('stat-disponibles').textContent = n1;
+  document.getElementById('stat-mis-ofertas').textContent = n2;
+  document.getElementById('stat-proceso').textContent = n3;
+  document.getElementById('stat-rep').textContent = usuario.promedio_estrellas ? usuario.promedio_estrellas + '⭐' : '—';
+
+  setBadge('badge-disponibles', n1, 'page-disponibles');
+  setBadge('badge-ofertas', n2, 'page-mis-ofertas');
+  setBadge('badge-proceso', n3, 'page-en-proceso');
+
+  renderDisponibles();
+  renderMisOfertas();
   document.getElementById('lista-proceso').innerHTML = enProceso.map(t => renderCardProceso(t)).join('') || '<div class="empty">No tenés trabajos en proceso.</div>';
-  document.getElementById('lista-completados').innerHTML = misTareas.filter(t => t.estado === 'completado').map(t => renderCardCompletado(t)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
+  document.getElementById('lista-completados').innerHTML = misTareas.filter(t=>t.estado==='completado').map(t=>renderCardCompletado(t)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
+  renderSaldo();
   enProceso.forEach(t => cargarMensajes(t.id));
 }
 
-function renderCardDisponible(t) {
-  return `
-    <div class="trabajo-card nuevo">
-      <div class="trabajo-header">
-        <div class="trabajo-servicio">${t.servicio}</div>
-        <div style="font-size:12px;color:var(--text-soft)">${fmtDate(t.created_at)}</div>
-      </div>
-      <div class="trabajo-desc">${t.descripcion||''}</div>
-      ${t.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido al cliente: <strong>${fmt(t.precio_sugerido_ia)}</strong><br>Tu parte sería: <strong>${fmt(t.precio_sugerido_ia * 0.8)}</strong> · ChamBA: ${fmt(t.precio_sugerido_ia * 0.2)} (20%)</div>` : ''}
-      <div id="form-${t.id}" style="display:none" class="oferta-form">
-        <div class="form-group" style="margin-bottom:8px">
-          <label>Tu precio (lo que el cliente paga)</label>
-          <input type="number" id="precio-${t.id}" placeholder="Ej: 15000" oninput="calcNeto('${t.id}')"/>
-        </div>
-        <div id="preview-${t.id}" class="oferta-preview"></div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn btn-teal btn-sm" onclick="enviarOferta('${t.id}')">Enviar oferta</button>
-          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('form-${t.id}').style.display='none'">Cancelar</button>
-        </div>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="btn btn-teal btn-sm" onclick="toggleForm('${t.id}')">💼 Hacer oferta</button>
-      </div>
-    </div>`;
+function setBadge(id, count, pageId) {
+  const el = document.getElementById(id);
+  const activa = document.getElementById(pageId)?.classList.contains('active');
+  el.textContent = count;
+  el.style.display = (count > 0 && !activa) ? 'inline' : 'none';
+}
+
+function renderDisponibles() {
+  document.getElementById('lista-disponibles').innerHTML = trabajosDisponibles.length
+    ? trabajosDisponibles.map(t => `
+        <div class="trabajo-card nuevo">
+          <div class="trabajo-header"><div class="trabajo-servicio">${t.servicio}</div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(t.created_at)}</div></div>
+          <div class="trabajo-desc">${t.descripcion||''}</div>
+          ${t.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido al cliente: <strong>${fmt(t.precio_sugerido_ia)}</strong><br>Tu parte: <strong>${fmt(t.precio_sugerido_ia*0.8)}</strong> · ChamBA: ${fmt(t.precio_sugerido_ia*0.2)} (20%)</div>` : ''}
+          <div id="form-${t.id}" style="display:none" class="oferta-form">
+            <div class="form-group" style="margin-bottom:8px"><label>Tu precio (lo que el cliente paga)</label><input type="number" id="precio-${t.id}" placeholder="Ej: 15000" oninput="calcNeto('${t.id}')"/></div>
+            <div id="preview-${t.id}" class="oferta-preview"></div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn btn-teal btn-sm" onclick="enviarOferta('${t.id}')">Enviar oferta</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('form-${t.id}').style.display='none'">Cancelar</button>
+            </div>
+          </div>
+          <div style="margin-top:10px"><button class="btn btn-teal btn-sm" onclick="toggleForm('${t.id}')">💼 Hacer oferta</button></div>
+        </div>`).join('')
+    : `<div class="empty">No hay trabajos de <strong>${usuario.especialidad||'tu especialidad'}</strong> disponibles ahora.</div>`;
 }
 
 function renderMisOfertas() {
-  const html = misOfertas.map(o => {
-    const pedido = pedidosPorId[o.pedido_id];
-    const cancelado = o.estado === 'rechazada' || (pedido && pedido.estado === 'cancelado');
+  const ofertasFiltradas = misOfertas.filter(o => o.estado !== 'aceptada');
+  document.getElementById('lista-mis-ofertas').innerHTML = ofertasFiltradas.length ? ofertasFiltradas.map(o => {
+    const pedido = pedidosCache[o.pedido_id];
+    const cancelado = o.estado === 'rechazada' || pedido?.estado === 'cancelado';
+    const clienteContraoferto = o.ultima_oferta_de === 'cliente' && o.estado === 'negociando';
     const esperandoCliente = o.ultima_oferta_de === 'socio' && o.estado === 'negociando';
-    const clienteControferTO = o.ultima_oferta_de === 'cliente' && o.estado === 'negociando';
-    return `
-      <div class="trabajo-card ${cancelado ? 'cancelado' : ''}" style="position:relative">
-        ${cancelado ? `<div class="wasted-overlay"><div class="wasted-text">CANCELADO</div><button class="btn btn-red btn-sm" onclick="eliminarOferta('${o.id}')">Eliminar</button></div>` : ''}
-        <div class="trabajo-header">
-          <div class="trabajo-servicio">${pedido ? pedido.servicio : 'Trabajo'}</div>
-          ${o.estado === 'aceptada' ? '<span class="badge badge-green">✅ Aceptada</span>' : o.estado === 'negociando' ? '<span class="badge badge-amber">Negociando</span>' : '<span class="badge badge-gray">Pendiente</span>'}
-        </div>
-        <div class="trabajo-desc">${pedido ? pedido.descripcion||'' : ''}</div>
-        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Tu oferta: <span style="color:var(--teal-dark)">${fmt(o.precio_ofertado)}</span></div>
-        <div style="font-size:13px;color:var(--text-soft)">Tu parte: ${fmt(o.precio_neto)} · Comisión ChamBA: ${fmt(o.comision)}</div>
-        ${clienteControferTO ? `
-          <div class="neg-box" style="margin-top:10px">
-            <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px">💬 El cliente propuso: <strong>${fmt(o.precio_ofertado)}</strong></div>
-            <div style="font-size:12px;color:var(--text-mid);margin-bottom:10px">Podés aceptar este precio o hacer una nueva contraoferta</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-teal btn-sm" onclick="aceptarContraoferta('${o.id}','${o.pedido_id}')">✅ Aceptar ${fmt(o.precio_ofertado)}</button>
-              <button class="btn btn-ghost btn-sm" onclick="toggleNegSocio('neg-socio-${o.id}')">💬 Contraofertrar</button>
-              <button class="btn btn-red btn-sm" onclick="rechazarTrabajo('${o.id}')">❌ Rechazar trabajo</button>
-            </div>
-            <div id="neg-socio-${o.id}" style="display:none" class="neg-precio-input" style="margin-top:8px">
-              <input type="number" id="neg-val-${o.id}" placeholder="Tu nuevo precio..."/>
-              <button class="btn btn-teal btn-sm" onclick="enviarContraofertaSocio('${o.id}')">Enviar</button>
-            </div>
-          </div>` : ''}
-        ${esperandoCliente ? `<div style="font-size:13px;color:var(--text-soft);margin-top:8px">⏳ Esperando respuesta del cliente...</div>` : ''}
-        ${o.estado === 'pendiente' ? `
-          <div style="margin-top:10px;display:flex;gap:8px">
+    return `<div class="trabajo-card ${cancelado?'':''}" style="position:relative">
+      ${cancelado ? `<div class="wasted-overlay"><div class="wasted-text">CANCELADO</div><button class="btn btn-red btn-sm" onclick="eliminarOferta('${o.id}')">Eliminar</button></div>` : ''}
+      <div class="trabajo-header">
+        <div class="trabajo-servicio">${pedido ? pedido.servicio : 'Trabajo'}</div>
+        ${o.estado==='negociando' ? '<span class="badge badge-amber">Negociando</span>' : '<span class="badge badge-gray">Pendiente</span>'}
+      </div>
+      <div class="trabajo-desc">${pedido ? pedido.descripcion||'' : ''}</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Tu oferta: <span style="color:var(--teal-dark)">${fmt(o.precio_ofertado)}</span></div>
+      <div style="font-size:13px;color:var(--text-soft)">Tu parte: ${fmt(o.precio_neto)} · Comisión: ${fmt(o.comision)}</div>
+      ${clienteContraoferto ? `
+        <div class="neg-box">
+          <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px">💬 El cliente propuso: <strong>${fmt(o.precio_ofertado)}</strong></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-teal btn-sm" onclick="aceptarContraoferta('${o.id}')">✅ Aceptar ${fmt(o.precio_ofertado)}</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleNegSocio('neg-${o.id}')">💬 Contraofertrar</button>
             <button class="btn btn-red btn-sm" onclick="rechazarTrabajo('${o.id}')">❌ Rechazar trabajo</button>
-          </div>` : ''}
-      </div>`;
-  }).join('') || '<div class="empty">No enviaste ofertas aún. Buscá trabajos disponibles.</div>';
-  document.getElementById('lista-mis-ofertas').innerHTML = html;
+          </div>
+          <div id="neg-${o.id}" style="display:none" class="neg-precio-input">
+            <input type="number" id="neg-val-${o.id}" placeholder="Tu nuevo precio..."/>
+            <button class="btn btn-teal btn-sm" onclick="enviarContraofertaSocio('${o.id}')">Enviar</button>
+          </div>
+        </div>` : ''}
+      ${esperandoCliente ? `<div style="font-size:13px;color:var(--text-soft);margin-top:8px">⏳ Esperando respuesta del cliente...</div>` : ''}
+      ${o.estado==='pendiente' ? `<div style="margin-top:10px"><button class="btn btn-red btn-sm" onclick="rechazarTrabajo('${o.id}')">❌ Rechazar trabajo</button></div>` : ''}
+    </div>`;
+  }).join('') : '<div class="empty">No enviaste ofertas aún.</div>';
 }
 
 function renderCardProceso(t) {
-  return `
-    <div class="trabajo-card asignado">
-      <div class="trabajo-header">
-        <div class="trabajo-servicio">${t.servicio}</div>
-        <span class="badge badge-amber">⚙️ En proceso</span>
+  return `<div class="trabajo-card asignado">
+    <div class="trabajo-header"><div class="trabajo-servicio">${t.servicio}</div><span class="badge badge-amber">⚙️ En proceso</span></div>
+    <div class="trabajo-desc">${t.descripcion||''}</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px">
+      <div><div style="font-size:12px;color:var(--teal-dark)">Tu pago al completar</div><div style="font-size:22px;font-weight:700;color:var(--teal-dark)">${fmt(t.precio_socio)}</div></div>
+      <div><div style="font-size:12px;color:var(--teal-dark)">Comisión ChamBA</div><div style="font-size:15px;font-weight:600;color:var(--teal-dark)">${fmt(t.comision)}</div></div>
+    </div>
+    <div style="background:#fff;border:2px solid var(--teal);border-radius:12px;padding:18px;text-align:center">
+      <div style="font-size:14px;font-weight:600;color:var(--teal-dark);margin-bottom:12px">🔐 Ingresá el código del cliente</div>
+      <div class="codigo-inputs">
+        <input class="codigo-digit" id="cod-${t.id}-0" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-1')" onkeydown="prevDigit(event,null,'cod-${t.id}-0')"/>
+        <input class="codigo-digit" id="cod-${t.id}-1" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-2')" onkeydown="prevDigit(event,'cod-${t.id}-0','cod-${t.id}-1')"/>
+        <input class="codigo-digit" id="cod-${t.id}-2" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-3')" onkeydown="prevDigit(event,'cod-${t.id}-1','cod-${t.id}-2')"/>
+        <input class="codigo-digit" id="cod-${t.id}-3" maxlength="1" oninput="nextDigit(this,null)" onkeydown="prevDigit(event,'cod-${t.id}-2','cod-${t.id}-3')"/>
       </div>
-      <div class="trabajo-desc">${t.descripcion||''}</div>
-      <div style="display:flex;gap:20px;margin-bottom:14px;flex-wrap:wrap">
-        <div><div style="font-size:12px;color:var(--teal-dark)">Tu pago al completar</div><div style="font-size:22px;font-weight:700;color:var(--teal-dark)">${fmt(t.precio_socio)}</div></div>
-        <div><div style="font-size:12px;color:var(--teal-dark)">Comisión ChamBA</div><div style="font-size:15px;font-weight:600;color:var(--teal-dark)">${fmt(t.comision)}</div></div>
-      </div>
-      <div style="background:#fff;border:2px solid var(--teal);border-radius:12px;padding:18px;text-align:center">
-        <div style="font-size:14px;font-weight:600;color:var(--teal-dark);margin-bottom:4px">🔐 Ingresá el código del cliente</div>
-        <div style="font-size:12px;color:var(--text-mid);margin-bottom:12px">Pedíselo cuando termines el trabajo para desbloquear tu pago</div>
-        <div class="codigo-inputs">
-          <input class="codigo-digit" id="cod-${t.id}-0" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-1')" onkeydown="prevDigit(event,null,'cod-${t.id}-0')"/>
-          <input class="codigo-digit" id="cod-${t.id}-1" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-2')" onkeydown="prevDigit(event,'cod-${t.id}-0','cod-${t.id}-1')"/>
-          <input class="codigo-digit" id="cod-${t.id}-2" maxlength="1" oninput="nextDigit(this,'cod-${t.id}-3')" onkeydown="prevDigit(event,'cod-${t.id}-1','cod-${t.id}-2')"/>
-          <input class="codigo-digit" id="cod-${t.id}-3" maxlength="1" oninput="nextDigit(this,null)" onkeydown="prevDigit(event,'cod-${t.id}-2','cod-${t.id}-3')"/>
-        </div>
-        <button class="btn btn-teal" onclick="verificarCodigo('${t.id}')">Verificar y cobrar</button>
-        <div id="cod-err-${t.id}" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
-      </div>
-      <div style="margin-top:14px">
-        <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--teal-dark)">💬 Chat con el cliente</div>
-        <div class="chat-box">
-          <div class="chat-messages" id="chat-${t.id}"></div>
-          <div class="chat-input-row">
-            <input class="chat-input" id="chat-in-${t.id}" placeholder="Coordiná día, hora y lugar..." onkeydown="if(event.key==='Enter')enviarMsg('${t.id}')"/>
-            <button class="btn btn-teal btn-sm" onclick="enviarMsg('${t.id}')">Enviar</button>
-          </div>
+      <button class="btn btn-teal" onclick="verificarCodigo('${t.id}')">Verificar y cobrar</button>
+      <div id="cod-err-${t.id}" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
+    </div>
+    <div class="codigo-advertencia">⚠️ <strong>Importante:</strong> Pedile el código al cliente solo cuando hayas <strong>terminado el trabajo</strong>. Tenés 4 intentos para ingresarlo correctamente.</div>
+    <div style="margin-top:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:var(--teal-dark)">💬 Chat con el cliente</div>
+      <div class="chat-box">
+        <div class="chat-messages" id="chat-${t.id}"></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-in-${t.id}" placeholder="Coordiná día, hora y lugar..." onkeydown="if(event.key==='Enter')enviarMsg('${t.id}')"/>
+          <button class="btn btn-teal btn-sm" onclick="enviarMsg('${t.id}')">Enviar</button>
         </div>
       </div>
-    </div>`;
+    </div>
+  </div>`;
 }
 
 function renderCardCompletado(t) {
-  return `
-    <div class="trabajo-card">
-      <div class="trabajo-header">
-        <div class="trabajo-servicio">${t.servicio}</div>
-        <span class="badge badge-green">✅ Completado</span>
-      </div>
-      <div class="trabajo-desc">${t.descripcion||''}</div>
-      <div style="font-size:14px;font-weight:500;color:var(--teal-dark)">Cobrado: ${fmt(t.precio_socio)} · ${fmtDate(t.created_at)}</div>
-    </div>`;
+  return `<div class="trabajo-card">
+    <div class="trabajo-header"><div class="trabajo-servicio">${t.servicio}</div><span class="badge badge-green">✅ Completado</span></div>
+    <div class="trabajo-desc">${t.descripcion||''}</div>
+    <div style="font-size:14px;font-weight:500;color:var(--teal-dark)">Cobrado: ${fmt(t.precio_socio)} · ${fmtDate(t.created_at)}</div>
+  </div>`;
 }
 
-function toggleForm(id) {
-  const el = document.getElementById('form-' + id);
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
-}
-function toggleNegSocio(id) {
-  const el = document.getElementById(id);
-  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
-}
+function toggleForm(id) { const el=document.getElementById('form-'+id); el.style.display=el.style.display==='none'?'block':'none'; }
+function toggleNegSocio(id) { const el=document.getElementById(id); el.style.display=el.style.display==='none'?'block':'none'; }
 
 function calcNeto(id) {
-  const precio = parseFloat(document.getElementById('precio-' + id).value) || 0;
-  const preview = document.getElementById('preview-' + id);
-  if (precio > 0) {
-    preview.style.display = 'block';
-    preview.innerHTML = `Vas a recibir: <strong>${fmt(precio * 0.8)}</strong> · ChamBA cobra: <strong>${fmt(precio * 0.2)}</strong> (20%)`;
-  } else { preview.style.display = 'none'; }
+  const precio = parseFloat(document.getElementById('precio-'+id).value) || 0;
+  const preview = document.getElementById('preview-'+id);
+  if (precio > 0) { preview.style.display='block'; preview.innerHTML = `Vas a recibir: <strong>${fmt(precio*0.8)}</strong> · ChamBA cobra: <strong>${fmt(precio*0.2)}</strong> (20%)`; }
+  else preview.style.display = 'none';
 }
 
 async function enviarOferta(pedidoId) {
-  const precio = parseFloat(document.getElementById('precio-' + pedidoId).value);
-  if (!precio || precio <= 0) return alert('Ingresá un precio válido.');
-  try {
-    await api('/api/ofertas', 'POST', { pedido_id: pedidoId, socio_id: usuario.id, socio_nombre: usuario.nombre, especialidad: usuario.especialidad, precio_ofertado: precio });
-    alert('✅ ¡Oferta enviada! El cliente podrá verla y aceptarla o negociar.');
-    document.getElementById('form-' + pedidoId).style.display = 'none';
-    await cargarMisOfertas();
-  } catch(e) { alert('Error al enviar la oferta.'); }
+  const precio = parseFloat(document.getElementById('precio-'+pedidoId).value);
+  if (!precio || precio<=0) return showInfo('⚠️','Precio inválido','Ingresá un precio válido.');
+  await api('/api/ofertas', 'POST', { pedido_id: pedidoId, socio_id: usuario.id, socio_nombre: usuario.nombre, especialidad: usuario.especialidad, precio_ofertado: precio });
+  showInfo('✅','Oferta enviada','El cliente verá tu oferta y podrá aceptarla o negociar.');
+  await cargarTodo();
 }
 
-async function aceptarContraoferta(ofertaId, pedidoId) {
-  if (!confirm('¿Aceptás el precio propuesto por el cliente?')) return;
-  const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: null });
-  if (r.error) return alert(r.error);
-  alert('✅ ¡Precio aceptado! El cliente recibirá el código de verificación una vez que pague.');
-  await cargarTodo();
-  goTo('en-proceso', document.querySelector('[onclick*="en-proceso"]'));
+async function aceptarContraoferta(ofertaId) {
+  showConfirm('✅','¿Aceptás el precio?','El cliente recibirá el código de verificación una vez que confirme el pago.', async () => {
+    const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: null });
+    if (r.error) return showInfo('❌','Error',r.error);
+    await cargarTodo();
+    goTo('en-proceso', document.getElementById('nav-proceso'));
+  });
 }
 
 async function enviarContraofertaSocio(ofertaId) {
-  const precio = parseFloat(document.getElementById('neg-val-' + ofertaId).value);
-  if (!precio || precio <= 0) return alert('Ingresá un precio válido.');
+  const precio = parseFloat(document.getElementById('neg-val-'+ofertaId).value);
+  if (!precio || precio<=0) return showInfo('⚠️','Precio inválido','Ingresá un precio válido.');
   await api('/api/ofertas/' + ofertaId + '/contraoferta', 'POST', { nuevo_precio: precio, rol: 'socio' });
-  alert('Contraoferta enviada al cliente.');
-  await cargarMisOfertas();
+  showInfo('✅','Contraoferta enviada','El cliente verá tu propuesta.');
+  await cargarTodo();
 }
 
 async function rechazarTrabajo(ofertaId) {
-  if (!confirm('¿Rechazás este trabajo? Ten en cuenta que esto bajará tu reputación 0.2 puntos.')) return;
-  const r = await api('/api/ofertas/' + ofertaId + '/rechazar', 'POST');
-  if (r.error) return alert(r.error);
-  alert('Trabajo rechazado. Tu reputación bajó 0.2 puntos.');
-  await cargarMisOfertas();
+  showConfirm('⚠️','¿Rechazar trabajo?','Tu reputación bajará 0.2 puntos por rechazar este trabajo.', async () => {
+    const r = await api('/api/ofertas/' + ofertaId + '/rechazar', 'POST');
+    if (r.error) return showInfo('❌','Error',r.error);
+    await cargarTodo();
+  }, 'Sí, rechazar');
 }
 
 async function eliminarOferta(ofertaId) {
-  misOfertas = misOfertas.filter(o => o.id !== ofertaId);
-  renderMisOfertas();
+  showConfirm('🗑️','¿Eliminar de tu vista?','El trabajo cancelado desaparecerá de tu lista.', async () => {
+    misOfertas = misOfertas.filter(o => o.id !== ofertaId);
+    renderMisOfertas();
+  }, 'Sí, eliminar');
 }
 
-function nextDigit(current, nextId) {
-  if (current.value && nextId) document.getElementById(nextId)?.focus();
-}
-function prevDigit(e, prevId, currentId) {
-  if (e.key === 'Backspace' && !document.getElementById(currentId).value && prevId) document.getElementById(prevId).focus();
-}
+function nextDigit(c, n) { if (c.value && n) document.getElementById(n)?.focus(); }
+function prevDigit(e, p, c) { if (e.key==='Backspace' && !document.getElementById(c).value && p) document.getElementById(p).focus(); }
 
 async function verificarCodigo(tareaId) {
   const digits = [0,1,2,3].map(i => document.getElementById(`cod-${tareaId}-${i}`).value).join('');
@@ -527,19 +520,14 @@ async function verificarCodigo(tareaId) {
   try {
     const r = await api('/api/pedidos/' + tareaId + '/verificar-codigo', 'POST', { codigo: digits });
     if (r.error) return showCodErr(tareaId, r.error);
-    alert('🎉 ' + r.mensaje);
+    showInfo('🎉','¡Código verificado!', r.mensaje);
     const users = await api('/api/usuarios');
     const fresco = Array.isArray(users) ? users.find(x => x.email === usuario.email) : null;
     if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); }
     await cargarTodo();
-    renderSaldo();
   } catch(e) { showCodErr(tareaId, 'Error al verificar. Intentá de nuevo.'); }
 }
-
-function showCodErr(id, msg) {
-  const el = document.getElementById('cod-err-' + id);
-  if (el) { el.textContent = msg; el.style.display = 'block'; }
-}
+function showCodErr(id, msg) { const el=document.getElementById('cod-err-'+id); if(el){el.textContent=msg;el.style.display='block';} }
 
 async function cargarMensajes(tareaId) {
   try {
@@ -547,7 +535,7 @@ async function cargarMensajes(tareaId) {
     const box = document.getElementById('chat-' + tareaId);
     if (!box) return;
     box.innerHTML = Array.isArray(msgs) && msgs.length
-      ? msgs.map(m => `<div class="chat-msg ${m.autor===usuario.nombre?'yo':'otro'}"><div class="chat-msg-meta">${m.autor}</div>${m.contenido}</div>`).join('')
+      ? msgs.map(m=>`<div class="chat-msg ${m.autor===usuario.nombre?'yo':'otro'}"><div class="chat-msg-meta">${m.autor}</div>${m.contenido}</div>`).join('')
       : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:14px">Chat habilitado — coordiná con el cliente</div>';
     box.scrollTop = box.scrollHeight;
   } catch(e) {}
@@ -558,13 +546,13 @@ async function enviarMsg(tareaId) {
   const contenido = input.value.trim(); if (!contenido) return;
   input.value = '';
   const r = await api('/api/mensajes', 'POST', { pedido_id: tareaId, autor: usuario.nombre, rol: 'socio', contenido });
-  if (r.error) { alert(r.error); return; }
+  if (r.error) { showInfo('❌','Error',r.error); return; }
   cargarMensajes(tareaId);
 }
 
 function renderSaldo() {
-  document.getElementById('saldo-disponible').textContent = fmt(usuario.saldo_disponible || 0);
-  document.getElementById('saldo-bloqueado').textContent = fmt(usuario.saldo_bloqueado || 0);
+  document.getElementById('saldo-disponible').textContent = fmt(usuario.saldo_disponible||0);
+  document.getElementById('saldo-bloqueado').textContent = fmt(usuario.saldo_bloqueado||0);
 }
 
 function renderPerfil() {
@@ -576,20 +564,48 @@ function renderPerfil() {
     <div><div class="perfil-label">DNI</div><div class="perfil-val">${usuario.dni||'—'}</div></div>
     <div><div class="perfil-label">Experiencia</div><div class="perfil-val">${usuario.experiencia||'—'}</div></div>
     <div><div class="perfil-label">Matrícula</div><div class="perfil-val">${usuario.matricula||'—'}</div></div>
-    <div><div class="perfil-label">Reputación</div><div class="perfil-val">${usuario.promedio_estrellas ? usuario.promedio_estrellas + ' ⭐ (' + (usuario.total_calificaciones||0) + ' reviews)' : 'Sin calificaciones aún'}</div></div>
+    <div><div class="perfil-label">Reputación</div><div class="perfil-val">${usuario.promedio_estrellas ? usuario.promedio_estrellas+' ⭐ ('+(usuario.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
     <div><div class="perfil-label">Trabajos completados</div><div class="perfil-val">${usuario.trabajos_completados||0}</div></div>
     <div><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado==='aprobado'?'✅ Aprobado':'⏳ Pendiente'}</div></div>`;
 }
 
+let foroPosts = [];
 async function cargarForo() {
-  try {
-    const posts = await api('/api/foro');
-    document.getElementById('foro-posts').innerHTML = Array.isArray(posts) && posts.length
-      ? posts.map(p => `<div class="foro-post"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div></div><div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.titulo}</div><div style="font-size:14px;color:var(--text-mid);line-height:1.6">${p.contenido}</div></div>`).join('')
-      : '<div class="empty">No hay publicaciones aún.</div>';
-  } catch(e) {}
+  try { foroPosts = await api('/api/foro'); if (!Array.isArray(foroPosts)) foroPosts = []; renderForo(); } catch(e) {}
 }
-
+function renderForo() {
+  const principales = foroPosts.filter(p => !p.parent_id);
+  const respuestas = foroPosts.filter(p => p.parent_id);
+  document.getElementById('foro-posts').innerHTML = principales.length ? principales.map(p => {
+    const resps = respuestas.filter(r => r.parent_id === p.id);
+    return `<div class="foro-post">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div><span style="font-size:13px;font-weight:600">${p.autor_nombre}</span><span class="tipo-chip tipo-${p.autor_tipo}">${p.autor_tipo}</span></div>
+        <div style="font-size:12px;color:var(--text-soft)">${fmtDate(p.created_at)}</div>
+      </div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.titulo}</div>
+      <div style="font-size:14px;color:var(--text-mid);line-height:1.6;margin-bottom:10px">${p.contenido}</div>
+      ${resps.map(r=>`<div class="foro-respuesta"><div class="foro-resp-autor">${r.autor_nombre} <span class="tipo-chip tipo-${r.autor_tipo}">${r.autor_tipo}</span> · ${fmtDate(r.created_at)}</div>${r.contenido}</div>`).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="toggleRespForm('resp-form-${p.id}')">💬 Responder</button>
+      <div class="foro-resp-form" id="resp-form-${p.id}">
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <input type="text" id="resp-input-${p.id}" placeholder="Escribí tu respuesta..." onkeydown="if(event.key==='Enter')responder('${p.id}')"/>
+          <button class="btn btn-teal btn-sm" onclick="responder('${p.id}')">Enviar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty">No hay publicaciones aún.</div>';
+}
+function toggleRespForm(id) { const el=document.getElementById(id); el.style.display=el.style.display==='none'||el.style.display===''?'block':'none'; }
+async function responder(parentId) {
+  const input = document.getElementById('resp-input-' + parentId);
+  const contenido = input.value.trim(); if (!contenido) return;
+  const parent = foroPosts.find(p => p.id === parentId);
+  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'socio', titulo: 'Re: '+(parent?.titulo||''), contenido, parent_id: parentId });
+  input.value = '';
+  toggleRespForm('resp-form-' + parentId);
+  await cargarForo();
+}
 async function publicarForo() {
   const titulo = document.getElementById('foro-titulo').value.trim();
   const contenido = document.getElementById('foro-body').value.trim();
@@ -597,7 +613,7 @@ async function publicarForo() {
   await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'socio', titulo, contenido });
   document.getElementById('foro-titulo').value = '';
   document.getElementById('foro-body').value = '';
-  cargarForo();
+  await cargarForo();
 }
 </script>
 </body>
