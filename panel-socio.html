@@ -308,11 +308,19 @@ function goTo(page, btn) {
   if (page === 'foro') cargarForo();
 }
 
-async function api(path, method='GET', body=null) {
+async function api(path, method='GET', body=null, reintentos=3) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(BACKEND + path, opts);
-  return r.json();
+  for (let i = 0; i < reintentos; i++) {
+    try {
+      const r = await fetch(BACKEND + path, opts);
+      return r.json();
+    } catch(e) {
+      console.log('[REINTENTO ' + (i+1) + '] ' + path, e.message);
+      if (i < reintentos - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+      else throw e;
+    }
+  }
 }
 
 function fmt(n) { return '$' + Number(n||0).toLocaleString('es-AR'); }
