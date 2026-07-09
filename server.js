@@ -144,9 +144,26 @@ app.post('/api/pedidos/:id/eliminar-admin', async (req, res) => {
 
 // ── OFERTAS ──
 app.get('/api/ofertas', async (req, res) => {
-  const pedido_id = req.query.pedido_id ? `&pedido_id=eq.${req.query.pedido_id}` : '';
-  const socio_id = req.query.socio_id ? `&socio_id=eq.${req.query.socio_id}` : '';
-  res.json(await sb(`ofertas?select=*&order=created_at.desc${pedido_id}${socio_id}`));
+  try {
+    const pedido_id = req.query.pedido_id ? `&pedido_id=eq.${req.query.pedido_id}` : '';
+    const socio_id = req.query.socio_id ? `&socio_id=eq.${req.query.socio_id}` : '';
+    const ofertas = await sb(`ofertas?select=*&order=created_at.desc${pedido_id}${socio_id}`);
+    if (Array.isArray(ofertas) && ofertas.length) {
+      const ids = [...new Set(ofertas.map(o => o.socio_id).filter(Boolean))];
+      const socios = ids.length ? await sb(`usuarios?id=in.(${ids.join(',')})&select=id,promedio_estrellas,trabajos_completados`) : [];
+      const mapa = {};
+      (Array.isArray(socios) ? socios : []).forEach(s => mapa[s.id] = s);
+      ofertas.forEach(o => {
+        const s = mapa[o.socio_id];
+        o.rep_promedio = s?.promedio_estrellas || 0;
+        o.trabajos_completados = s?.trabajos_completados || 0;
+      });
+    }
+    res.json(ofertas);
+  } catch (e) {
+    console.error('❌ Error en GET /ofertas:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudieron cargar las ofertas.' });
+  }
 });
 
 app.post('/api/ofertas', async (req, res) => {
@@ -213,20 +230,27 @@ app.post('/api/pedidos/:id/buscar-otro-socio', async (req, res) => {
 });
 
 app.post('/api/pedidos/:id/verificar-codigo', async (req, res) => {
-  const { codigo } = req.body;
-  const pedidos = await sb(`pedidos?id=eq.${req.params.id}&select=*`);
-  if (!pedidos.length) return res.status(404).json({ error: 'Pedido no encontrado' });
-  const p = pedidos[0];
-  if (p.codigo_usado) return res.status(400).json({ error: 'Este código ya fue usado.' });
-  if (p.intentos_codigo >= 4) return res.status(400).json({ error: 'Límite de 4 intentos alcanzado. Contactá a ChamBA.' });
-  if (String(p.codigo_verificacion) !== String(codigo)) {
-    await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { intentos_codigo: (p.intentos_codigo || 0) + 1 });
-    const restantes = 4 - (p.intentos_codigo + 1);
-    return res.status(400).json({ error: `Código incorrecto. Te quedan ${restantes} intento${restantes !== 1 ? 's' : ''}.` });
+  try {
+    const { codigo } = req.body;
+    const pedidos = await sb(`pedidos?id=eq.${req.params.id}&select=*`);
+    if (!pedidos.length) return res.status(404).json({ error: 'Pedido no encontrado' });
+    const p = pedidos[0];
+    if (p.codigo_usado) return res.status(400).json({ error: 'Este código ya fue usado.' });
+    if (p.intentos_codigo >= 4) return res.status(400).json({ error: 'Límite de 4 intentos alcanzado. Contactá a ChamBA.' });
+    if (String(p.codigo_verificacion) !== String(codigo)) {
+      await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { intentos_codigo: (p.intentos_codigo || 0) + 1 });
+      const restantes = 4 - (p.intentos_codigo + 1);
+      return res.status(400).json({ error: `Código incorrecto. Te quedan ${restantes} intento${restantes !== 1 ? 's' : ''}.` });
+    }
+    await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { codigo_usado: true, estado: 'completado', dinero_liberado: true, estado_pago: 'liberado' });
+    const socio = await sb(`usuarios?id=eq.${p.profesional_id}&select=saldo_disponible`);
+    const saldoActual = socio.length ? parseFloat(socio[0].saldo_disponible) || 0 : 0;
+    await sb(`usuarios?id=eq.${p.profesional_id}`, 'PATCH', { saldo_disponible: saldoActual + p.precio_socio, saldo_bloqueado: 0 });
+    res.json({ ok: true, mensaje: '¡Código verificado! El dinero fue liberado a tu cuenta.' });
+  } catch (e) {
+    console.error('❌ Error en /verificar-codigo:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo verificar el código.', detalle: e.message });
   }
-  await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { codigo_usado: true, estado: 'completado', dinero_liberado: true, estado_pago: 'liberado' });
-  await sb(`usuarios?id=eq.${p.profesional_id}`, 'PATCH', { saldo_disponible: p.precio_socio, saldo_bloqueado: 0 });
-  res.json({ ok: true, mensaje: '¡Código verificado! El dinero fue liberado a tu cuenta.' });
 });
 
 // ── MENSAJES (solo si chat_habilitado) ──
@@ -263,8 +287,14 @@ app.post('/api/calificaciones', async (req, res) => {
 app.get('/api/calificaciones/:socio_id', async (req, res) => res.json(await sb(`calificaciones?socio_id=eq.${req.params.socio_id}&select=*&order=created_at.desc`)));
 
 // ── FORO (con soporte para respuestas vía parent_id) ──
-app.get('/api/foro', async (req, res) => res.json(await sb('foro?select=*&order=created_at.asc')));
-app.post('/api/foro', async (req, res) => res.json(await sb('foro', 'POST', req.body)));
+app.get('/api/foro', async (req, res) => {
+  try { res.json(await sb('foro?select=*&order=created_at.asc')); }
+  catch (e) { console.error('❌ Error en GET /foro:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo cargar el foro.' }); }
+});
+app.post('/api/foro', async (req, res) => {
+  try { res.json(await sb('foro', 'POST', req.body)); }
+  catch (e) { console.error('❌ Error en POST /foro:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo publicar.', detalle: e.message }); }
+});
 app.delete('/api/foro/:id', async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/foro?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
   res.json({ ok: true });
