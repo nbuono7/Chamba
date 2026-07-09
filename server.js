@@ -239,19 +239,25 @@ app.post('/api/mensajes', async (req, res) => {
 
 // ── CALIFICACIONES ──
 app.post('/api/calificaciones', async (req, res) => {
-  const { pedido_id, socio_id, cliente_id, estrellas, comentario } = req.body;
-  const data = await sb('calificaciones', 'POST', { pedido_id, socio_id, cliente_id, estrellas, comentario });
-  const cals = await sb(`calificaciones?socio_id=eq.${socio_id}&select=estrellas`);
-  if (Array.isArray(cals) && cals.length) {
-    const promedio = cals.reduce((s, c) => s + c.estrellas, 0) / cals.length;
-    const trabajos = await sb(`pedidos?profesional_id=eq.${socio_id}&estado=eq.completado&select=id`);
-    await sb(`usuarios?id=eq.${socio_id}`, 'PATCH', {
-      promedio_estrellas: Math.round(promedio * 10) / 10,
-      total_calificaciones: cals.length,
-      trabajos_completados: Array.isArray(trabajos) ? trabajos.length : 0
-    });
+  try {
+    const { pedido_id, socio_id, cliente_id, estrellas, comentario } = req.body;
+    const data = await sb('calificaciones', 'POST', { pedido_id, socio_id, cliente_id, estrellas, comentario });
+    await sb(`pedidos?id=eq.${pedido_id}`, 'PATCH', { calificado: true });
+    const cals = await sb(`calificaciones?socio_id=eq.${socio_id}&select=estrellas`);
+    if (Array.isArray(cals) && cals.length) {
+      const promedio = cals.reduce((s, c) => s + c.estrellas, 0) / cals.length;
+      const trabajos = await sb(`pedidos?profesional_id=eq.${socio_id}&estado=eq.completado&select=id`);
+      await sb(`usuarios?id=eq.${socio_id}`, 'PATCH', {
+        promedio_estrellas: Math.round(promedio * 10) / 10,
+        total_calificaciones: cals.length,
+        trabajos_completados: Array.isArray(trabajos) ? trabajos.length : 0
+      });
+    }
+    res.json(data);
+  } catch (e) {
+    console.error('❌ Error en /calificaciones:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar la calificación.', detalle: e.message });
   }
-  res.json(data);
 });
 
 app.get('/api/calificaciones/:socio_id', async (req, res) => res.json(await sb(`calificaciones?socio_id=eq.${req.params.socio_id}&select=*&order=created_at.desc`)));
