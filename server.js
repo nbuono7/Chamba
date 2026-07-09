@@ -8,6 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// Red de seguridad: si algo falla en una ruta y no fue capturado, no tumbar el servidor.
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled error:', err?.message || err);
+});
+
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 const COMISION = 0.20;
@@ -18,7 +23,15 @@ const sb = async (path, method='GET', body=null) => {
     method, headers: body ? { ...sbH, 'Prefer': 'return=representation' } : sbH,
     body: body ? JSON.stringify(body) : null
   });
-  return r.json();
+  const data = await r.json();
+  if (!r.ok) {
+    console.error(`❌ Supabase error [${method} ${path}]:`, JSON.stringify(data));
+    const err = new Error(data?.message || 'Error en la base de datos');
+    err.supabase = data;
+    err.status = r.status;
+    throw err;
+  }
+  return data;
 };
 
 app.get('/', (req, res) => res.json({ status: 'Chamba API ✅' }));
@@ -156,18 +169,23 @@ app.post('/api/ofertas/:id/contraoferta', async (req, res) => {
 });
 
 app.post('/api/ofertas/:id/aceptar', async (req, res) => {
-  const oferta = await sb(`ofertas?id=eq.${req.params.id}&select=*`);
-  if (!oferta.length) return res.status(404).json({ error: 'Oferta no encontrada' });
-  const o = oferta[0];
-  const codigo = Math.floor(1000 + Math.random() * 9000).toString();
-  await sb(`pedidos?id=eq.${o.pedido_id}`, 'PATCH', {
-    profesional_id: o.socio_id, estado: 'en_proceso', estado_pago: 'pagado',
-    precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto,
-    comision: o.comision, codigo_verificacion: codigo, intentos_codigo: 0, chat_habilitado: true
-  });
-  await sb(`ofertas?id=eq.${o.id}`, 'PATCH', { estado: 'aceptada' });
-  await sb(`ofertas?pedido_id=eq.${o.pedido_id}&id=neq.${o.id}`, 'PATCH', { estado: 'rechazada' });
-  res.json({ ok: true, codigo, precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto, comision: o.comision });
+  try {
+    const oferta = await sb(`ofertas?id=eq.${req.params.id}&select=*`);
+    if (!oferta.length) return res.status(404).json({ error: 'Oferta no encontrada' });
+    const o = oferta[0];
+    const codigo = Math.floor(1000 + Math.random() * 9000); // número, no texto (la columna es numérica)
+    await sb(`pedidos?id=eq.${o.pedido_id}`, 'PATCH', {
+      profesional_id: o.socio_id, estado: 'en_proceso', estado_pago: 'pagado',
+      precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto,
+      comision: o.comision, codigo_verificacion: codigo, intentos_codigo: 0, chat_habilitado: true
+    });
+    await sb(`ofertas?id=eq.${o.id}`, 'PATCH', { estado: 'aceptada' });
+    await sb(`ofertas?pedido_id=eq.${o.pedido_id}&id=neq.${o.id}`, 'PATCH', { estado: 'rechazada' });
+    res.json({ ok: true, codigo, precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto, comision: o.comision });
+  } catch (e) {
+    console.error('❌ Error en /aceptar:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo aceptar la oferta.', detalle: e.message });
+  }
 });
 
 // Rechazar trabajo (SOLO el socio puede hacer esto) → penaliza reputación
@@ -201,7 +219,7 @@ app.post('/api/pedidos/:id/verificar-codigo', async (req, res) => {
   const p = pedidos[0];
   if (p.codigo_usado) return res.status(400).json({ error: 'Este código ya fue usado.' });
   if (p.intentos_codigo >= 4) return res.status(400).json({ error: 'Límite de 4 intentos alcanzado. Contactá a ChamBA.' });
-  if (p.codigo_verificacion !== codigo) {
+  if (String(p.codigo_verificacion) !== String(codigo)) {
     await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { intentos_codigo: (p.intentos_codigo || 0) + 1 });
     const restantes = 4 - (p.intentos_codigo + 1);
     return res.status(400).json({ error: `Código incorrecto. Te quedan ${restantes} intento${restantes !== 1 ? 's' : ''}.` });
