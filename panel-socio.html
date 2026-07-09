@@ -360,7 +360,11 @@ async function cargarTodo() {
 
   renderDisponibles();
   renderMisOfertas();
+  // Preservar lo que el socio ya tipeó en el código antes de redibujar (el auto-refresh no debe borrarlo)
+  const codigosEnCurso = {};
+  document.querySelectorAll('[id^="cod-"]').forEach(inp => { if (inp.value) codigosEnCurso[inp.id] = inp.value; });
   document.getElementById('lista-proceso').innerHTML = enProceso.map(t => renderCardProceso(t)).join('') || '<div class="empty">No tenés trabajos en proceso.</div>';
+  Object.entries(codigosEnCurso).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
   document.getElementById('lista-completados').innerHTML = misTareas.filter(t=>t.estado==='completado').map(t=>renderCardCompletado(t)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
   renderSaldo();
   enProceso.forEach(t => cargarMensajes(t.id));
