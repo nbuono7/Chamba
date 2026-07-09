@@ -100,6 +100,9 @@
     .stars-input { display: flex; gap: 6px; margin: 8px 0; }
     .star-btn { font-size: 28px; cursor: pointer; background: none; border: none; filter: grayscale(1); transition: filter 0.1s; }
     .star-btn.activa { filter: grayscale(0); }
+    .tag-chip { display: inline-block; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 16px; margin: 3px; border: 1px solid var(--border); background: transparent; color: var(--text-mid); cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { border-color: var(--teal); }
+    .tag-chip.activa { background: var(--teal); color: #fff; border-color: var(--teal); }
 
     /* FORO CON RESPUESTAS */
     .foro-post { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 12px; background: #fff; }
@@ -238,7 +241,9 @@ let usuario = null;
 let misPedidos = [];
 let todasOfertas = {};
 let iaSugerencia = null;
-let estrellasSeleccionadas = 0;
+let estrellasPorPedido = {};
+let tagsPorPedido = {};
+const TAGS_CALIFICACION = ['Rápido', 'Buen trabajo', 'Prolijo', 'Puntual', 'Buena comunicación', 'Lento', 'Deficiente', 'Mala comunicación'];
 let foroPosts = [];
 
 // ── MODAL PROPIO (reemplaza alert/confirm) ──
@@ -438,10 +443,11 @@ function renderCardCompletado(p) {
     <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-green">✅ Completado</span></div>
     <div class="trabajo-desc">${p.descripcion||''}</div>
     <div style="font-size:14px;color:var(--teal-dark);font-weight:500;margin-bottom:10px">Precio final: ${fmt(p.precio_cliente)} · ${fmtDate(p.created_at)}</div>
-    ${p.profesional_id ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px">
+    ${p.calificado ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text-soft);font-size:14px">✅ Ya calificaste a este socio. ¡Gracias!</div>` : p.profesional_id ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px">
       <div style="font-size:14px;font-weight:600;margin-bottom:8px">⭐ Calificá al socio</div>
       <div class="stars-input" id="stars-${p.id}">${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="selStar('${p.id}',${n})">⭐</button>`).join('')}</div>
-      <button class="btn btn-teal btn-sm" style="margin-top:8px" onclick="calificar('${p.id}','${p.profesional_id}')">Enviar calificación</button>
+      <div style="margin-top:10px" id="tags-${p.id}">${TAGS_CALIFICACION.map(tag=>`<button class="tag-chip" onclick="toggleTag('${p.id}','${tag}')">${tag}</button>`).join('')}</div>
+      <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="calificar('${p.id}','${p.profesional_id}')">Enviar calificación</button>
     </div>` : ''}
   </div>`;
 }
@@ -508,13 +514,26 @@ async function enviarMsg(pedidoId) {
 }
 
 function selStar(pedidoId, n) {
-  estrellasSeleccionadas = n;
+  estrellasPorPedido[pedidoId] = n;
   document.querySelectorAll(`#stars-${pedidoId} .star-btn`).forEach((btn,i) => btn.classList.toggle('activa', i<n));
 }
 
+function toggleTag(pedidoId, tag) {
+  if (!tagsPorPedido[pedidoId]) tagsPorPedido[pedidoId] = [];
+  const arr = tagsPorPedido[pedidoId];
+  const i = arr.indexOf(tag);
+  if (i === -1) arr.push(tag); else arr.splice(i, 1);
+  document.querySelectorAll(`#tags-${pedidoId} .tag-chip`).forEach(btn => btn.classList.toggle('activa', arr.includes(btn.textContent)));
+}
+
 async function calificar(pedidoId, socioId) {
-  if (!estrellasSeleccionadas) return showInfo('⚠️', 'Falta calificación', 'Elegí entre 1 y 5 estrellas.');
-  await api('/api/calificaciones', 'POST', { pedido_id: pedidoId, socio_id: socioId, cliente_id: usuario.id, estrellas: estrellasSeleccionadas });
+  const estrellas = estrellasPorPedido[pedidoId];
+  if (!estrellas) return showInfo('⚠️', 'Falta calificación', 'Elegí entre 1 y 5 estrellas.');
+  const comentario = (tagsPorPedido[pedidoId] || []).join(', ');
+  const r = await api('/api/calificaciones', 'POST', { pedido_id: pedidoId, socio_id: socioId, cliente_id: usuario.id, estrellas, comentario });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  delete estrellasPorPedido[pedidoId];
+  delete tagsPorPedido[pedidoId];
   showInfo('⭐', '¡Gracias!', 'Tu calificación fue enviada.');
   await cargarTodo();
 }
