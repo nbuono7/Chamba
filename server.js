@@ -196,6 +196,10 @@ app.post('/api/ofertas/:id/aceptar', async (req, res) => {
       precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto,
       comision: o.comision, codigo_verificacion: codigo, intentos_codigo: 0, chat_habilitado: true
     });
+    // El pago del cliente queda "bloqueado" hasta que se verifique el código de finalización
+    const socio = await sb(`usuarios?id=eq.${o.socio_id}&select=saldo_bloqueado`);
+    const bloqueadoActual = socio.length ? parseFloat(socio[0].saldo_bloqueado) || 0 : 0;
+    await sb(`usuarios?id=eq.${o.socio_id}`, 'PATCH', { saldo_bloqueado: bloqueadoActual + o.precio_neto });
     await sb(`ofertas?id=eq.${o.id}`, 'PATCH', { estado: 'aceptada' });
     await sb(`ofertas?pedido_id=eq.${o.pedido_id}&id=neq.${o.id}`, 'PATCH', { estado: 'rechazada' });
     res.json({ ok: true, codigo, precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto, comision: o.comision });
@@ -243,9 +247,13 @@ app.post('/api/pedidos/:id/verificar-codigo', async (req, res) => {
       return res.status(400).json({ error: `Código incorrecto. Te quedan ${restantes} intento${restantes !== 1 ? 's' : ''}.` });
     }
     await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { codigo_usado: true, estado: 'completado', dinero_liberado: true, estado_pago: 'liberado' });
-    const socio = await sb(`usuarios?id=eq.${p.profesional_id}&select=saldo_disponible`);
+    const socio = await sb(`usuarios?id=eq.${p.profesional_id}&select=saldo_disponible,saldo_bloqueado`);
     const saldoActual = socio.length ? parseFloat(socio[0].saldo_disponible) || 0 : 0;
-    await sb(`usuarios?id=eq.${p.profesional_id}`, 'PATCH', { saldo_disponible: saldoActual + p.precio_socio, saldo_bloqueado: 0 });
+    const bloqueadoActual = socio.length ? parseFloat(socio[0].saldo_bloqueado) || 0 : 0;
+    await sb(`usuarios?id=eq.${p.profesional_id}`, 'PATCH', {
+      saldo_disponible: saldoActual + p.precio_socio,
+      saldo_bloqueado: Math.max(0, bloqueadoActual - p.precio_socio)
+    });
     res.json({ ok: true, mensaje: '¡Código verificado! El dinero fue liberado a tu cuenta.' });
   } catch (e) {
     console.error('❌ Error en /verificar-codigo:', e.message, e.supabase || '');
@@ -254,11 +262,19 @@ app.post('/api/pedidos/:id/verificar-codigo', async (req, res) => {
 });
 
 // ── MENSAJES (solo si chat_habilitado) ──
-app.get('/api/mensajes/:pedido_id', async (req, res) => res.json(await sb(`mensajes?pedido_id=eq.${req.params.pedido_id}&select=*&order=created_at.asc`)));
+app.get('/api/mensajes/:pedido_id', async (req, res) => {
+  try { res.json(await sb(`mensajes?pedido_id=eq.${req.params.pedido_id}&select=*&order=created_at.asc`)); }
+  catch (e) { console.error('❌ Error en GET /mensajes:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudieron cargar los mensajes.' }); }
+});
 app.post('/api/mensajes', async (req, res) => {
-  const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado`);
-  if (!pedido.length || !pedido[0].chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
-  res.json(await sb('mensajes', 'POST', req.body));
+  try {
+    const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado`);
+    if (!pedido.length || !pedido[0].chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
+    res.json(await sb('mensajes', 'POST', req.body));
+  } catch (e) {
+    console.error('❌ Error en POST /mensajes:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar el mensaje.', detalle: e.message });
+  }
 });
 
 // ── CALIFICACIONES ──
