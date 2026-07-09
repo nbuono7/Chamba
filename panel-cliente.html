@@ -346,7 +346,11 @@ function renderTodo() {
 
   document.getElementById('lista-esperando').innerHTML = [...esperando, ...cancelados].map(p => renderCardEsperando(p)).join('') || '<div class="empty">No tenés trabajos esperando ofertas.</div>';
   document.getElementById('lista-negociacion').innerHTML = negociacion.map(p => renderCardNegociacion(p)).join('') || '<div class="empty">No tenés trabajos en negociación.</div>';
+  // Preservar mensajes de chat sin enviar antes de redibujar (el auto-refresh no debe borrarlos)
+  const chatsEnCurso = {};
+  document.querySelectorAll('[id^="chat-in-"]').forEach(inp => { if (inp.value) chatsEnCurso[inp.id] = inp.value; });
   document.getElementById('lista-proceso').innerHTML = proceso.map(p => renderCardProceso(p)).join('') || '<div class="empty">No tenés trabajos en proceso.</div>';
+  Object.entries(chatsEnCurso).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
   document.getElementById('lista-completados').innerHTML = completados.map(p => renderCardCompletado(p)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
 
   proceso.forEach(p => cargarMensajes(p.id));
@@ -614,7 +618,8 @@ async function responder(parentId) {
   const input = document.getElementById('resp-input-' + parentId);
   const contenido = input.value.trim(); if (!contenido) return;
   const parent = foroPosts.find(p => p.id === parentId);
-  await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'cliente', titulo: 'Re: ' + (parent?.titulo||''), contenido, parent_id: parentId });
+  const r = await api('/api/foro', 'POST', { autor_id: usuario.id, autor_nombre: usuario.nombre, autor_tipo: 'cliente', titulo: 'Re: ' + (parent?.titulo||''), contenido, parent_id: parentId });
+  if (r.error) return showInfo('❌', 'Error', r.error);
   input.value = '';
   toggleRespForm('resp-form-' + parentId);
   await cargarForo();
