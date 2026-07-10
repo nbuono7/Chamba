@@ -28,7 +28,7 @@
     .login-btn { width: 100%; background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; }
     .login-btn:hover { background: var(--teal-dark); }
     .login-error { font-size: 13px; color: #f09595; margin-top: 12px; text-align: center; display: none; }
-    #app { display: none; }
+    #app { display: block; }
     .layout { display: flex; min-height: 100vh; }
     .sidebar { width: 220px; flex-shrink: 0; background: var(--sidebar); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; }
     .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -112,23 +112,12 @@
 </head>
 <body>
 
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">Cham<span>BA</span></div>
-    <div class="login-sub">Panel de administración</div>
-    <label>Usuario</label><input type="text" id="login-user" placeholder="admin"/>
-    <label>Contraseña</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <button class="login-btn" onclick="doLogin()">Ingresar</button>
-    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
-  </div>
-</div>
-
 <div id="app">
   <div class="layout">
     <aside class="sidebar">
       <div class="sidebar-logo">
         <div class="logo">Cham<span>BA</span></div>
-        <div class="role">Panel Admin</div>
+        <div class="role" id="sidebar-user">Panel Admin</div>
       </div>
       <nav class="sidebar-nav">
         <div class="nav-section">General</div>
@@ -285,25 +274,20 @@
 
 <script>
 const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
-const ADMINS = [
-  { user: 'admin', pass: 'chamba2024' },
-  { user: 'empleado1', pass: 'empleado123' }
-];
-
+let usuario = null;
 let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [];
 let filtroPedidos = 'todos', filtroSocios = 'todos', filtroSolicitudes = 'todos';
 
-function doLogin() {
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  if (ADMINS.find(a => a.user === u && a.pass === p)) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-AR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    cargarTodo();
-  } else { document.getElementById('login-error').style.display = 'block'; }
-}
-function doLogout() { document.getElementById('app').style.display='none'; document.getElementById('login-screen').style.display='flex'; }
+window.onload = async () => {
+  const u = localStorage.getItem('chamba_user');
+  if (!u) return window.location.href = '/login';
+  usuario = JSON.parse(u);
+  if (usuario.tipo !== 'admin') return window.location.href = '/login';
+  document.getElementById('sidebar-user').textContent = usuario.nombre;
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-AR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  cargarTodo();
+};
+function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
 
 async function api(path, method='GET', body=null) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
