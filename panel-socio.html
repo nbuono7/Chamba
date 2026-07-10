@@ -227,7 +227,19 @@
     <div class="page" id="page-mi-perfil">
       <div class="page-title">Mi perfil</div>
       <div class="page-sub">Tus datos en ChamBA.</div>
-      <div class="card"><div class="card-body"><div class="perfil-grid" id="perfil-grid"></div></div></div>
+      <div class="card"><div class="card-body">
+        <div class="perfil-grid" id="perfil-grid"></div>
+        <button class="btn btn-teal btn-sm" style="margin-top:14px" onclick="guardarPerfil()">💾 Guardar cambios</button>
+      </div></div>
+
+      <div class="card" style="margin-top:16px"><div class="card-body">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">🎓 Matrícula</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:12px">¿Estudiaste una tecnicatura nueva? Solicitá agregar una matrícula — el equipo de ChamBA la va a revisar y aprobar.</div>
+        <div class="form-group"><label>Nueva matrícula</label><input type="text" id="nueva-matricula" placeholder="Número o código de matrícula"/></div>
+        <div class="form-group"><label>Especialidad relacionada (opcional)</label><input type="text" id="nueva-matricula-esp" placeholder="Ej: Gasista, Electricista..."/></div>
+        <button class="btn btn-teal btn-sm" onclick="solicitarMatricula()">Enviar solicitud</button>
+        <div id="lista-solicitudes-matricula" style="margin-top:16px"></div>
+      </div></div>
     </div>
 
   </main>
@@ -294,6 +306,7 @@ window.onload = async () => {
     setInterval(cargarTodo, 30000);
   }
   renderPerfil();
+  cargarSolicitudesMatricula();
   cargarForo();
 };
 
@@ -574,16 +587,62 @@ function renderSaldo() {
 
 function renderPerfil() {
   document.getElementById('perfil-grid').innerHTML = `
-    <div><div class="perfil-label">Nombre</div><div class="perfil-val">${usuario.nombre}</div></div>
+    <div class="form-group"><label>Nombre</label><input type="text" id="perfil-nombre" value="${usuario.nombre||''}"/></div>
     <div><div class="perfil-label">Email</div><div class="perfil-val">${usuario.email}</div></div>
-    <div><div class="perfil-label">Teléfono</div><div class="perfil-val">${usuario.telefono||'—'}</div></div>
-    <div><div class="perfil-label">Especialidad</div><div class="perfil-val">${usuario.especialidad||'—'}</div></div>
+    <div class="form-group"><label>Teléfono</label><input type="text" id="perfil-telefono" value="${usuario.telefono||''}"/></div>
+    <div class="form-group"><label>Especialidad</label><input type="text" id="perfil-especialidad" value="${usuario.especialidad||''}"/></div>
     <div><div class="perfil-label">DNI</div><div class="perfil-val">${usuario.dni||'—'}</div></div>
-    <div><div class="perfil-label">Experiencia</div><div class="perfil-val">${usuario.experiencia||'—'}</div></div>
+    <div class="form-group"><label>Experiencia</label><input type="text" id="perfil-experiencia" value="${usuario.experiencia||''}"/></div>
     <div><div class="perfil-label">Matrícula</div><div class="perfil-val">${usuario.matricula||'—'}</div></div>
     <div><div class="perfil-label">Reputación</div><div class="perfil-val">${usuario.promedio_estrellas ? usuario.promedio_estrellas+' ⭐ ('+(usuario.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
     <div><div class="perfil-label">Trabajos completados</div><div class="perfil-val">${usuario.trabajos_completados||0}</div></div>
     <div><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado==='aprobado'?'✅ Aprobado':'⏳ Pendiente'}</div></div>`;
+}
+
+async function guardarPerfil() {
+  const body = {
+    nombre: document.getElementById('perfil-nombre').value.trim(),
+    telefono: document.getElementById('perfil-telefono').value.trim(),
+    especialidad: document.getElementById('perfil-especialidad').value.trim(),
+    experiencia: document.getElementById('perfil-experiencia').value.trim()
+  };
+  if (!body.nombre) return showInfo('⚠️', 'Falta el nombre', 'El nombre no puede quedar vacío.');
+  const r = await api('/api/usuarios/' + usuario.id, 'PATCH', body);
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  usuario = { ...usuario, ...body };
+  localStorage.setItem('chamba_user', JSON.stringify(usuario));
+  document.getElementById('sidebar-user').textContent = usuario.nombre;
+  document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
+  document.getElementById('mi-especialidad').textContent = usuario.especialidad || 'tu especialidad';
+  showInfo('✅', 'Guardado', 'Tu perfil fue actualizado.');
+}
+
+async function solicitarMatricula() {
+  const matricula_nueva = document.getElementById('nueva-matricula').value.trim();
+  const especialidad = document.getElementById('nueva-matricula-esp').value.trim();
+  if (!matricula_nueva) return showInfo('⚠️', 'Falta la matrícula', 'Ingresá el número o código de matrícula.');
+  const r = await api('/api/solicitudes-matricula', 'POST', { socio_id: usuario.id, matricula_nueva, especialidad });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  document.getElementById('nueva-matricula').value = '';
+  document.getElementById('nueva-matricula-esp').value = '';
+  showInfo('✅', 'Solicitud enviada', 'ChamBA va a revisar tu matrícula y te va a avisar cuando esté aprobada.');
+  cargarSolicitudesMatricula();
+}
+
+async function cargarSolicitudesMatricula() {
+  try {
+    const sols = await api('/api/solicitudes-matricula?socio_id=' + usuario.id);
+    const box = document.getElementById('lista-solicitudes-matricula');
+    if (!box) return;
+    if (!Array.isArray(sols) || !sols.length) { box.innerHTML = ''; return; }
+    const badge = { pendiente: 'badge-amber', aprobada: 'badge-green', rechazada: 'badge-red' };
+    const label = { pendiente: '⏳ Pendiente', aprobada: '✅ Aprobada', rechazada: '❌ Rechazada' };
+    box.innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:8px">Tus solicitudes</div>' +
+      sols.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+        <div><div style="font-size:14px;font-weight:500">${s.matricula_nueva}</div><div style="font-size:12px;color:var(--text-soft)">${s.especialidad||''}</div></div>
+        <span class="badge ${badge[s.estado]||'badge-gray'}">${label[s.estado]||s.estado}</span>
+      </div>`).join('');
+  } catch(e) {}
 }
 
 let foroPosts = [];
