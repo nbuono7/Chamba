@@ -138,6 +138,7 @@
         <div class="nav-section">Usuarios</div>
         <button class="nav-item" onclick="goTo('clientes-reg')"><span>🏠</span> Clientes <span class="nav-badge" id="badge-clientes" style="display:none">0</span></button>
         <button class="nav-item" onclick="goTo('socios-reg')"><span>🔧</span> Socios <span class="nav-badge" id="badge-socios" style="display:none">0</span></button>
+        <button class="nav-item" onclick="goTo('solicitudes')"><span>🎓</span> Solicitudes <span class="nav-badge" id="badge-solicitudes" style="display:none">0</span></button>
         <div class="nav-section">Comunidad</div>
         <button class="nav-item" onclick="goTo('foro')"><span>💬</span> Foro</button>
       </nav>
@@ -215,6 +216,23 @@
         </div>
       </div>
 
+      <!-- SOLICITUDES DE MATRÍCULA -->
+      <div class="page" id="page-solicitudes">
+        <div class="page-title">Solicitudes de matrícula</div>
+        <div class="page-sub">Nuevas matrículas o tecnicaturas que los socios quieren sumar a su perfil.</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="filter-tabs">
+              <button class="filter-tab active" onclick="filtrarSolicitudes('todos',this)">Todas</button>
+              <button class="filter-tab" onclick="filtrarSolicitudes('pendiente',this)">Pendientes</button>
+              <button class="filter-tab" onclick="filtrarSolicitudes('aprobada',this)">Aprobadas</button>
+              <button class="filter-tab" onclick="filtrarSolicitudes('rechazada',this)">Rechazadas</button>
+            </div>
+          </div>
+          <table><thead><tr><th>Socio</th><th>Matrícula solicitada</th><th>Especialidad</th><th>Fecha</th><th>Estado</th><th></th></tr></thead><tbody id="solicitudes-tbody"></tbody></table>
+        </div>
+      </div>
+
       <!-- PAGOS -->
       <div class="page" id="page-pagos">
         <div class="page-title">Pagos y comisiones</div>
@@ -272,8 +290,8 @@ const ADMINS = [
   { user: 'empleado1', pass: 'empleado123' }
 ];
 
-let pedidos = [], usuarios = [], foroPosts = [];
-let filtroPedidos = 'todos', filtroSocios = 'todos';
+let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [];
+let filtroPedidos = 'todos', filtroSocios = 'todos', filtroSolicitudes = 'todos';
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -295,10 +313,11 @@ async function api(path, method='GET', body=null) {
 }
 
 async function cargarTodo() {
-  [pedidos, usuarios] = await Promise.all([api('/api/pedidos'), api('/api/usuarios')]);
+  [pedidos, usuarios, solicitudesMatricula] = await Promise.all([api('/api/pedidos'), api('/api/usuarios'), api('/api/solicitudes-matricula')]);
   if (!Array.isArray(pedidos)) pedidos = [];
   if (!Array.isArray(usuarios)) usuarios = [];
-  renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); updateBadges();
+  if (!Array.isArray(solicitudesMatricula)) solicitudesMatricula = [];
+  renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); renderSolicitudes(); updateBadges();
 }
 
 function goTo(page) {
@@ -313,12 +332,13 @@ function updateBadges() {
   const np = pedidos.filter(p => p.estado === 'nuevo').length;
   const nc = usuarios.filter(u => u.tipo === 'cliente').length;
   const ns = usuarios.filter(u => u.tipo === 'socio' && u.estado === 'pendiente').length;
-  set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns);
+  const nm = solicitudesMatricula.filter(s => s.estado === 'pendiente').length;
+  set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns); set('badge-solicitudes', nm);
 }
 function set(id, val) { const el=document.getElementById(id); el.textContent=val; el.style.display=val?'inline':'none'; }
 
 function badge(e) {
-  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado', pendiente:'badge-amber|Pendiente', aprobado:'badge-green|Aprobado', rechazado:'badge-red|Rechazado' };
+  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado', pendiente:'badge-amber|Pendiente', aprobado:'badge-green|Aprobado', rechazado:'badge-red|Rechazado', aprobada:'badge-green|Aprobada', rechazada:'badge-red|Rechazada' };
   const [cls, label] = (map[e] || 'badge-gray|' + e).split('|');
   return `<span class="badge ${cls}">${label}</span>`;
 }
@@ -355,6 +375,28 @@ function renderSociosReg(lista) {
   document.getElementById('socios-reg-tbody').innerHTML = data.length ? data.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${s.dni||'—'}</td><td>${s.promedio_estrellas ? s.promedio_estrellas+' ⭐' : '—'}</td><td>${badge(s.estado)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${s.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay socios</td></tr>';
 }
 function filtrarSocios(f, btn) { filtroSocios=f; document.querySelectorAll('#page-socios-reg .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSociosReg(); }
+
+function renderSolicitudes(lista) {
+  const data = (lista || solicitudesMatricula).filter(s => filtroSolicitudes === 'todos' || s.estado === filtroSolicitudes);
+  document.getElementById('solicitudes-tbody').innerHTML = data.length ? data.map(s => {
+    const socio = usuarios.find(u => u.id === s.socio_id);
+    return `<tr>
+      <td class="td-primary">${socio ? socio.nombre : '—'}</td>
+      <td>${s.matricula_nueva}</td>
+      <td>${s.especialidad || '—'}</td>
+      <td>${fmtDate(s.created_at)}</td>
+      <td>${badge(s.estado)}</td>
+      <td>${s.estado === 'pendiente' ? `<button class="btn btn-teal btn-sm" onclick="resolverSolicitud('${s.id}','aprobada')">✅ Aprobar</button> <button class="btn btn-red btn-sm" onclick="resolverSolicitud('${s.id}','rechazada')">❌ Rechazar</button>` : ''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty">No hay solicitudes</td></tr>';
+}
+function filtrarSolicitudes(f, btn) { filtroSolicitudes=f; document.querySelectorAll('#page-solicitudes .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSolicitudes(); }
+async function resolverSolicitud(id, estado) {
+  const r = await api(`/api/solicitudes-matricula/${id}`, 'PATCH', { estado });
+  if (r && r.error) return toast(r.error);
+  await cargarTodo();
+  toast(estado === 'aprobada' ? 'Matrícula aprobada ✅' : 'Solicitud rechazada');
+}
 function buscarUsuarios(tipo, q) {
   const data = usuarios.filter(u => u.tipo === tipo && (u.nombre.toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase())));
   tipo === 'cliente' ? renderClientesReg(data) : renderSociosReg(data);
