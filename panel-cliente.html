@@ -40,6 +40,10 @@
     .badge-red { background: var(--red-light); color: var(--red); }
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-gray { background: #f1f1f1; color: #666; }
+    .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; margin-bottom: 3px; }
+    .perfil-val { font-size: 15px; color: var(--text); }
+    @media(max-width:768px) { .perfil-grid { grid-template-columns: 1fr; } }
     .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; border: none; transition: all 0.15s; }
     .btn-teal { background: var(--teal); color: #fff; }
     .btn-teal:hover { background: var(--teal-dark); }
@@ -145,6 +149,8 @@
       <button class="nav-item" onclick="goTo('completados',this)">✅ Completados</button>
       <div class="nav-section">Comunidad</div>
       <button class="nav-item" onclick="goTo('foro',this)">💬 Foro</button>
+      <div class="nav-section">Mi cuenta</div>
+      <button class="nav-item" onclick="goTo('mi-perfil',this)">👤 Mi perfil</button>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">🚪 Cerrar sesión</button>
@@ -222,6 +228,16 @@
       <div id="foro-posts"></div>
     </div>
 
+    <!-- MI PERFIL -->
+    <div class="page" id="page-mi-perfil">
+      <div class="page-title">Mi perfil</div>
+      <div class="page-sub">Tus datos en ChamBA.</div>
+      <div class="card"><div class="card-body">
+        <div class="perfil-grid" id="perfil-grid"></div>
+        <button class="btn btn-teal btn-sm" style="margin-top:14px" onclick="guardarPerfil()">💾 Guardar cambios</button>
+      </div></div>
+    </div>
+
   </main>
 </div>
 
@@ -274,6 +290,9 @@ window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
   if (!u) return window.location.href = '/login';
   usuario = JSON.parse(u);
+  if (usuario.tipo !== 'cliente') {
+    return window.location.href = usuario.tipo === 'admin' ? '/admin' : usuario.tipo === 'socio' ? '/panel-socio' : '/login';
+  }
   try {
     const todos = await api('/api/usuarios');
     const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
@@ -281,11 +300,41 @@ window.onload = async () => {
   } catch(e) {}
   document.getElementById('sidebar-user').textContent = usuario.nombre;
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
+  renderPerfil();
   await cargarTodo();
   setInterval(cargarTodo, 30000);
 };
 
+window.addEventListener('storage', (e) => {
+  if (e.key === 'chamba_user' && e.newValue) {
+    const nuevo = JSON.parse(e.newValue);
+    if (nuevo.id !== usuario?.id) window.location.reload();
+  }
+});
+
 function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
+
+function renderPerfil() {
+  document.getElementById('perfil-grid').innerHTML = `
+    <div class="form-group"><label>Nombre</label><input type="text" id="perfil-nombre" value="${usuario.nombre||''}"/></div>
+    <div><div class="perfil-label">Email</div><div class="perfil-val">${usuario.email}</div></div>
+    <div class="form-group"><label>Teléfono</label><input type="text" id="perfil-telefono" value="${usuario.telefono||''}"/></div>`;
+}
+
+async function guardarPerfil() {
+  const body = {
+    nombre: document.getElementById('perfil-nombre').value.trim(),
+    telefono: document.getElementById('perfil-telefono').value.trim()
+  };
+  if (!body.nombre) return showInfo('⚠️', 'Falta el nombre', 'El nombre no puede quedar vacío.');
+  const r = await api('/api/usuarios/' + usuario.id, 'PATCH', body);
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  usuario = { ...usuario, ...body };
+  localStorage.setItem('chamba_user', JSON.stringify(usuario));
+  document.getElementById('sidebar-user').textContent = usuario.nombre;
+  document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
+  showInfo('✅', 'Guardado', 'Tu perfil fue actualizado.');
+}
 
 function goTo(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
