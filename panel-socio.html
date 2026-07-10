@@ -41,6 +41,11 @@
     .badge-red { background: var(--red-light); color: var(--red); }
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-gray { background: #f1f1f1; color: #666; }
+    #notif-banner { display:none; position:sticky; top:0; z-index:100; padding:10px 20px; font-size:14px; font-weight:500; align-items:center; justify-content:space-between; cursor:pointer; color:#fff; }
+    #notif-banner.notif-aprobada { background: var(--teal); }
+    #notif-banner.notif-rechazada { background: var(--red); }
+    #notif-banner .notif-close { opacity:0.8; font-size:16px; padding:0 6px; }
+    #notif-banner .notif-close:hover { opacity:1; }
     .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; border: none; transition: all 0.15s; }
     .btn-teal { background: var(--teal); color: #fff; }
     .btn-teal:hover { background: var(--teal-dark); }
@@ -121,6 +126,10 @@
   </style>
 </head>
 <body>
+<div id="notif-banner" onclick="cerrarNotificacionMatricula()">
+  <span></span>
+  <span class="notif-close">✕</span>
+</div>
 <div class="layout">
   <aside class="sidebar">
     <div class="sidebar-logo">
@@ -287,7 +296,9 @@ window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
   if (!u) return window.location.href = '/login';
   usuario = JSON.parse(u);
-  if (usuario.tipo !== 'socio') return window.location.href = '/panel-cliente';
+  if (usuario.tipo !== 'socio') {
+    return window.location.href = usuario.tipo === 'admin' ? '/admin' : usuario.tipo === 'cliente' ? '/panel-cliente' : '/login';
+  }
   try {
     const todos = await api('/api/usuarios');
     const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
@@ -311,6 +322,13 @@ window.onload = async () => {
 };
 
 function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'chamba_user' && e.newValue) {
+    const nuevo = JSON.parse(e.newValue);
+    if (nuevo.id !== usuario?.id) window.location.reload();
+  }
+});
 function goTo(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -590,9 +608,8 @@ function renderPerfil() {
     <div class="form-group"><label>Nombre</label><input type="text" id="perfil-nombre" value="${usuario.nombre||''}"/></div>
     <div><div class="perfil-label">Email</div><div class="perfil-val">${usuario.email}</div></div>
     <div class="form-group"><label>Teléfono</label><input type="text" id="perfil-telefono" value="${usuario.telefono||''}"/></div>
-    <div class="form-group"><label>Especialidad</label><input type="text" id="perfil-especialidad" value="${usuario.especialidad||''}"/></div>
+    <div><div class="perfil-label">Especialidad</div><div class="perfil-val">${usuario.especialidad||'—'}</div></div>
     <div><div class="perfil-label">DNI</div><div class="perfil-val">${usuario.dni||'—'}</div></div>
-    <div class="form-group"><label>Experiencia</label><input type="text" id="perfil-experiencia" value="${usuario.experiencia||''}"/></div>
     <div><div class="perfil-label">Matrícula</div><div class="perfil-val">${usuario.matricula||'—'}</div></div>
     <div><div class="perfil-label">Reputación</div><div class="perfil-val">${usuario.promedio_estrellas ? usuario.promedio_estrellas+' ⭐ ('+(usuario.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
     <div><div class="perfil-label">Trabajos completados</div><div class="perfil-val">${usuario.trabajos_completados||0}</div></div>
@@ -602,9 +619,7 @@ function renderPerfil() {
 async function guardarPerfil() {
   const body = {
     nombre: document.getElementById('perfil-nombre').value.trim(),
-    telefono: document.getElementById('perfil-telefono').value.trim(),
-    especialidad: document.getElementById('perfil-especialidad').value.trim(),
-    experiencia: document.getElementById('perfil-experiencia').value.trim()
+    telefono: document.getElementById('perfil-telefono').value.trim()
   };
   if (!body.nombre) return showInfo('⚠️', 'Falta el nombre', 'El nombre no puede quedar vacío.');
   const r = await api('/api/usuarios/' + usuario.id, 'PATCH', body);
@@ -613,7 +628,6 @@ async function guardarPerfil() {
   localStorage.setItem('chamba_user', JSON.stringify(usuario));
   document.getElementById('sidebar-user').textContent = usuario.nombre;
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
-  document.getElementById('mi-especialidad').textContent = usuario.especialidad || 'tu especialidad';
   showInfo('✅', 'Guardado', 'Tu perfil fue actualizado.');
 }
 
@@ -632,17 +646,43 @@ async function solicitarMatricula() {
 async function cargarSolicitudesMatricula() {
   try {
     const sols = await api('/api/solicitudes-matricula?socio_id=' + usuario.id);
+    if (!Array.isArray(sols)) return;
+    // Las pendientes se muestran en la lista de abajo
     const box = document.getElementById('lista-solicitudes-matricula');
-    if (!box) return;
-    if (!Array.isArray(sols) || !sols.length) { box.innerHTML = ''; return; }
-    const badge = { pendiente: 'badge-amber', aprobada: 'badge-green', rechazada: 'badge-red' };
-    const label = { pendiente: '⏳ Pendiente', aprobada: '✅ Aprobada', rechazada: '❌ Rechazada' };
-    box.innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:8px">Tus solicitudes</div>' +
-      sols.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
-        <div><div style="font-size:14px;font-weight:500">${s.matricula_nueva}</div><div style="font-size:12px;color:var(--text-soft)">${s.especialidad||''}</div></div>
-        <span class="badge ${badge[s.estado]||'badge-gray'}">${label[s.estado]||s.estado}</span>
-      </div>`).join('');
+    const pendientes = sols.filter(s => s.estado === 'pendiente');
+    if (box) {
+      box.innerHTML = pendientes.length
+        ? '<div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:8px">Pendientes de revisión</div>' +
+          pendientes.map(s => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border)">
+            <div><div style="font-size:14px;font-weight:500">${s.matricula_nueva}</div><div style="font-size:12px;color:var(--text-soft)">${s.especialidad||''}</div></div>
+            <span class="badge badge-amber">⏳ Pendiente</span>
+          </div>`).join('')
+        : '';
+    }
+    // Las recién resueltas (aprobada/rechazada) y no vistas se avisan con una notificación arriba
+    const noVistas = sols.filter(s => s.estado !== 'pendiente' && !s.visto);
+    if (noVistas.length) mostrarNotificacionMatricula(noVistas);
   } catch(e) {}
+}
+
+function mostrarNotificacionMatricula(sols) {
+  const aprobadas = sols.filter(s => s.estado === 'aprobada');
+  const rechazadas = sols.filter(s => s.estado === 'rechazada');
+  let partes = [];
+  if (aprobadas.length) partes.push(`✅ Se aprobó tu matrícula: ${aprobadas.map(s=>s.matricula_nueva).join(', ')}`);
+  if (rechazadas.length) partes.push(`❌ Se rechazó tu solicitud de matrícula: ${rechazadas.map(s=>s.matricula_nueva).join(', ')}`);
+  const banner = document.getElementById('notif-banner');
+  banner.className = rechazadas.length && !aprobadas.length ? 'notif-rechazada' : 'notif-aprobada';
+  banner.querySelector('span').textContent = partes.join(' · ');
+  banner.style.display = 'flex';
+  banner.dataset.ids = sols.map(s => s.id).join(',');
+}
+
+async function cerrarNotificacionMatricula() {
+  const banner = document.getElementById('notif-banner');
+  const ids = (banner.dataset.ids || '').split(',').filter(Boolean);
+  banner.style.display = 'none';
+  await Promise.all(ids.map(id => api(`/api/solicitudes-matricula/${id}/visto`, 'PATCH')));
 }
 
 let foroPosts = [];
