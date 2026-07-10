@@ -307,14 +307,32 @@ app.patch('/api/solicitudes-matricula/:id', async (req, res) => {
     const { estado } = req.body; // 'aprobada' | 'rechazada'
     const sol = await sb(`solicitudes_matricula?id=eq.${req.params.id}&select=*`);
     if (!sol.length) return res.status(404).json({ error: 'Solicitud no encontrada.' });
-    await sb(`solicitudes_matricula?id=eq.${req.params.id}`, 'PATCH', { estado });
+    const s = sol[0];
+    await sb(`solicitudes_matricula?id=eq.${req.params.id}`, 'PATCH', { estado, visto: false });
     if (estado === 'aprobada') {
-      await sb(`usuarios?id=eq.${sol[0].socio_id}`, 'PATCH', { matricula: sol[0].matricula_nueva });
+      const socio = await sb(`usuarios?id=eq.${s.socio_id}&select=matricula,especialidad`);
+      if (socio.length) {
+        const u = socio[0];
+        const patch = { matricula: u.matricula ? `${u.matricula}, ${s.matricula_nueva}` : s.matricula_nueva };
+        if (s.especialidad && !(u.especialidad || '').includes(s.especialidad)) {
+          patch.especialidad = u.especialidad ? `${u.especialidad}, ${s.especialidad}` : s.especialidad;
+        }
+        await sb(`usuarios?id=eq.${s.socio_id}`, 'PATCH', patch);
+      }
     }
     res.json({ ok: true });
   } catch (e) {
     console.error('❌ Error en PATCH /solicitudes-matricula:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo procesar la solicitud.', detalle: e.message });
+  }
+});
+app.patch('/api/solicitudes-matricula/:id/visto', async (req, res) => {
+  try {
+    await sb(`solicitudes_matricula?id=eq.${req.params.id}`, 'PATCH', { visto: true });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en PATCH /solicitudes-matricula/visto:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo actualizar.' });
   }
 });
 
