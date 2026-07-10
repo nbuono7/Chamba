@@ -78,7 +78,8 @@ async function doLogin() {
     const data = await r.json();
     if (!r.ok) return showError(data.error || 'Error al ingresar.');
     localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
-    window.location.href = data.usuario.tipo === 'socio' ? '/panel-socio' : '/panel-cliente';
+    const destino = data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
+    window.location.href = destino;
   } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
   finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
 }
