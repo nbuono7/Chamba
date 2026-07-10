@@ -282,6 +282,42 @@ app.post('/api/mensajes', async (req, res) => {
   }
 });
 
+// ── SOLICITUDES DE MATRÍCULA ──
+app.get('/api/solicitudes-matricula', async (req, res) => {
+  try {
+    const socio_id = req.query.socio_id ? `&socio_id=eq.${req.query.socio_id}` : '';
+    res.json(await sb(`solicitudes_matricula?select=*&order=created_at.desc${socio_id}`));
+  } catch (e) {
+    console.error('❌ Error en GET /solicitudes-matricula:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudieron cargar las solicitudes.' });
+  }
+});
+app.post('/api/solicitudes-matricula', async (req, res) => {
+  try {
+    const { socio_id, matricula_nueva, especialidad } = req.body;
+    if (!socio_id || !matricula_nueva) return res.status(400).json({ error: 'Faltan datos.' });
+    res.json(await sb('solicitudes_matricula', 'POST', { socio_id, matricula_nueva, especialidad, estado: 'pendiente' }));
+  } catch (e) {
+    console.error('❌ Error en POST /solicitudes-matricula:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar la solicitud.', detalle: e.message });
+  }
+});
+app.patch('/api/solicitudes-matricula/:id', async (req, res) => {
+  try {
+    const { estado } = req.body; // 'aprobada' | 'rechazada'
+    const sol = await sb(`solicitudes_matricula?id=eq.${req.params.id}&select=*`);
+    if (!sol.length) return res.status(404).json({ error: 'Solicitud no encontrada.' });
+    await sb(`solicitudes_matricula?id=eq.${req.params.id}`, 'PATCH', { estado });
+    if (estado === 'aprobada') {
+      await sb(`usuarios?id=eq.${sol[0].socio_id}`, 'PATCH', { matricula: sol[0].matricula_nueva });
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en PATCH /solicitudes-matricula:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo procesar la solicitud.', detalle: e.message });
+  }
+});
+
 // ── CALIFICACIONES ──
 app.post('/api/calificaciones', async (req, res) => {
   try {
