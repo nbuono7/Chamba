@@ -93,14 +93,19 @@ app.post('/api/usuarios/login', async (req, res) => {
 });
 
 app.patch('/api/usuarios/:id', async (req, res) => {
-  const prev = await sb(`usuarios?id=eq.${req.params.id}&select=*`);
-  const data = await sb(`usuarios?id=eq.${req.params.id}`, 'PATCH', req.body);
-  if (req.body.estado && prev.length) {
-    const u = prev[0];
-    if (req.body.estado === 'aprobado' && u.tipo === 'socio') emailSocioAprobado(u.nombre, u.email);
-    if (req.body.estado === 'rechazado' && u.tipo === 'socio') emailSocioRechazado(u.nombre, u.email);
+  try {
+    const prev = await sb(`usuarios?id=eq.${req.params.id}&select=*`);
+    const data = await sb(`usuarios?id=eq.${req.params.id}`, 'PATCH', req.body);
+    if (req.body.estado && prev.length) {
+      const u = prev[0];
+      if (req.body.estado === 'aprobado' && u.tipo === 'socio') emailSocioAprobado(u.nombre, u.email);
+      if (req.body.estado === 'rechazado' && u.tipo === 'socio') emailSocioRechazado(u.nombre, u.email);
+    }
+    res.json(data);
+  } catch (e) {
+    console.error('❌ Error en PATCH /usuarios:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo actualizar.', detalle: e.message });
   }
-  res.json(data);
 });
 
 app.delete('/api/usuarios/:id', async (req, res) => {
