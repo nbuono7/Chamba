@@ -115,28 +115,39 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 
 // ── PEDIDOS ──
 app.get('/api/pedidos', async (req, res) => {
-  const usuario_id = req.query.usuario_id ? `&usuario_id=eq.${req.query.usuario_id}` : '';
-  const estado = req.query.estado ? `&estado=eq.${req.query.estado}` : '';
-  res.json(await sb(`pedidos?select=*&order=created_at.desc${usuario_id}${estado}`));
+  try {
+    const usuario_id = req.query.usuario_id ? `&usuario_id=eq.${req.query.usuario_id}` : '';
+    const estado = req.query.estado ? `&estado=eq.${req.query.estado}` : '';
+    res.json(await sb(`pedidos?select=*&order=created_at.desc${usuario_id}${estado}`));
+  } catch (e) {
+    console.error('❌ Error en GET /pedidos:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudieron cargar los pedidos.' });
+  }
 });
 
 app.post('/api/pedidos', async (req, res) => {
-  const data = await sb('pedidos', 'POST', req.body);
-  if (req.body.usuario_id) {
-    const users = await sb(`usuarios?id=eq.${req.body.usuario_id}&select=nombre,email`);
-    if (users.length) emailPedidoRecibido(users[0].nombre, users[0].email, req.body.servicio);
+  try {
+    const data = await sb('pedidos', 'POST', req.body);
+    if (req.body.usuario_id) {
+      const users = await sb(`usuarios?id=eq.${req.body.usuario_id}&select=nombre,email`);
+      if (users.length) emailPedidoRecibido(users[0].nombre, users[0].email, req.body.servicio);
+    }
+    res.json(data);
+  } catch (e) {
+    console.error('❌ Error en POST /pedidos:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo publicar el trabajo.', detalle: e.message });
   }
-  res.json(data);
 });
 
 app.patch('/api/pedidos/:id', async (req, res) => {
-  res.json(await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', req.body));
+  try { res.json(await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', req.body)); }
+  catch (e) { console.error('❌ Error en PATCH /pedidos:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo actualizar el pedido.', detalle: e.message }); }
 });
 
 // Eliminar pedido — usado por cliente (cancelados) y por ADMIN (sin penalizar a nadie)
 app.delete('/api/pedidos/:id', async (req, res) => {
-  await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
-  res.json({ ok: true });
+  try { await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH }); res.json({ ok: true }); }
+  catch (e) { console.error('❌ Error en DELETE /pedidos:', e.message); res.status(500).json({ error: 'No se pudo eliminar.' }); }
 });
 
 // Endpoint específico para que el ADMIN elimine un trabajo sin afectar reputación de nadie
