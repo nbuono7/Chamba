@@ -83,6 +83,25 @@
     .codigo-digit { width: 52px; height: 60px; border: 2px solid var(--border); border-radius: 10px; text-align: center; font-size: 28px; font-family: monospace; font-weight: 700; }
     .codigo-digit:focus { outline: none; border-color: var(--teal); }
     .codigo-advertencia { background: var(--amber-light); border: 1px solid #fbbf24; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #854f0b; margin-top: 12px; }
+    .alert { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; display: none; }
+    .alert-success { background: var(--teal-light); border: 1px solid var(--teal-mid); color: var(--teal-dark); }
+    .alert-error { background: var(--red-light); border: 1px solid #f09595; color: var(--red); }
+    .trabajo-footer { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .trabajo-card.con-ofertas { border-color: var(--teal-mid); }
+    .oferta-card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 10px; background: #fafafa; }
+    .oferta-card.mejor { border-color: var(--teal); background: var(--teal-light); }
+    .oferta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .oferta-socio { font-size: 14px; font-weight: 600; }
+    .oferta-precio { font-size: 22px; font-weight: 700; color: var(--teal-dark); }
+    .oferta-rep { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .oferta-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .codigo-num { font-size: 52px; font-weight: 700; letter-spacing: 10px; color: var(--teal-dark); font-family: monospace; }
+    .stars-input { display: flex; gap: 6px; margin: 8px 0; }
+    .star-btn { font-size: 28px; cursor: pointer; background: none; border: none; filter: grayscale(1); transition: filter 0.1s; }
+    .star-btn.activa { filter: grayscale(0); }
+    .tag-chip { display: inline-block; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 16px; margin: 3px; border: 1px solid var(--border); background: transparent; color: var(--text-mid); cursor: pointer; transition: all 0.15s; }
+    .tag-chip:hover { border-color: var(--teal); }
+    .tag-chip.activa { background: var(--teal); color: #fff; border-color: var(--teal); }
 
     .saldo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
     .saldo-box { background: var(--sidebar); border-radius: var(--radius); padding: 20px; color: #fff; }
@@ -145,6 +164,12 @@
       <button class="nav-item" id="nav-ofertas" onclick="goTo('mis-ofertas',this)">📤 Mis ofertas <span class="nav-badge" id="badge-ofertas" style="display:none">0</span></button>
       <button class="nav-item" id="nav-proceso" onclick="goTo('en-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
       <button class="nav-item" onclick="goTo('completados',this)">✅ Completados</button>
+      <div class="nav-section">Necesito un servicio</div>
+      <button class="nav-item" onclick="goTo('cli-nuevo',this)">➕ Publicar trabajo</button>
+      <button class="nav-item" id="nav-cli-esperando" onclick="goTo('cli-esperando',this)">🔍 Esperando ofertas <span class="nav-badge" id="badge-cli-esperando" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-cli-negociacion" onclick="goTo('cli-negociacion',this)">💬 En negociación <span class="nav-badge" id="badge-cli-negociacion" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-cli-proceso" onclick="goTo('cli-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-cli-proceso" style="display:none">0</span></button>
+      <button class="nav-item" onclick="goTo('cli-completados',this)">📦 Completados</button>
       <div class="nav-section">Mi cuenta</div>
       <button class="nav-item" onclick="goTo('mi-saldo',this)">💰 Mi saldo</button>
       <button class="nav-item" onclick="goTo('foro',this)">💬 Foro</button>
@@ -173,6 +198,7 @@
           <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('mis-ofertas')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">📤</div><div style="font-size:22px;font-weight:600" id="stat-mis-ofertas">—</div><div style="font-size:12px;color:var(--text-soft)">Mis ofertas</div></div></div>
           <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('en-proceso')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">⚙️</div><div style="font-size:22px;font-weight:600" id="stat-proceso">—</div><div style="font-size:12px;color:var(--text-soft)">En proceso</div></div></div>
           <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">⭐</div><div style="font-size:22px;font-weight:600" id="stat-rep">—</div><div style="font-size:12px;color:var(--text-soft)">Reputación</div></div></div>
+          <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('cli-nuevo')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">➕</div><div style="font-size:14px;font-weight:600;color:var(--teal)">Pedir un servicio</div></div></div>
         </div>
       </div>
     </div>
@@ -203,6 +229,51 @@
       <div class="page-title">Completados</div>
       <div class="page-sub">Historial de trabajos finalizados.</div>
       <div id="lista-completados"><div class="empty">Cargando...</div></div>
+    </div>
+
+    <!-- CLI: NUEVO PEDIDO -->
+    <div class="page" id="page-cli-nuevo">
+      <div class="page-title">Publicar un trabajo</div>
+      <div class="page-sub">Describí lo que necesitás y otros socios te enviarán ofertas de precio.</div>
+      <div class="card"><div class="card-body">
+        <div class="alert alert-success" id="cli-pedido-ok">✅ ¡Trabajo publicado! Los socios ya pueden ver tu solicitud.</div>
+        <div class="alert alert-error" id="cli-pedido-err"></div>
+        <div class="form-group"><label>Tipo de servicio</label>
+          <select id="cli-p-servicio"><option value="">Elegí el servicio</option><option>Plomería</option><option>Electricidad</option><option>Gas</option><option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option></select>
+        </div>
+        <div class="form-group"><label>Descripción del problema</label><textarea id="cli-p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
+        <div id="cli-ia-sugerencia" style="display:none" class="trabajo-ia"></div>
+        <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="consultarIACliente()">🤖 Consultar precio a la IA</button></div>
+        <button class="btn btn-teal" onclick="publicarTrabajoCliente()">Publicar trabajo</button>
+      </div></div>
+    </div>
+
+    <!-- CLI: ESPERANDO OFERTAS -->
+    <div class="page" id="page-cli-esperando">
+      <div class="page-title">Esperando ofertas</div>
+      <div class="page-sub">Trabajos publicados sin ofertas aún. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div id="lista-cli-esperando"><div class="empty">Cargando...</div></div>
+    </div>
+
+    <!-- CLI: EN NEGOCIACIÓN -->
+    <div class="page" id="page-cli-negociacion">
+      <div class="page-title">En negociación</div>
+      <div class="page-sub">Trabajos con ofertas recibidas. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div id="lista-cli-negociacion"><div class="empty">Cargando...</div></div>
+    </div>
+
+    <!-- CLI: EN PROCESO -->
+    <div class="page" id="page-cli-proceso">
+      <div class="page-title">En proceso</div>
+      <div class="page-sub">Trabajos pagados en ejecución. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div id="lista-cli-proceso"><div class="empty">Cargando...</div></div>
+    </div>
+
+    <!-- CLI: COMPLETADOS -->
+    <div class="page" id="page-cli-completados">
+      <div class="page-title">Completados</div>
+      <div class="page-sub">Historial de trabajos que pediste.</div>
+      <div id="lista-cli-completados"><div class="empty">Cargando...</div></div>
     </div>
 
     <!-- MI SALDO -->
@@ -271,6 +342,12 @@ let trabajosDisponibles = [];
 let misOfertas = [];
 let misTareas = [];
 let pedidosCache = {};
+let misPedidosCliente = [];
+let todasOfertasCliente = {};
+let iaSugerenciaCliente = null;
+let estrellasPorPedido = {};
+let tagsPorPedido = {};
+const TAGS_CALIFICACION = ['Rápido', 'Buen trabajo', 'Prolijo', 'Puntual', 'Buena comunicación', 'Lento', 'Deficiente', 'Mala comunicación'];
 
 function showModal(icon, title, msg, btns) {
   document.getElementById('modal-icon').textContent = icon;
@@ -334,7 +411,7 @@ function goTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
-  const badgeMap = { 'disponibles': 'badge-disponibles', 'mis-ofertas': 'badge-ofertas', 'en-proceso': 'badge-proceso' };
+  const badgeMap = { 'disponibles': 'badge-disponibles', 'mis-ofertas': 'badge-ofertas', 'en-proceso': 'badge-proceso', 'cli-esperando': 'badge-cli-esperando', 'cli-negociacion': 'badge-cli-negociacion', 'cli-proceso': 'badge-cli-proceso' };
   if (badgeMap[page]) document.getElementById(badgeMap[page]).style.display = 'none';
   if (page === 'foro') cargarForo();
 }
@@ -372,6 +449,14 @@ async function cargarTodo() {
 
     // Mis tareas (asignadas a mí)
     misTareas = lista.filter(p => p.profesional_id === usuario.id);
+
+    // Pedidos que YO publiqué como cliente (necesito un servicio)
+    misPedidosCliente = lista.filter(p => p.usuario_id === usuario.id);
+    todasOfertasCliente = {};
+    const pedidosClienteNuevos = misPedidosCliente.filter(p => p.estado === 'nuevo');
+    for (const p of pedidosClienteNuevos) {
+      try { todasOfertasCliente[p.id] = await api('/api/ofertas?pedido_id=' + p.id); } catch(e) { todasOfertasCliente[p.id] = []; }
+    }
   } catch(e) {}
 
   const n1 = trabajosDisponibles.length;
@@ -399,6 +484,7 @@ async function cargarTodo() {
   document.getElementById('lista-completados').innerHTML = misTareas.filter(t=>t.estado==='completado').map(t=>renderCardCompletado(t)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
   renderSaldo();
   enProceso.forEach(t => cargarMensajes(t.id));
+  renderCliTodo();
 }
 
 function setBadge(id, count, pageId) {
@@ -593,7 +679,9 @@ async function enviarMsg(tareaId) {
   const input = document.getElementById('chat-in-' + tareaId);
   const contenido = input.value.trim(); if (!contenido) return;
   input.value = '';
-  const r = await api('/api/mensajes', 'POST', { pedido_id: tareaId, autor: usuario.nombre, rol: 'socio', contenido });
+  const pedido = pedidosCache[tareaId];
+  const rol = pedido && pedido.usuario_id === usuario.id ? 'cliente' : 'socio';
+  const r = await api('/api/mensajes', 'POST', { pedido_id: tareaId, autor: usuario.nombre, rol, contenido });
   if (r.error) { showInfo('❌','Error',r.error); return; }
   cargarMensajes(tareaId);
 }
@@ -601,6 +689,220 @@ async function enviarMsg(tareaId) {
 function renderSaldo() {
   document.getElementById('saldo-disponible').textContent = fmt(usuario.saldo_disponible||0);
   document.getElementById('saldo-bloqueado').textContent = fmt(usuario.saldo_bloqueado||0);
+}
+
+function starsHtml(n) { return n ? '⭐'.repeat(Math.min(5, Math.round(n))) + ' ' + n : 'Sin calificaciones'; }
+
+// ── NECESITO UN SERVICIO (el socio actuando como cliente) ──
+function renderCliTodo() {
+  const esperando = misPedidosCliente.filter(p => p.estado === 'nuevo' && (!todasOfertasCliente[p.id] || !todasOfertasCliente[p.id].filter(o => o.estado !== 'rechazada').length));
+  const negociacion = misPedidosCliente.filter(p => p.estado === 'nuevo' && todasOfertasCliente[p.id] && todasOfertasCliente[p.id].filter(o => o.estado !== 'rechazada').length > 0);
+  const proceso = misPedidosCliente.filter(p => p.estado === 'en_proceso');
+  const completados = misPedidosCliente.filter(p => p.estado === 'completado');
+  const cancelados = misPedidosCliente.filter(p => p.estado === 'cancelado');
+
+  setBadge('badge-cli-esperando', esperando.length, 'page-cli-esperando');
+  setBadge('badge-cli-negociacion', negociacion.length, 'page-cli-negociacion');
+  setBadge('badge-cli-proceso', proceso.length, 'page-cli-proceso');
+
+  document.getElementById('lista-cli-esperando').innerHTML = [...esperando, ...cancelados].map(p => renderCardCliEsperando(p)).join('') || '<div class="empty">No tenés trabajos esperando ofertas.</div>';
+  document.getElementById('lista-cli-negociacion').innerHTML = negociacion.map(p => renderCardCliNegociacion(p)).join('') || '<div class="empty">No tenés trabajos en negociación.</div>';
+
+  const chatsEnCurso = {};
+  document.querySelectorAll('[id^="chat-in-"]').forEach(inp => { if (inp.value) chatsEnCurso[inp.id] = inp.value; });
+  document.getElementById('lista-cli-proceso').innerHTML = proceso.map(p => renderCardCliProceso(p)).join('') || '<div class="empty">No tenés trabajos en proceso.</div>';
+  Object.entries(chatsEnCurso).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.value = val; });
+
+  document.getElementById('lista-cli-completados').innerHTML = completados.map(p => renderCardCliCompletado(p)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
+  proceso.forEach(p => cargarMensajes(p.id));
+}
+
+function renderCardCliEsperando(p) {
+  const cancelado = p.estado === 'cancelado';
+  return `<div class="trabajo-card" style="position:relative">
+    ${cancelado ? `<div class="wasted-overlay"><div class="wasted-text">CANCELADO</div><button class="btn btn-red btn-sm" onclick="eliminarPedidoCliente('${p.id}')">Eliminar</button></div>` : ''}
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-gray">Esperando ofertas</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    ${p.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(p.precio_sugerido_ia)}</strong></div>` : ''}
+    <div class="trabajo-footer">
+      <span style="font-size:12px;color:var(--text-soft)">📅 ${fmtDate(p.created_at)}</span>
+      ${!cancelado ? `<button class="btn btn-red btn-sm" onclick="cancelarPedidoCliente('${p.id}')">Eliminar solicitud</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderCardCliNegociacion(p) {
+  const ofertas = (todasOfertasCliente[p.id] || []).filter(o => o.estado !== 'rechazada');
+  const sorted = [...ofertas].sort((a,b) => (b.rep_promedio||0) - (a.rep_promedio||0) || a.precio_ofertado - b.precio_ofertado);
+  return `<div class="trabajo-card con-ofertas">
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-amber">${ofertas.length} oferta${ofertas.length!==1?'s':''}</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    ${p.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(p.precio_sugerido_ia)}</strong></div>` : ''}
+    <div style="margin-top:12px">
+      ${sorted.map((o,i) => `
+        <div class="oferta-card ${i===0?'mejor':''}">
+          ${i===0 ? '<div style="font-size:11px;font-weight:600;color:var(--teal);margin-bottom:6px">⭐ MEJOR OFERTA</div>' : ''}
+          <div class="oferta-header">
+            <div><div class="oferta-socio">${o.socio_nombre}</div><div class="oferta-rep">${starsHtml(o.rep_promedio)} · ${o.trabajos_completados||0} trabajos</div></div>
+            <div class="oferta-precio">${fmt(o.precio_ofertado)}</div>
+          </div>
+          ${o.ultima_oferta_de==='cliente' ? `<div style="font-size:12px;color:var(--amber);font-weight:500;margin-top:4px">⏳ Esperando respuesta del socio a tu contraoferta</div>` : ''}
+          ${o.ultima_oferta_de!=='cliente' ? `<div class="oferta-btns">
+            <button class="btn btn-teal btn-sm" onclick="aceptarOfertaCliente('${o.id}','${p.id}',${o.precio_ofertado})">✅ Aceptar ${fmt(o.precio_ofertado)}</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleNegCliente('neg-cli-${o.id}')">💬 Contraofertar</button>
+            <button class="btn btn-red btn-sm" onclick="buscarOtroSocioCliente('${p.id}')">🔄 Buscar otro socio</button>
+          </div>
+          <div id="neg-cli-${o.id}" style="display:none" class="neg-box">
+            <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:8px">Tu contraoferta (solo precio)</div>
+            <div class="neg-precio-input">
+              <input type="number" id="neg-cli-val-${o.id}" placeholder="Tu precio máximo..."/>
+              <button class="btn btn-teal btn-sm" onclick="enviarContraofertaCliente('${o.id}')">Enviar</button>
+            </div>
+          </div>` : ''}
+        </div>`).join('')}
+    </div>
+    <div class="trabajo-footer">
+      <span style="font-size:12px;color:var(--text-soft)">📅 ${fmtDate(p.created_at)}</span>
+      <button class="btn btn-red btn-sm" onclick="cancelarPedidoCliente('${p.id}')">Eliminar solicitud</button>
+    </div>
+  </div>`;
+}
+
+function renderCardCliProceso(p) {
+  return `<div class="trabajo-card en-proceso">
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-amber">⚙️ En proceso</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+      <div><div style="font-size:12px;color:var(--teal-dark)">Precio acordado</div><div style="font-size:20px;font-weight:700;color:var(--teal-dark)">${fmt(p.precio_cliente)}</div></div>
+      <div><div style="font-size:12px;color:var(--teal-dark)">Comisión ChamBA</div><div style="font-size:14px;font-weight:600;color:var(--teal-dark)">${fmt(p.comision)}</div></div>
+    </div>
+    ${p.codigo_verificacion && !p.codigo_usado ? `
+      <div class="codigo-box">
+        <div style="font-size:13px;font-weight:600;color:var(--teal-dark);margin-bottom:6px">🔐 Tu código de verificación</div>
+        <div class="codigo-num">${p.codigo_verificacion}</div>
+      </div>
+      <div class="codigo-advertencia">⚠️ <strong>Importante:</strong> Entregá este código al socio únicamente cuando haya <strong>terminado el trabajo</strong>. El código desbloquea su pago.</div>` : ''}
+    ${p.codigo_usado ? '<div style="background:var(--teal);color:#fff;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:500;margin:10px 0">✅ Código verificado — el socio cobró su pago</div>' : ''}
+    <div style="margin-top:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">💬 Chat con el socio</div>
+      <div class="chat-box">
+        <div class="chat-messages" id="chat-${p.id}"><div style="text-align:center;color:var(--text-soft);font-size:13px;padding:14px">Cargando...</div></div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-in-${p.id}" placeholder="Coordiná día, hora y lugar..." onkeydown="if(event.key==='Enter')enviarMsg('${p.id}')"/>
+          <button class="btn btn-teal btn-sm" onclick="enviarMsg('${p.id}')">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCardCliCompletado(p) {
+  return `<div class="trabajo-card">
+    <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-green">✅ Completado</span></div>
+    <div class="trabajo-desc">${p.descripcion||''}</div>
+    <div style="font-size:14px;color:var(--teal-dark);font-weight:500;margin-bottom:10px">Precio final: ${fmt(p.precio_cliente)} · ${fmtDate(p.created_at)}</div>
+    ${p.calificado ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text-soft);font-size:14px">✅ Ya calificaste a este socio. ¡Gracias!</div>` : p.profesional_id ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">⭐ Calificá al socio</div>
+      <div class="stars-input" id="stars-${p.id}">${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="selStar('${p.id}',${n})">⭐</button>`).join('')}</div>
+      <div style="margin-top:10px" id="tags-${p.id}">${TAGS_CALIFICACION.map(tag=>`<button class="tag-chip" onclick="toggleTag('${p.id}','${tag}')">${tag}</button>`).join('')}</div>
+      <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="calificar('${p.id}','${p.profesional_id}')">Enviar calificación</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function toggleNegCliente(id) { const el=document.getElementById(id); el.style.display=el.style.display==='none'?'block':'none'; }
+
+async function aceptarOfertaCliente(ofertaId, pedidoId, precio) {
+  showConfirm('💰', '¿Confirmás el pago?',
+    `Vas a pagar ${fmt(precio)}. El dinero queda retenido en ChamBA hasta que el socio complete el trabajo y vos le entregues el código de verificación.`,
+    async () => {
+      const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
+      if (r.error) return showInfo('❌', 'Error', r.error);
+      await cargarTodo();
+      goTo('cli-proceso', document.getElementById('nav-cli-proceso'));
+    }, '✅ Confirmar pago');
+}
+
+async function enviarContraofertaCliente(ofertaId) {
+  const precio = parseFloat(document.getElementById('neg-cli-val-' + ofertaId).value);
+  if (!precio || precio <= 0) return showInfo('⚠️', 'Precio inválido', 'Ingresá un precio válido.');
+  await api('/api/ofertas/' + ofertaId + '/contraoferta', 'POST', { nuevo_precio: precio, rol: 'cliente' });
+  document.getElementById('neg-cli-' + ofertaId).style.display = 'none';
+  showInfo('✅', 'Contraoferta enviada', 'El socio verá tu propuesta y podrá aceptarla o responder con otro precio.');
+  await cargarTodo();
+}
+
+async function buscarOtroSocioCliente(pedidoId) {
+  showConfirm('🔄', '¿Buscar otro socio?', 'Se cancelarán todas las ofertas actuales y el trabajo volverá a estar disponible para otros socios.',
+    async () => { await api('/api/pedidos/' + pedidoId + '/buscar-otro-socio', 'POST'); await cargarTodo(); });
+}
+
+async function cancelarPedidoCliente(pedidoId) {
+  showConfirm('🗑️', '¿Eliminar solicitud?', 'Los socios que ofertaron verán que el trabajo fue cancelado.',
+    async () => { await api('/api/pedidos/' + pedidoId, 'PATCH', { estado: 'cancelado' }); await cargarTodo(); }, 'Sí, eliminar');
+}
+
+async function eliminarPedidoCliente(pedidoId) {
+  showConfirm('🗑️', '¿Eliminar de tu vista?', 'El trabajo cancelado desaparecerá de tu lista.',
+    async () => { await api('/api/pedidos/' + pedidoId, 'DELETE'); await cargarTodo(); }, 'Sí, eliminar');
+}
+
+function selStar(pedidoId, n) {
+  estrellasPorPedido[pedidoId] = n;
+  document.querySelectorAll(`#stars-${pedidoId} .star-btn`).forEach((btn,i) => btn.classList.toggle('activa', i<n));
+}
+
+function toggleTag(pedidoId, tag) {
+  if (!tagsPorPedido[pedidoId]) tagsPorPedido[pedidoId] = [];
+  const arr = tagsPorPedido[pedidoId];
+  const i = arr.indexOf(tag);
+  if (i === -1) arr.push(tag); else arr.splice(i, 1);
+  document.querySelectorAll(`#tags-${pedidoId} .tag-chip`).forEach(btn => btn.classList.toggle('activa', arr.includes(btn.textContent)));
+}
+
+async function calificar(pedidoId, socioId) {
+  const estrellas = estrellasPorPedido[pedidoId];
+  if (!estrellas) return showInfo('⚠️', 'Falta calificación', 'Elegí entre 1 y 5 estrellas.');
+  const comentario = (tagsPorPedido[pedidoId] || []).join(', ');
+  const r = await api('/api/calificaciones', 'POST', { pedido_id: pedidoId, socio_id: socioId, cliente_id: usuario.id, estrellas, comentario });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  delete estrellasPorPedido[pedidoId];
+  delete tagsPorPedido[pedidoId];
+  showInfo('⭐', '¡Gracias!', 'Tu calificación fue enviada.');
+  await cargarTodo();
+}
+
+async function consultarIACliente() {
+  const servicio = document.getElementById('cli-p-servicio').value;
+  const desc = document.getElementById('cli-p-desc').value.trim();
+  if (!servicio || !desc) return showInfo('⚠️', 'Falta información', 'Completá el servicio y la descripción primero.');
+  const box = document.getElementById('cli-ia-sugerencia');
+  box.style.display = 'block'; box.innerHTML = '🤖 Consultando a la IA...';
+  try {
+    const r = await api('/api/analizar', 'POST', { servicio, descripcion: desc, fotos: [] });
+    iaSugerenciaCliente = r;
+    box.innerHTML = `🤖 <strong>Precio sugerido: ${fmt(r.precio_cliente)}</strong> · Rango: ${fmt(r.precio_min)} – ${fmt(r.precio_max)}<br><span style="font-size:12px">El socio recibiría ${fmt(r.precio_socio)} · ChamBA cobra ${fmt(r.comision_chamba)} (20%)</span>`;
+  } catch(e) { box.innerHTML = '⚠️ No se pudo consultar la IA.'; }
+}
+
+async function publicarTrabajoCliente() {
+  const servicio = document.getElementById('cli-p-servicio').value;
+  const descripcion = document.getElementById('cli-p-desc').value.trim();
+  document.getElementById('cli-pedido-ok').style.display = 'none';
+  document.getElementById('cli-pedido-err').style.display = 'none';
+  if (!servicio || !descripcion) { const e=document.getElementById('cli-pedido-err'); e.textContent='Completá todos los campos.'; e.style.display='block'; return; }
+  const body = { servicio, descripcion, usuario_id: usuario.id, estado: 'nuevo' };
+  if (iaSugerenciaCliente) body.precio_sugerido_ia = iaSugerenciaCliente.precio_cliente;
+  try {
+    const r = await api('/api/pedidos', 'POST', body);
+    if (r.error) throw new Error(r.error);
+    document.getElementById('cli-pedido-ok').style.display = 'block';
+    document.getElementById('cli-p-servicio').value = '';
+    document.getElementById('cli-p-desc').value = '';
+    document.getElementById('cli-ia-sugerencia').style.display = 'none';
+    iaSugerenciaCliente = null;
+    await cargarTodo();
+  } catch(e) { const el=document.getElementById('cli-pedido-err'); el.textContent=e.message||'Error al publicar.'; el.style.display='block'; }
 }
 
 function renderPerfil() {
