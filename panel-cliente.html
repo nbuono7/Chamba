@@ -40,6 +40,18 @@
     .main { max-width: 1180px; margin: 0 auto; padding: 32px 28px 60px; }
     .page { display: none; }
     .page.active { display: block; }
+    .subtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; overflow-x: auto; }
+    .subtab { position: relative; padding: 10px 16px; border: none; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--text-mid); cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .subtab:hover { color: var(--text); }
+    .subtab.active { color: var(--teal-dark); }
+    .subtab.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--teal); }
+    .subpage { display: none; }
+    .subpage.active { display: block; }
+    .actividad-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+    .actividad-item:first-child { border-top: none; padding-top: 0; }
+    .actividad-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--teal-light); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .actividad-texto { font-size: 14px; color: var(--text); line-height: 1.4; }
+    .actividad-fecha { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
     .page-title { font-family: 'Sora', sans-serif; font-size: 25px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(22,35,63,0.05); }
@@ -147,16 +159,7 @@
     <div class="logo">Cham<span>BA</span></div>
     <nav class="topnav">
       <button class="nav-item active" onclick="goTo('inicio',this)">Inicio</button>
-      <div class="nav-dropdown" id="dd-trabajos">
-        <button class="nav-item" id="nav-trigger-trabajos" onclick="toggleDropdown('dd-trabajos-menu')">Mis trabajos <span id="badge-trabajos-total" class="nav-badge" style="display:none">0</span></button>
-        <div class="nav-dropdown-menu" id="dd-trabajos-menu">
-          <button class="nav-item" onclick="goTo('nuevo-pedido',this)">➕ Publicar trabajo</button>
-          <button class="nav-item" id="nav-esperando" onclick="goTo('esperando-ofertas',this)">🔍 Esperando ofertas <span class="nav-badge" id="badge-esperando" style="display:none">0</span></button>
-          <button class="nav-item" id="nav-negociacion" onclick="goTo('en-negociacion',this)">💬 En negociación <span class="nav-badge" id="badge-negociacion" style="display:none">0</span></button>
-          <button class="nav-item" id="nav-proceso" onclick="goTo('en-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
-          <button class="nav-item" onclick="goTo('completados',this)">✅ Completados</button>
-        </div>
-      </div>
+      <button class="nav-item" id="nav-mis-trabajos" onclick="goTo('mis-trabajos',this)">Mis trabajos <span id="badge-trabajos-total" class="nav-badge" style="display:none">0</span></button>
       <button class="nav-item" onclick="goTo('foro',this)">Foro</button>
     </nav>
     <div class="topbar-right">
@@ -182,11 +185,15 @@
       <div class="page-sub">Panel de cliente ChamBA</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px">
         <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('nuevo-pedido')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">➕</div><div style="font-size:14px;font-weight:600;color:var(--teal-dark)">Publicar trabajo</div></div></div>
-        <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('esperando-ofertas')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">🔍</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-esperando">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">Esperando ofertas</div></div></div>
-        <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('en-negociacion')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">💬</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-negociacion">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">En negociación</div></div></div>
-        <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('en-proceso')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">⚙️</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-proceso">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">En proceso</div></div></div>
-        <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('completados')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">✅</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-completados">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">Completados</div></div></div>
+        <div class="card" style="overflow:visible;cursor:pointer" onclick="irATrabajos('esperando')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">🔍</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-esperando">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">Esperando ofertas</div></div></div>
+        <div class="card" style="overflow:visible;cursor:pointer" onclick="irATrabajos('negociacion')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">💬</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-negociacion">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">En negociación</div></div></div>
+        <div class="card" style="overflow:visible;cursor:pointer" onclick="irATrabajos('proceso')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">⚙️</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-proceso">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">En proceso</div></div></div>
+        <div class="card" style="overflow:visible;cursor:pointer" onclick="irATrabajos('completados')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">✅</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-completados">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">Completados</div></div></div>
       </div>
+      <div class="card"><div class="card-body">
+        <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;margin-bottom:14px">Actividad reciente</div>
+        <div id="actividad-reciente"></div>
+      </div></div>
     </div>
 
     <!-- NUEVO PEDIDO -->
@@ -206,32 +213,20 @@
       </div></div>
     </div>
 
-    <!-- ESPERANDO OFERTAS -->
-    <div class="page" id="page-esperando-ofertas">
-      <div class="page-title">Esperando ofertas</div>
-      <div class="page-sub">Trabajos publicados sin ofertas aún. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-esperando"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- EN NEGOCIACIÓN -->
-    <div class="page" id="page-en-negociacion">
-      <div class="page-title">En negociación</div>
-      <div class="page-sub">Trabajos con ofertas recibidas. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-negociacion"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- EN PROCESO -->
-    <div class="page" id="page-en-proceso">
-      <div class="page-title">En proceso</div>
-      <div class="page-sub">Trabajos pagados en ejecución. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-proceso"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- COMPLETADOS -->
-    <div class="page" id="page-completados">
-      <div class="page-title">Completados</div>
-      <div class="page-sub">Historial de trabajos finalizados.</div>
-      <div id="lista-completados"><div class="empty">Cargando...</div></div>
+    <!-- MIS TRABAJOS (pestañas horizontales, sin duplicar Inicio) -->
+    <div class="page" id="page-mis-trabajos">
+      <div class="page-title">Mis trabajos</div>
+      <div class="page-sub">Seguí el estado de las solicitudes que publicaste. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div class="subtabs">
+        <button class="subtab active" data-tab="esperando" onclick="goSubTab('esperando')">Esperando ofertas <span class="nav-badge" id="badge-esperando" style="display:none">0</span></button>
+        <button class="subtab" data-tab="negociacion" onclick="goSubTab('negociacion')">En negociación <span class="nav-badge" id="badge-negociacion" style="display:none">0</span></button>
+        <button class="subtab" data-tab="proceso" onclick="goSubTab('proceso')">En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
+        <button class="subtab" data-tab="completados" onclick="goSubTab('completados')">Completados</button>
+      </div>
+      <div class="subpage active" id="sub-esperando"><div id="lista-esperando"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" id="sub-negociacion"><div id="lista-negociacion"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" id="sub-proceso"><div id="lista-proceso"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" id="sub-completados"><div id="lista-completados"><div class="empty">Cargando...</div></div></div>
     </div>
 
     <!-- FORO -->
@@ -365,13 +360,23 @@ function goTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
-  const grupoTrabajos = ['nuevo-pedido', 'esperando-ofertas', 'en-negociacion', 'en-proceso', 'completados'];
-  if (grupoTrabajos.includes(page)) document.getElementById('nav-trigger-trabajos').classList.add('active');
+  if (page === 'nuevo-pedido') document.getElementById('nav-mis-trabajos').classList.add('active');
   document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
-  // Limpiar badge al entrar
-  const badgeMap = { 'esperando-ofertas': 'badge-esperando', 'en-negociacion': 'badge-negociacion', 'en-proceso': 'badge-proceso' };
-  if (badgeMap[page]) document.getElementById(badgeMap[page]).style.display = 'none';
   if (page === 'foro') cargarForo();
+}
+
+function goSubTab(tab) {
+  document.querySelectorAll('.subtab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.subpage').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.subtab[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById('sub-' + tab).classList.add('active');
+  const badgeMap = { esperando: 'badge-esperando', negociacion: 'badge-negociacion', proceso: 'badge-proceso' };
+  if (badgeMap[tab]) document.getElementById(badgeMap[tab]).style.display = 'none';
+}
+
+function irATrabajos(tab) {
+  goTo('mis-trabajos', document.getElementById('nav-mis-trabajos'));
+  goSubTab(tab);
 }
 
 function toggleDropdown(id) {
@@ -424,9 +429,9 @@ function renderTodo() {
   document.getElementById('stat-completados').textContent = completados.length;
 
   // Badges solo si hay novedades y el usuario NO está en esa sección
-  setBadge('badge-esperando', esperando.length, 'page-esperando-ofertas');
-  setBadge('badge-negociacion', negociacion.length, 'page-en-negociacion');
-  setBadge('badge-proceso', proceso.length, 'page-en-proceso');
+  badgeSubtab('badge-esperando', esperando.length, 'sub-esperando');
+  badgeSubtab('badge-negociacion', negociacion.length, 'sub-negociacion');
+  badgeSubtab('badge-proceso', proceso.length, 'sub-proceso');
   const totalTrabajos = negociacion.length; // solo lo que realmente requiere tu atención (nuevas ofertas)
   const badgeTotal = document.getElementById('badge-trabajos-total');
   badgeTotal.textContent = totalTrabajos;
@@ -442,6 +447,28 @@ function renderTodo() {
   document.getElementById('lista-completados').innerHTML = completados.map(p => renderCardCompletado(p)).join('') || '<div class="empty">No tenés trabajos completados aún.</div>';
 
   proceso.forEach(p => cargarMensajes(p.id));
+  renderActividadReciente();
+}
+
+function renderActividadReciente() {
+  const box = document.getElementById('actividad-reciente');
+  if (!misPedidos.length) {
+    box.innerHTML = '<div style="text-align:center;padding:20px 10px"><div style="font-size:14px;color:var(--text-mid);margin-bottom:12px">Todavía no publicaste ningún trabajo.</div><button class="btn btn-teal btn-sm" onclick="goTo(\'nuevo-pedido\')">➕ Publicar mi primer trabajo</button></div>';
+    return;
+  }
+  const eventos = misPedidos.map(p => {
+    const ofertasPedido = (todasOfertas[p.id] || []).filter(o => o.estado !== 'rechazada');
+    if (p.estado === 'cancelado') return { icon: '🗑️', texto: `Cancelaste la solicitud de <strong>${p.servicio}</strong>`, fecha: p.created_at };
+    if (p.estado === 'completado') return { icon: '✅', texto: `Completaste el trabajo de <strong>${p.servicio}</strong>${p.calificado ? '' : ' — todavía no lo calificaste'}`, fecha: p.created_at };
+    if (p.estado === 'en_proceso') return { icon: '⚙️', texto: `<strong>${p.servicio}</strong> está en proceso — pagaste ${fmt(p.precio_cliente)}`, fecha: p.created_at };
+    if (ofertasPedido.length) return { icon: '💬', texto: `Recibiste ${ofertasPedido.length} oferta${ofertasPedido.length!==1?'s':''} para <strong>${p.servicio}</strong>`, fecha: p.created_at };
+    return { icon: '🔍', texto: `Publicaste un trabajo de <strong>${p.servicio}</strong>`, fecha: p.created_at };
+  }).sort((a,b) => new Date(b.fecha) - new Date(a.fecha)).slice(0, 6);
+
+  box.innerHTML = eventos.map(e => `<div class="actividad-item">
+    <div class="actividad-icon">${e.icon}</div>
+    <div><div class="actividad-texto">${e.texto}</div><div class="actividad-fecha">${fmtDate(e.fecha)}</div></div>
+  </div>`).join('');
 }
 
 function setBadge(id, count, pageId) {
@@ -449,6 +476,14 @@ function setBadge(id, count, pageId) {
   const pageActiva = document.getElementById(pageId)?.classList.contains('active');
   el.textContent = count;
   el.style.display = (count > 0 && !pageActiva) ? 'inline' : 'none';
+}
+
+function badgeSubtab(id, count, subId) {
+  const el = document.getElementById(id);
+  const viendola = document.getElementById('page-mis-trabajos')?.classList.contains('active')
+    && document.getElementById(subId)?.classList.contains('active');
+  el.textContent = count;
+  el.style.display = (count > 0 && !viendola) ? 'inline' : 'none';
 }
 
 function renderCardEsperando(p) {
@@ -556,7 +591,7 @@ async function aceptarOferta(ofertaId, pedidoId, precio) {
       if (r.error) return showInfo('❌', 'Error', r.error);
       await cargarTodo();
       console.log('[DEBUG] misPedidos despues de recargar:', misPedidos);
-      goTo('en-proceso', document.getElementById('nav-proceso'));
+      irATrabajos('proceso');
     }, '✅ Confirmar pago');
 }
 
