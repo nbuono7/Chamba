@@ -4,37 +4,58 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ChamBA — Panel Socio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --teal: #1D9E75; --teal-dark: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #5DCAA5;
-      --bg: #f4f5f4; --sidebar: #0f1512; --card: #fff;
-      --text: #111; --text-mid: #555; --text-soft: #999; --border: #e8eae8; --radius: 12px;
-      --red: #e24b4a; --red-light: #fdeaea; --amber: #d97706; --amber-light: #fef3e2;
+      --teal: #E2662D; --teal-dark: #B84F1F; --teal-light: #FBE9DC; --teal-mid: #F0955F;
+      --navy: #16233F; --navy-mid: #223655; --navy-soft: #8DA0C2;
+      --bg: #F7F2E7; --card: #fff;
+      --text: #1E2430; --text-mid: #5B6270; --text-soft: #93989F; --border: #E9E1D0; --radius: 14px;
+      --red: #C1443F; --red-light: #FBEAE9; --amber: #B8790E; --amber-light: #FAF0DD;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-    .layout { display: flex; min-height: 100vh; }
-    .sidebar { width: 220px; flex-shrink: 0; background: var(--sidebar); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; }
-    .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .sidebar-logo .logo { font-size: 20px; font-weight: 600; color: #fff; }
-    .sidebar-logo .logo span { color: var(--teal); }
-    .sidebar-user { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px; }
-    .sidebar-badge { display: inline-block; background: var(--teal); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-top: 4px; }
-    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
-    .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.2); padding: 12px 12px 4px; }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.5); border: none; background: none; font-family: inherit; width: 100%; text-align: left; transition: all 0.15s; }
-    .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
-    .nav-item.active { background: rgba(29,158,117,0.15); color: var(--teal-mid); }
-    .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 10px; }
-    .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
-    .logout-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.3); border: none; background: none; font-family: inherit; width: 100%; }
-    .main { margin-left: 220px; flex: 1; padding: 32px; }
+    .topbar { position: sticky; top: 0; z-index: 20; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .topbar-inner { max-width: 1180px; margin: 0 auto; padding: 0 28px; height: 68px; display: flex; align-items: center; gap: 4px; }
+    .logo { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-right: 24px; letter-spacing: -0.01em; white-space: nowrap; }
+    .logo span { color: var(--teal); }
+    .topnav { display: flex; align-items: center; gap: 2px; height: 100%; }
+    .nav-item { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 14px; height: 100%; border: none; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.55); cursor: pointer; white-space: nowrap; }
+    .nav-item:hover { color: #fff; }
+    .nav-item.active { color: #fff; }
+    .nav-item.active::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; background: var(--teal); border-radius: 3px 3px 0 0; }
+    .nav-badge { background: var(--teal); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+    .nav-dropdown { position: relative; height: 100%; }
+    .nav-dropdown-menu { position: absolute; top: calc(100% + 8px); left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 28px rgba(22,35,63,0.18); padding: 6px; min-width: 220px; display: none; flex-direction: column; z-index: 30; }
+    .nav-dropdown-menu.open { display: flex; }
+    .nav-dropdown-menu .nav-item { height: auto; padding: 10px 12px; border-radius: 7px; justify-content: space-between; color: var(--text-mid); }
+    .nav-dropdown-menu .nav-item:hover { background: var(--bg); color: var(--text); }
+    .nav-dropdown-menu .nav-item.active { background: var(--teal-light); color: var(--teal-dark); }
+    .nav-dropdown-menu .nav-item.active::after { display: none; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .user-chip { display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); background: none; font-family: inherit; cursor: pointer; }
+    .user-chip:hover { border-color: var(--teal); }
+    .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--teal); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 500; color: #fff; }
+    .main { max-width: 1180px; margin: 0 auto; padding: 32px 28px 60px; }
     .page { display: none; }
     .page.active { display: block; }
-    .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-    .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 24px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+    .subtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; overflow-x: auto; }
+    .subtab { position: relative; padding: 10px 16px; border: none; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--text-mid); cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .subtab:hover { color: var(--text); }
+    .subtab.active { color: var(--teal-dark); }
+    .subtab.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--teal); }
+    .subpage { display: none; }
+    .subpage.active { display: block; }
+    .actividad-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+    .actividad-item:first-child { border-top: none; padding-top: 0; }
+    .actividad-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--teal-light); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .actividad-texto { font-size: 14px; color: var(--text); line-height: 1.4; }
+    .actividad-fecha { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .page-title { font-family: 'Sora', sans-serif; font-size: 25px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
+    .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(22,35,63,0.05); }
+    .stat-icon { width: 44px; height: 44px; border-radius: 50%; background: var(--teal-light); display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 10px; }
     .card-body { padding: 20px; }
     .badge { display: inline-flex; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
     .badge-green { background: var(--teal-light); color: var(--teal-dark); }
@@ -141,7 +162,7 @@
     .modal-msg { font-size: 14px; color: var(--text-mid); margin-bottom: 20px; line-height: 1.6; white-space: pre-line; }
     .modal-btns { display: flex; gap: 10px; justify-content: center; }
 
-    @media(max-width:768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 16px; } .perfil-grid, .saldo-grid { grid-template-columns: 1fr; } }
+    @media(max-width:768px) { .topbar-inner { padding: 0 14px; } .logo { margin-right: 10px; } .nav-item { padding: 0 9px; font-size: 13px; } .user-name { display: none; } .main { padding: 20px 14px 40px; } .perfil-grid, .saldo-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -149,36 +170,31 @@
   <span></span>
   <span class="notif-close">✕</span>
 </div>
-<div class="layout">
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo">Cham<span>BA</span></div>
-      <div class="sidebar-user" id="sidebar-user"></div>
-      <div class="sidebar-badge">🔧 Socio</div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">General</div>
-      <button class="nav-item active" onclick="goTo('inicio',this)">🏠 Inicio</button>
-      <div class="nav-section">Trabajos</div>
-      <button class="nav-item" id="nav-disponibles" onclick="goTo('disponibles',this)">🔍 Disponibles <span class="nav-badge" id="badge-disponibles" style="display:none">0</span></button>
-      <button class="nav-item" id="nav-ofertas" onclick="goTo('mis-ofertas',this)">📤 Mis ofertas <span class="nav-badge" id="badge-ofertas" style="display:none">0</span></button>
-      <button class="nav-item" id="nav-proceso" onclick="goTo('en-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
-      <button class="nav-item" onclick="goTo('completados',this)">✅ Completados</button>
-      <div class="nav-section">Necesito un servicio</div>
-      <button class="nav-item" onclick="goTo('cli-nuevo',this)">➕ Publicar trabajo</button>
-      <button class="nav-item" id="nav-cli-esperando" onclick="goTo('cli-esperando',this)">🔍 Esperando ofertas <span class="nav-badge" id="badge-cli-esperando" style="display:none">0</span></button>
-      <button class="nav-item" id="nav-cli-negociacion" onclick="goTo('cli-negociacion',this)">💬 En negociación <span class="nav-badge" id="badge-cli-negociacion" style="display:none">0</span></button>
-      <button class="nav-item" id="nav-cli-proceso" onclick="goTo('cli-proceso',this)">⚙️ En proceso <span class="nav-badge" id="badge-cli-proceso" style="display:none">0</span></button>
-      <button class="nav-item" onclick="goTo('cli-completados',this)">📦 Completados</button>
-      <div class="nav-section">Mi cuenta</div>
-      <button class="nav-item" onclick="goTo('mi-saldo',this)">💰 Mi saldo</button>
-      <button class="nav-item" onclick="goTo('foro',this)">💬 Foro</button>
-      <button class="nav-item" onclick="goTo('mi-perfil',this)">👤 Mi perfil</button>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">Cham<span>BA</span></div>
+    <nav class="topnav">
+      <button class="nav-item active" onclick="goTo('inicio',this)">Inicio</button>
+      <button class="nav-item" id="nav-trabajos" onclick="goTo('trabajos',this)">Trabajos <span id="badge-trabajos-total" class="nav-badge" style="display:none">0</span></button>
+      <button class="nav-item" id="nav-servicio" onclick="goTo('necesito-servicio',this)">Necesito un servicio <span id="badge-servicio-total" class="nav-badge" style="display:none">0</span></button>
+      <button class="nav-item" onclick="goTo('mi-saldo',this)">Mi saldo</button>
+      <button class="nav-item" onclick="goTo('foro',this)">Foro</button>
     </nav>
-    <div class="sidebar-footer">
-      <button class="logout-btn" onclick="doLogout()">🚪 Cerrar sesión</button>
+    <div class="topbar-right">
+      <div class="nav-dropdown" id="dd-user">
+        <button class="user-chip" onclick="toggleDropdown('dd-user-menu')">
+          <span class="user-avatar" id="user-avatar"></span>
+          <span class="user-name" id="sidebar-user"></span>
+        </button>
+        <div class="nav-dropdown-menu" id="dd-user-menu" style="right:0;left:auto">
+          <button class="nav-item" onclick="goTo('mi-perfil',this)">👤 Mi perfil</button>
+          <button class="nav-item" onclick="doLogout()">🚪 Cerrar sesión</button>
+        </div>
+      </div>
     </div>
-  </aside>
+  </div>
+</div>
+<div class="layout">
   <main class="main">
 
     <!-- INICIO -->
@@ -193,87 +209,67 @@
         </div>
       </div>
       <div id="inicio-aprobado" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">
-          <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('disponibles')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">🔍</div><div style="font-size:22px;font-weight:600" id="stat-disponibles">—</div><div style="font-size:12px;color:var(--text-soft)">Disponibles</div></div></div>
-          <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('mis-ofertas')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">📤</div><div style="font-size:22px;font-weight:600" id="stat-mis-ofertas">—</div><div style="font-size:12px;color:var(--text-soft)">Mis ofertas</div></div></div>
-          <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('en-proceso')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">⚙️</div><div style="font-size:22px;font-weight:600" id="stat-proceso">—</div><div style="font-size:12px;color:var(--text-soft)">En proceso</div></div></div>
-          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">⭐</div><div style="font-size:22px;font-weight:600" id="stat-rep">—</div><div style="font-size:12px;color:var(--text-soft)">Reputación</div></div></div>
-          <div class="card" style="overflow:visible;cursor:pointer" onclick="goTo('cli-nuevo')"><div class="card-body" style="text-align:center"><div style="font-size:28px;margin-bottom:6px">➕</div><div style="font-size:14px;font-weight:600;color:var(--teal)">Pedir un servicio</div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px">
+          <div class="card" style="overflow:visible;cursor:pointer" onclick="irATrabajos('disponibles')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">🔍</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-disponibles">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">Disponibles</div></div></div>
+          <div class="card" style="overflow:visible;cursor:pointer" onclick="irATrabajos('ofertas')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">📤</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-mis-ofertas">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">Mis ofertas</div></div></div>
+          <div class="card" style="overflow:visible;cursor:pointer" onclick="irATrabajos('proceso')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">⚙️</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-proceso">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">En proceso</div></div></div>
+          <div class="card" style="overflow:visible"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">⭐</div><div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:700" id="stat-rep">—</div><div style="font-size:12px;color:var(--text-soft);margin-top:2px">Reputación</div></div></div>
+          <div class="card" style="overflow:visible;cursor:pointer" onclick="irAServicio('publicar')"><div class="card-body" style="text-align:center;padding:24px 16px"><div class="stat-icon">➕</div><div style="font-size:14px;font-weight:600;color:var(--teal-dark)">Pedir un servicio</div></div></div>
         </div>
+        <div class="card"><div class="card-body">
+          <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;margin-bottom:14px">Actividad reciente</div>
+          <div id="actividad-reciente"></div>
+        </div></div>
       </div>
     </div>
 
-    <!-- DISPONIBLES -->
-    <div class="page" id="page-disponibles">
-      <div class="page-title">Trabajos disponibles</div>
-      <div class="page-sub">Solo ves trabajos de tu especialidad: <strong id="mi-especialidad"></strong>. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-disponibles"><div class="empty">Cargando...</div></div>
+    <!-- TRABAJOS (rol: socio que ofrece servicios) -->
+    <div class="page" id="page-trabajos">
+      <div class="page-title">Trabajos</div>
+      <div class="page-sub">Ofertá en trabajos de tu especialidad y seguí los que ganaste. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div class="subtabs">
+        <button class="subtab active" data-group="trab" data-tab="disponibles" onclick="goSubTab('trab','disponibles')">Disponibles <span class="nav-badge" id="badge-disponibles" style="display:none">0</span></button>
+        <button class="subtab" data-group="trab" data-tab="ofertas" onclick="goSubTab('trab','ofertas')">Mis ofertas <span class="nav-badge" id="badge-ofertas" style="display:none">0</span></button>
+        <button class="subtab" data-group="trab" data-tab="proceso" onclick="goSubTab('trab','proceso')">En proceso <span class="nav-badge" id="badge-proceso" style="display:none">0</span></button>
+        <button class="subtab" data-group="trab" data-tab="completados" onclick="goSubTab('trab','completados')">Completados</button>
+      </div>
+      <div class="subpage active" data-group="trab" id="sub-trab-disponibles">
+        <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px">Solo ves trabajos de tu especialidad: <strong id="mi-especialidad"></strong>.</div>
+        <div id="lista-disponibles"><div class="empty">Cargando...</div></div>
+      </div>
+      <div class="subpage" data-group="trab" id="sub-trab-ofertas"><div id="lista-mis-ofertas"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" data-group="trab" id="sub-trab-proceso"><div id="lista-proceso"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" data-group="trab" id="sub-trab-completados"><div id="lista-completados"><div class="empty">Cargando...</div></div></div>
     </div>
 
-    <!-- MIS OFERTAS -->
-    <div class="page" id="page-mis-ofertas">
-      <div class="page-title">Mis ofertas</div>
-      <div class="page-sub">Trabajos donde ya enviaste una oferta. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-mis-ofertas"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- EN PROCESO -->
-    <div class="page" id="page-en-proceso">
-      <div class="page-title">En proceso</div>
-      <div class="page-sub">Trabajos que ganaste y estás realizando. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-proceso"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- COMPLETADOS -->
-    <div class="page" id="page-completados">
-      <div class="page-title">Completados</div>
-      <div class="page-sub">Historial de trabajos finalizados.</div>
-      <div id="lista-completados"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- CLI: NUEVO PEDIDO -->
-    <div class="page" id="page-cli-nuevo">
-      <div class="page-title">Publicar un trabajo</div>
-      <div class="page-sub">Describí lo que necesitás y otros socios te enviarán ofertas de precio.</div>
-      <div class="card"><div class="card-body">
-        <div class="alert alert-success" id="cli-pedido-ok">✅ ¡Trabajo publicado! Los socios ya pueden ver tu solicitud.</div>
-        <div class="alert alert-error" id="cli-pedido-err"></div>
-        <div class="form-group"><label>Tipo de servicio</label>
-          <select id="cli-p-servicio"><option value="">Elegí el servicio</option><option>Plomería</option><option>Electricidad</option><option>Gas</option><option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option></select>
-        </div>
-        <div class="form-group"><label>Descripción del problema</label><textarea id="cli-p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
-        <div id="cli-ia-sugerencia" style="display:none" class="trabajo-ia"></div>
-        <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="consultarIACliente()">🤖 Consultar precio a la IA</button></div>
-        <button class="btn btn-teal" onclick="publicarTrabajoCliente()">Publicar trabajo</button>
-      </div></div>
-    </div>
-
-    <!-- CLI: ESPERANDO OFERTAS -->
-    <div class="page" id="page-cli-esperando">
-      <div class="page-title">Esperando ofertas</div>
-      <div class="page-sub">Trabajos publicados sin ofertas aún. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-cli-esperando"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- CLI: EN NEGOCIACIÓN -->
-    <div class="page" id="page-cli-negociacion">
-      <div class="page-title">En negociación</div>
-      <div class="page-sub">Trabajos con ofertas recibidas. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-cli-negociacion"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- CLI: EN PROCESO -->
-    <div class="page" id="page-cli-proceso">
-      <div class="page-title">En proceso</div>
-      <div class="page-sub">Trabajos pagados en ejecución. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
-      <div id="lista-cli-proceso"><div class="empty">Cargando...</div></div>
-    </div>
-
-    <!-- CLI: COMPLETADOS -->
-    <div class="page" id="page-cli-completados">
-      <div class="page-title">Completados</div>
-      <div class="page-sub">Historial de trabajos que pediste.</div>
-      <div id="lista-cli-completados"><div class="empty">Cargando...</div></div>
+    <!-- NECESITO UN SERVICIO (rol: socio que pide un servicio) -->
+    <div class="page" id="page-necesito-servicio">
+      <div class="page-title">Necesito un servicio</div>
+      <div class="page-sub">Publicá un trabajo y recibí ofertas de otros socios. <button class="refresh-btn" onclick="cargarTodo()">↻ Actualizar</button></div>
+      <div class="subtabs">
+        <button class="subtab active" data-group="serv" data-tab="publicar" onclick="goSubTab('serv','publicar')">➕ Publicar trabajo</button>
+        <button class="subtab" data-group="serv" data-tab="esperando" onclick="goSubTab('serv','esperando')">Esperando ofertas <span class="nav-badge" id="badge-cli-esperando" style="display:none">0</span></button>
+        <button class="subtab" data-group="serv" data-tab="negociacion" onclick="goSubTab('serv','negociacion')">En negociación <span class="nav-badge" id="badge-cli-negociacion" style="display:none">0</span></button>
+        <button class="subtab" data-group="serv" data-tab="proceso" onclick="goSubTab('serv','proceso')">En proceso <span class="nav-badge" id="badge-cli-proceso" style="display:none">0</span></button>
+        <button class="subtab" data-group="serv" data-tab="completados" onclick="goSubTab('serv','completados')">Completados</button>
+      </div>
+      <div class="subpage active" data-group="serv" id="sub-serv-publicar">
+        <div class="card"><div class="card-body">
+          <div class="alert alert-success" id="cli-pedido-ok">✅ ¡Trabajo publicado! Los socios ya pueden ver tu solicitud.</div>
+          <div class="alert alert-error" id="cli-pedido-err"></div>
+          <div class="form-group"><label>Tipo de servicio</label>
+            <select id="cli-p-servicio"><option value="">Elegí el servicio</option><option>Plomería</option><option>Electricidad</option><option>Gas</option><option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option></select>
+          </div>
+          <div class="form-group"><label>Descripción del problema</label><textarea id="cli-p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
+          <div id="cli-ia-sugerencia" style="display:none" class="trabajo-ia"></div>
+          <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="consultarIACliente()">🤖 Consultar precio a la IA</button></div>
+          <button class="btn btn-teal" onclick="publicarTrabajoCliente()">Publicar trabajo</button>
+        </div></div>
+      </div>
+      <div class="subpage" data-group="serv" id="sub-serv-esperando"><div id="lista-cli-esperando"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" data-group="serv" id="sub-serv-negociacion"><div id="lista-cli-negociacion"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" data-group="serv" id="sub-serv-proceso"><div id="lista-cli-proceso"><div class="empty">Cargando...</div></div></div>
+      <div class="subpage" data-group="serv" id="sub-serv-completados"><div id="lista-cli-completados"><div class="empty">Cargando...</div></div></div>
     </div>
 
     <!-- MI SALDO -->
@@ -382,6 +378,7 @@ window.onload = async () => {
     if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); }
   } catch(e) {}
   document.getElementById('sidebar-user').textContent = usuario.nombre;
+  document.getElementById('user-avatar').textContent = iniciales(usuario.nombre);
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
   if (usuario.estado === 'pendiente') {
     document.getElementById('pendiente-aviso').style.display = 'block';
@@ -399,6 +396,7 @@ window.onload = async () => {
 };
 
 function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
+function iniciales(nombre) { return (nombre || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase(); }
 
 window.addEventListener('storage', (e) => {
   if (e.key === 'chamba_user' && e.newValue) {
@@ -411,10 +409,33 @@ function goTo(page, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if (btn) btn.classList.add('active');
-  const badgeMap = { 'disponibles': 'badge-disponibles', 'mis-ofertas': 'badge-ofertas', 'en-proceso': 'badge-proceso', 'cli-esperando': 'badge-cli-esperando', 'cli-negociacion': 'badge-cli-negociacion', 'cli-proceso': 'badge-cli-proceso' };
-  if (badgeMap[page]) document.getElementById(badgeMap[page]).style.display = 'none';
+  document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
   if (page === 'foro') cargarForo();
 }
+
+function goSubTab(group, tab) {
+  document.querySelectorAll(`.subtab[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`.subpage[data-group="${group}"]`).forEach(p => p.classList.remove('active'));
+  document.querySelector(`.subtab[data-group="${group}"][data-tab="${tab}"]`).classList.add('active');
+  document.getElementById(`sub-${group}-${tab}`).classList.add('active');
+  const badgeMap = {
+    trab: { disponibles: 'badge-disponibles', ofertas: 'badge-ofertas', proceso: 'badge-proceso' },
+    serv: { esperando: 'badge-cli-esperando', negociacion: 'badge-cli-negociacion', proceso: 'badge-cli-proceso' }
+  };
+  const id = badgeMap[group] && badgeMap[group][tab];
+  if (id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+}
+
+function irATrabajos(tab) { goTo('trabajos', document.getElementById('nav-trabajos')); goSubTab('trab', tab); }
+function irAServicio(tab) { goTo('necesito-servicio', document.getElementById('nav-servicio')); goSubTab('serv', tab); }
+
+function toggleDropdown(id) {
+  document.querySelectorAll('.nav-dropdown-menu').forEach(m => { if (m.id !== id) m.classList.remove('open'); });
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.nav-dropdown')) document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
+});
 
 async function api(path, method='GET', body=null, reintentos=3) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -470,9 +491,12 @@ async function cargarTodo() {
   document.getElementById('stat-proceso').textContent = n3;
   document.getElementById('stat-rep').textContent = usuario.promedio_estrellas ? usuario.promedio_estrellas + '⭐' : '—';
 
-  setBadge('badge-disponibles', n1, 'page-disponibles');
-  setBadge('badge-ofertas', n2, 'page-mis-ofertas');
-  setBadge('badge-proceso', n3, 'page-en-proceso');
+  setBadge('badge-disponibles', n1, 'sub-trab-disponibles');
+  setBadge('badge-ofertas', n2, 'sub-trab-ofertas');
+  setBadge('badge-proceso', n3, 'sub-trab-proceso');
+  const badgeTrabTotal = document.getElementById('badge-trabajos-total');
+  badgeTrabTotal.textContent = n1;
+  badgeTrabTotal.style.display = n1 > 0 ? 'inline-flex' : 'none';
 
   renderDisponibles();
   renderMisOfertas();
@@ -485,6 +509,7 @@ async function cargarTodo() {
   renderSaldo();
   enProceso.forEach(t => cargarMensajes(t.id));
   renderCliTodo();
+  renderActividadReciente();
 }
 
 function setBadge(id, count, pageId) {
@@ -616,7 +641,7 @@ async function aceptarContraoferta(ofertaId) {
     if (r.error) return showInfo('❌','Error',r.error);
     await cargarTodo();
     console.log('[DEBUG] misTareas despues de recargar:', misTareas);
-    goTo('en-proceso', document.getElementById('nav-proceso'));
+    irATrabajos('proceso');
   });
 }
 
@@ -693,6 +718,33 @@ function renderSaldo() {
 
 function starsHtml(n) { return n ? '⭐'.repeat(Math.min(5, Math.round(n))) + ' ' + n : 'Sin calificaciones'; }
 
+function renderActividadReciente() {
+  const box = document.getElementById('actividad-reciente');
+  if (!box) return;
+  if (!misTareas.length && !misPedidosCliente.length) {
+    box.innerHTML = '<div style="text-align:center;padding:20px 10px"><div style="font-size:14px;color:var(--text-mid)">Todavía no tenés actividad en ChamBA.</div></div>';
+    return;
+  }
+  const eventosTrabajo = misTareas.map(t => {
+    if (t.estado === 'completado') return { icon: '✅', texto: `Completaste el trabajo de <strong>${t.servicio}</strong> — cobraste ${fmt(t.precio_socio)}`, fecha: t.created_at };
+    if (t.estado === 'en_proceso') return { icon: '⚙️', texto: `Estás realizando el trabajo de <strong>${t.servicio}</strong> — cobrarás ${fmt(t.precio_socio)}`, fecha: t.created_at };
+    return { icon: '📤', texto: `Ofertaste en un trabajo de <strong>${t.servicio}</strong>`, fecha: t.created_at };
+  });
+  const eventosServicio = misPedidosCliente.map(p => {
+    const ofertasPedido = (todasOfertasCliente[p.id] || []).filter(o => o.estado !== 'rechazada');
+    if (p.estado === 'cancelado') return { icon: '🗑️', texto: `Cancelaste tu solicitud de <strong>${p.servicio}</strong>`, fecha: p.created_at };
+    if (p.estado === 'completado') return { icon: '✅', texto: `Completaste el trabajo de <strong>${p.servicio}</strong>${p.calificado ? '' : ' — todavía no lo calificaste'}`, fecha: p.created_at };
+    if (p.estado === 'en_proceso') return { icon: '⚙️', texto: `<strong>${p.servicio}</strong> está en proceso — pagaste ${fmt(p.precio_cliente)}`, fecha: p.created_at };
+    if (ofertasPedido.length) return { icon: '💬', texto: `Recibiste ${ofertasPedido.length} oferta${ofertasPedido.length!==1?'s':''} para <strong>${p.servicio}</strong>`, fecha: p.created_at };
+    return { icon: '🔍', texto: `Publicaste un pedido de <strong>${p.servicio}</strong>`, fecha: p.created_at };
+  });
+  const eventos = [...eventosTrabajo, ...eventosServicio].sort((a,b) => new Date(b.fecha) - new Date(a.fecha)).slice(0, 6);
+  box.innerHTML = eventos.map(e => `<div class="actividad-item">
+    <div class="actividad-icon">${e.icon}</div>
+    <div><div class="actividad-texto">${e.texto}</div><div class="actividad-fecha">${fmtDate(e.fecha)}</div></div>
+  </div>`).join('');
+}
+
 // ── NECESITO UN SERVICIO (el socio actuando como cliente) ──
 function renderCliTodo() {
   const esperando = misPedidosCliente.filter(p => p.estado === 'nuevo' && (!todasOfertasCliente[p.id] || !todasOfertasCliente[p.id].filter(o => o.estado !== 'rechazada').length));
@@ -701,9 +753,12 @@ function renderCliTodo() {
   const completados = misPedidosCliente.filter(p => p.estado === 'completado');
   const cancelados = misPedidosCliente.filter(p => p.estado === 'cancelado');
 
-  setBadge('badge-cli-esperando', esperando.length, 'page-cli-esperando');
-  setBadge('badge-cli-negociacion', negociacion.length, 'page-cli-negociacion');
-  setBadge('badge-cli-proceso', proceso.length, 'page-cli-proceso');
+  setBadge('badge-cli-esperando', esperando.length, 'sub-serv-esperando');
+  setBadge('badge-cli-negociacion', negociacion.length, 'sub-serv-negociacion');
+  setBadge('badge-cli-proceso', proceso.length, 'sub-serv-proceso');
+  const badgeServTotal = document.getElementById('badge-servicio-total');
+  badgeServTotal.textContent = negociacion.length;
+  badgeServTotal.style.display = negociacion.length > 0 ? 'inline-flex' : 'none';
 
   document.getElementById('lista-cli-esperando').innerHTML = [...esperando, ...cancelados].map(p => renderCardCliEsperando(p)).join('') || '<div class="empty">No tenés trabajos esperando ofertas.</div>';
   document.getElementById('lista-cli-negociacion').innerHTML = negociacion.map(p => renderCardCliNegociacion(p)).join('') || '<div class="empty">No tenés trabajos en negociación.</div>';
@@ -819,7 +874,7 @@ async function aceptarOfertaCliente(ofertaId, pedidoId, precio) {
       const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
       if (r.error) return showInfo('❌', 'Error', r.error);
       await cargarTodo();
-      goTo('cli-proceso', document.getElementById('nav-cli-proceso'));
+      irAServicio('proceso');
     }, '✅ Confirmar pago');
 }
 
@@ -929,6 +984,7 @@ async function guardarPerfil() {
   usuario = { ...usuario, ...body };
   localStorage.setItem('chamba_user', JSON.stringify(usuario));
   document.getElementById('sidebar-user').textContent = usuario.nombre;
+  document.getElementById('user-avatar').textContent = iniciales(usuario.nombre);
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
   showInfo('✅', 'Guardado', 'Tu perfil fue actualizado.');
 }
