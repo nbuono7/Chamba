@@ -4,49 +4,52 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ChamBA — Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --teal: #1D9E75; --teal-dark: #0F6E56; --teal-light: #E1F5EE; --teal-mid: #5DCAA5;
-      --bg: #f4f5f4; --sidebar: #0f1512; --card: #fff;
-      --text: #111; --text-mid: #555; --text-soft: #999;
-      --border: #e8eae8; --radius: 12px;
-      --red: #e24b4a; --red-light: #fdeaea;
-      --amber: #d97706; --amber-light: #fef3e2;
+      --teal: #E2662D; --teal-dark: #B84F1F; --teal-light: #FBE9DC; --teal-mid: #F0955F;
+      --navy: #16233F; --navy-mid: #223655; --navy-soft: #8DA0C2;
+      --bg: #F7F2E7; --card: #fff;
+      --text: #1E2430; --text-mid: #5B6270; --text-soft: #93989F;
+      --border: #E9E1D0; --radius: 14px;
+      --red: #C1443F; --red-light: #FBEAE9;
+      --amber: #B8790E; --amber-light: #FAF0DD;
       --blue: #2563eb; --blue-light: #eff6ff;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-    #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--sidebar); }
-    .login-box { background: #1a231f; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 40px; width: 100%; max-width: 380px; }
-    .login-logo { font-size: 26px; font-weight: 600; color: #fff; margin-bottom: 8px; }
-    .login-logo span { color: var(--teal); }
-    .login-sub { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 32px; }
-    .login-box label { display: block; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
-    .login-box input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 11px 14px; font-size: 14px; color: #fff; font-family: inherit; margin-bottom: 16px; }
-    .login-box input:focus { outline: none; border-color: var(--teal); }
-    .login-btn { width: 100%; background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; }
-    .login-btn:hover { background: var(--teal-dark); }
-    .login-error { font-size: 13px; color: #f09595; margin-top: 12px; text-align: center; display: none; }
     #app { display: block; }
-    .layout { display: flex; min-height: 100vh; }
-    .sidebar { width: 220px; flex-shrink: 0; background: var(--sidebar); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; }
-    .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .sidebar-logo .logo { font-size: 20px; font-weight: 600; color: #fff; }
-    .sidebar-logo .logo span { color: var(--teal); }
-    .sidebar-logo .role { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
-    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
-    .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.2); padding: 12px 12px 6px; }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.5); border: none; background: none; font-family: inherit; width: 100%; text-align: left; transition: all 0.15s; }
-    .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
-    .nav-item.active { background: rgba(29,158,117,0.15); color: var(--teal-mid); }
-    .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
-    .sidebar-footer { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.06); }
-    .logout-btn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: rgba(255,255,255,0.3); border: none; background: none; font-family: inherit; width: 100%; }
-    .main { margin-left: 220px; flex: 1; padding: 32px; }
+    .topbar { position: sticky; top: 0; z-index: 20; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .topbar-inner { max-width: 1180px; margin: 0 auto; padding: 0 28px; height: 68px; display: flex; align-items: center; gap: 4px; }
+    .logo { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-right: 24px; letter-spacing: -0.01em; white-space: nowrap; }
+    .logo span { color: var(--teal); }
+    .topnav { display: flex; align-items: center; gap: 2px; height: 100%; }
+    .nav-item { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 14px; height: 100%; border: none; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.55); cursor: pointer; white-space: nowrap; }
+    .nav-item:hover { color: #fff; }
+    .nav-item.active { color: #fff; }
+    .nav-item.active::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; background: var(--teal); border-radius: 3px 3px 0 0; }
+    .nav-badge { background: var(--teal); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+    .nav-dropdown { position: relative; height: 100%; }
+    .nav-dropdown-menu { position: absolute; top: calc(100% + 8px); left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 28px rgba(22,35,63,0.18); padding: 6px; min-width: 200px; display: none; flex-direction: column; z-index: 30; }
+    .nav-dropdown-menu.open { display: flex; }
+    .nav-dropdown-menu .nav-item { height: auto; padding: 10px 12px; border-radius: 7px; justify-content: space-between; color: var(--text-mid); }
+    .nav-dropdown-menu .nav-item:hover { background: var(--bg); color: var(--text); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .user-chip { display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); background: none; font-family: inherit; cursor: pointer; }
+    .user-chip:hover { border-color: var(--teal); }
+    .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--teal); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 500; color: #fff; }
+    .main { max-width: 1180px; margin: 0 auto; padding: 32px 28px 60px; }
     .page { display: none; }
     .page.active { display: block; }
-    .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .subtabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; overflow-x: auto; }
+    .subtab { position: relative; padding: 10px 16px; border: none; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--text-mid); cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .subtab:hover { color: var(--text); }
+    .subtab.active { color: var(--teal-dark); }
+    .subtab.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--teal); }
+    .subpage { display: none; }
+    .subpage.active { display: block; }
+    .page-title { font-family: 'Sora', sans-serif; font-size: 25px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
     .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
     .metric { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; }
@@ -95,7 +98,7 @@
     .filter-tab { padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--text-mid); font-family: inherit; transition: all 0.15s; }
     .filter-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
     .empty { padding: 40px; text-align: center; color: var(--text-soft); font-size: 14px; }
-    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 200; background: var(--sidebar); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 200; background: var(--navy); color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
     .toast.show { transform: translateY(0); opacity: 1; }
 
     /* FORO ADMIN CON RESPUESTAS */
@@ -108,34 +111,36 @@
     .tipo-cliente { background: #eff6ff; color: #2563eb; }
     .tipo-socio { background: var(--teal-light); color: var(--teal-dark); }
     .tipo-admin { background: #f1f1f1; color: #666; }
+    @media(max-width:768px) { .topbar-inner { padding: 0 14px; } .logo { margin-right: 10px; } .nav-item { padding: 0 9px; font-size: 13px; } .user-name { display: none; } .main { padding: 20px 14px 40px; } }
   </style>
 </head>
 <body>
 
 <div id="app">
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <div class="logo">Cham<span>BA</span></div>
-        <div class="role" id="sidebar-user">Panel Admin</div>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">Cham<span>BA</span></div>
+    <nav class="topnav">
+      <button class="nav-item active" onclick="goTo('dashboard',this)">Dashboard</button>
+      <button class="nav-item" onclick="goTo('pedidos',this)">Pedidos <span class="nav-badge" id="badge-pedidos" style="display:none">0</span></button>
+      <button class="nav-item" onclick="goTo('pagos',this)">Pagos</button>
+      <button class="nav-item" id="nav-usuarios" onclick="goTo('usuarios',this)">Usuarios <span class="nav-badge" id="badge-usuarios-total" style="display:none">0</span></button>
+      <button class="nav-item" onclick="goTo('foro',this)">Foro</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="nav-dropdown" id="dd-user">
+        <button class="user-chip" onclick="toggleDropdown('dd-user-menu')">
+          <span class="user-avatar" id="user-avatar"></span>
+          <span class="user-name" id="sidebar-user">Panel Admin</span>
+        </button>
+        <div class="nav-dropdown-menu" id="dd-user-menu" style="right:0;left:auto">
+          <button class="nav-item" onclick="doLogout()">🚪 Cerrar sesión</button>
+        </div>
       </div>
-      <nav class="sidebar-nav">
-        <div class="nav-section">General</div>
-        <button class="nav-item active" onclick="goTo('dashboard')"><span>📊</span> Dashboard</button>
-        <button class="nav-item" onclick="goTo('pedidos')"><span>📋</span> Pedidos <span class="nav-badge" id="badge-pedidos" style="display:none">0</span></button>
-        <button class="nav-item" onclick="goTo('pagos')"><span>💰</span> Pagos</button>
-        <div class="nav-section">Usuarios</div>
-        <button class="nav-item" onclick="goTo('clientes-reg')"><span>🏠</span> Clientes <span class="nav-badge" id="badge-clientes" style="display:none">0</span></button>
-        <button class="nav-item" onclick="goTo('socios-reg')"><span>🔧</span> Socios <span class="nav-badge" id="badge-socios" style="display:none">0</span></button>
-        <button class="nav-item" onclick="goTo('solicitudes')"><span>🎓</span> Solicitudes <span class="nav-badge" id="badge-solicitudes" style="display:none">0</span></button>
-        <div class="nav-section">Comunidad</div>
-        <button class="nav-item" onclick="goTo('foro')"><span>💬</span> Foro</button>
-      </nav>
-      <div class="sidebar-footer">
-        <button class="logout-btn" onclick="doLogout()"><span>🚪</span> Cerrar sesión</button>
-      </div>
-    </aside>
-
+    </div>
+  </div>
+</div>
+<div class="layout">
     <main class="main">
 
       <!-- DASHBOARD -->
@@ -153,7 +158,7 @@
           <table><thead><tr><th>Servicio</th><th>Descripción</th><th>Estado</th><th>Fecha</th><th></th></tr></thead><tbody id="dash-pedidos"></tbody></table>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Socios pendientes de aprobación</div><button class="btn btn-ghost btn-sm" onclick="goTo('socios-reg')">Ver todos →</button></div>
+          <div class="card-header"><div class="card-title">Socios pendientes de aprobación</div><button class="btn btn-ghost btn-sm" onclick="irAUsuarios('socios')">Ver todos →</button></div>
           <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>Registrado</th><th></th></tr></thead><tbody id="dash-socios-pending"></tbody></table>
         </div>
       </div>
@@ -177,48 +182,50 @@
         </div>
       </div>
 
-      <!-- CLIENTES -->
-      <div class="page" id="page-clientes-reg">
-        <div class="page-title">Clientes</div>
-        <div class="page-sub">Personas registradas como clientes en ChamBA.</div>
-        <div class="card">
-          <div class="card-header"><div class="card-title" id="clientes-reg-count">Clientes</div><input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('cliente', this.value)"/></div>
-          <table><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Registrado</th><th></th></tr></thead><tbody id="clientes-reg-tbody"></tbody></table>
+      <!-- USUARIOS (clientes, socios, solicitudes de matrícula) -->
+      <div class="page" id="page-usuarios">
+        <div class="page-title">Usuarios</div>
+        <div class="page-sub">Clientes, socios y solicitudes de matrícula en ChamBA.</div>
+        <div class="subtabs">
+          <button class="subtab active" data-group="users" data-tab="clientes" onclick="goSubTab('users','clientes')">Clientes <span class="nav-badge" id="badge-clientes" style="display:none">0</span></button>
+          <button class="subtab" data-group="users" data-tab="socios" onclick="goSubTab('users','socios')">Socios <span class="nav-badge" id="badge-socios" style="display:none">0</span></button>
+          <button class="subtab" data-group="users" data-tab="solicitudes" onclick="goSubTab('users','solicitudes')">Solicitudes <span class="nav-badge" id="badge-solicitudes" style="display:none">0</span></button>
         </div>
-      </div>
 
-      <!-- SOCIOS -->
-      <div class="page" id="page-socios-reg">
-        <div class="page-title">Socios</div>
-        <div class="page-sub">Profesionales que solicitaron unirse a ChamBA.</div>
-        <div class="card">
-          <div class="card-header">
-            <div class="filter-tabs">
-              <button class="filter-tab active" onclick="filtrarSocios('todos',this)">Todos</button>
-              <button class="filter-tab" onclick="filtrarSocios('pendiente',this)">Pendientes</button>
-              <button class="filter-tab" onclick="filtrarSocios('aprobado',this)">Aprobados</button>
-              <button class="filter-tab" onclick="filtrarSocios('rechazado',this)">Rechazados</button>
-            </div>
-            <input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('socio', this.value)"/>
+        <div class="subpage active" data-group="users" id="sub-users-clientes">
+          <div class="card">
+            <div class="card-header"><div class="card-title" id="clientes-reg-count">Clientes</div><input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('cliente', this.value)"/></div>
+            <table><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Registrado</th><th></th></tr></thead><tbody id="clientes-reg-tbody"></tbody></table>
           </div>
-          <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>DNI</th><th>Reputación</th><th>Estado</th><th></th></tr></thead><tbody id="socios-reg-tbody"></tbody></table>
         </div>
-      </div>
 
-      <!-- SOLICITUDES DE MATRÍCULA -->
-      <div class="page" id="page-solicitudes">
-        <div class="page-title">Solicitudes de matrícula</div>
-        <div class="page-sub">Nuevas matrículas o tecnicaturas que los socios quieren sumar a su perfil.</div>
-        <div class="card">
-          <div class="card-header">
-            <div class="filter-tabs">
-              <button class="filter-tab active" onclick="filtrarSolicitudes('todos',this)">Todas</button>
-              <button class="filter-tab" onclick="filtrarSolicitudes('pendiente',this)">Pendientes</button>
-              <button class="filter-tab" onclick="filtrarSolicitudes('aprobada',this)">Aprobadas</button>
-              <button class="filter-tab" onclick="filtrarSolicitudes('rechazada',this)">Rechazadas</button>
+        <div class="subpage" data-group="users" id="sub-users-socios">
+          <div class="card">
+            <div class="card-header">
+              <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filtrarSocios('todos',this)">Todos</button>
+                <button class="filter-tab" onclick="filtrarSocios('pendiente',this)">Pendientes</button>
+                <button class="filter-tab" onclick="filtrarSocios('aprobado',this)">Aprobados</button>
+                <button class="filter-tab" onclick="filtrarSocios('rechazado',this)">Rechazados</button>
+              </div>
+              <input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('socio', this.value)"/>
             </div>
+            <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>DNI</th><th>Reputación</th><th>Estado</th><th></th></tr></thead><tbody id="socios-reg-tbody"></tbody></table>
           </div>
-          <table><thead><tr><th>Socio</th><th>Matrícula solicitada</th><th>Especialidad</th><th>Fecha</th><th>Estado</th><th></th></tr></thead><tbody id="solicitudes-tbody"></tbody></table>
+        </div>
+
+        <div class="subpage" data-group="users" id="sub-users-solicitudes">
+          <div class="card">
+            <div class="card-header">
+              <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filtrarSolicitudes('todos',this)">Todas</button>
+                <button class="filter-tab" onclick="filtrarSolicitudes('pendiente',this)">Pendientes</button>
+                <button class="filter-tab" onclick="filtrarSolicitudes('aprobada',this)">Aprobadas</button>
+                <button class="filter-tab" onclick="filtrarSolicitudes('rechazada',this)">Rechazadas</button>
+              </div>
+            </div>
+            <table><thead><tr><th>Socio</th><th>Matrícula solicitada</th><th>Especialidad</th><th>Fecha</th><th>Estado</th><th></th></tr></thead><tbody id="solicitudes-tbody"></tbody></table>
+          </div>
         </div>
       </div>
 
@@ -284,10 +291,12 @@ window.onload = async () => {
   usuario = JSON.parse(u);
   if (usuario.tipo !== 'admin') return window.location.href = '/login';
   document.getElementById('sidebar-user').textContent = usuario.nombre;
+  document.getElementById('user-avatar').textContent = iniciales(usuario.nombre);
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-AR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   cargarTodo();
 };
 function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
+function iniciales(nombre) { return (nombre || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase(); }
 
 async function api(path, method='GET', body=null) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -304,13 +313,31 @@ async function cargarTodo() {
   renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); renderSolicitudes(); updateBadges();
 }
 
-function goTo(page) {
+function goTo(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => { if (n.textContent.toLowerCase().includes(page==='dashboard'?'dashboard':page.slice(0,5))) n.classList.add('active'); });
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
   if (page === 'foro') cargarForo();
 }
+
+function goSubTab(group, tab) {
+  document.querySelectorAll(`.subtab[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`.subpage[data-group="${group}"]`).forEach(p => p.classList.remove('active'));
+  document.querySelector(`.subtab[data-group="${group}"][data-tab="${tab}"]`).classList.add('active');
+  document.getElementById(`sub-${group}-${tab}`).classList.add('active');
+}
+
+function irAUsuarios(tab) { goTo('usuarios', document.getElementById('nav-usuarios')); goSubTab('users', tab); }
+
+function toggleDropdown(id) {
+  document.querySelectorAll('.nav-dropdown-menu').forEach(m => { if (m.id !== id) m.classList.remove('open'); });
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.nav-dropdown')) document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
+});
 
 function updateBadges() {
   const np = pedidos.filter(p => p.estado === 'nuevo').length;
@@ -318,6 +345,7 @@ function updateBadges() {
   const ns = usuarios.filter(u => u.tipo === 'socio' && u.estado === 'pendiente').length;
   const nm = solicitudesMatricula.filter(s => s.estado === 'pendiente').length;
   set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns); set('badge-solicitudes', nm);
+  set('badge-usuarios-total', ns + nm);
 }
 function set(id, val) { const el=document.getElementById(id); el.textContent=val; el.style.display=val?'inline':'none'; }
 
@@ -358,7 +386,7 @@ function renderSociosReg(lista) {
   const data = (lista || socios).filter(s => filtroSocios === 'todos' || s.estado === filtroSocios);
   document.getElementById('socios-reg-tbody').innerHTML = data.length ? data.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${s.dni||'—'}</td><td>${s.promedio_estrellas ? s.promedio_estrellas+' ⭐' : '—'}</td><td>${badge(s.estado)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${s.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay socios</td></tr>';
 }
-function filtrarSocios(f, btn) { filtroSocios=f; document.querySelectorAll('#page-socios-reg .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSociosReg(); }
+function filtrarSocios(f, btn) { filtroSocios=f; document.querySelectorAll('#sub-users-socios .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSociosReg(); }
 
 function renderSolicitudes(lista) {
   const data = (lista || solicitudesMatricula).filter(s => filtroSolicitudes === 'todos' || s.estado === filtroSolicitudes);
@@ -374,7 +402,7 @@ function renderSolicitudes(lista) {
     </tr>`;
   }).join('') : '<tr><td colspan="6" class="empty">No hay solicitudes</td></tr>';
 }
-function filtrarSolicitudes(f, btn) { filtroSolicitudes=f; document.querySelectorAll('#page-solicitudes .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSolicitudes(); }
+function filtrarSolicitudes(f, btn) { filtroSolicitudes=f; document.querySelectorAll('#sub-users-solicitudes .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSolicitudes(); }
 async function resolverSolicitud(id, estado) {
   const r = await api(`/api/solicitudes-matricula/${id}`, 'PATCH', { estado });
   if (r && r.error) return toast(r.error);
