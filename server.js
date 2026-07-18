@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 require('dotenv').config();
 const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido } = require('./emailService');
@@ -16,6 +17,26 @@ process.on('unhandledRejection', (err) => {
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 const COMISION = 0.20;
+
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) console.error('⚠️  Falta la variable de entorno JWT_SECRET — configurala en Railway.');
+
+// Exige que la persona esté logueada. Guarda sus datos (id, tipo, email) en req.usuario.
+function auth(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header) return res.status(401).json({ error: 'Necesitás iniciar sesión.' });
+  try {
+    req.usuario = jwt.verify(header.replace('Bearer ', ''), JWT_SECRET);
+    next();
+  } catch (e) {
+    return res.status(401).json({ error: 'Tu sesión expiró. Iniciá sesión de nuevo.' });
+  }
+}
+// Exige que además sea admin.
+function soloAdmin(req, res, next) {
+  if (req.usuario.tipo !== 'admin') return res.status(403).json({ error: 'No tenés permiso para hacer esto.' });
+  next();
+}
 
 const sbH = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` };
 const sb = async (path, method='GET', body=null) => {
@@ -89,11 +110,15 @@ app.post('/api/usuarios/login', async (req, res) => {
   if (user.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
   if (user.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
   const { password_hash, ...safeUser } = user;
-  res.json({ ok: true, usuario: safeUser });
+  const token = jwt.sign({ id: user.id, tipo: user.tipo, email: user.email, nombre: user.nombre }, JWT_SECRET, { expiresIn: '30d' });
+  res.json({ ok: true, usuario: safeUser, token });
 });
 
-app.patch('/api/usuarios/:id', async (req, res) => {
+app.patch('/api/usuarios/:id', auth, async (req, res) => {
   try {
+    if (req.usuario.id !== req.params.id && req.usuario.tipo !== 'admin') {
+      return res.status(403).json({ error: 'No podés editar el perfil de otra persona.' });
+    }
     const prev = await sb(`usuarios?id=eq.${req.params.id}&select=*`);
     const data = await sb(`usuarios?id=eq.${req.params.id}`, 'PATCH', req.body);
     if (req.body.estado && prev.length) {
@@ -108,7 +133,7 @@ app.patch('/api/usuarios/:id', async (req, res) => {
   }
 });
 
-app.delete('/api/usuarios/:id', async (req, res) => {
+app.delete('/api/usuarios/:id', auth, soloAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/usuarios?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
   res.json({ ok: true });
 });
@@ -125,13 +150,12 @@ app.get('/api/pedidos', async (req, res) => {
   }
 });
 
-app.post('/api/pedidos', async (req, res) => {
+app.post('/api/pedidos', auth, async (req, res) => {
   try {
-    const data = await sb('pedidos', 'POST', req.body);
-    if (req.body.usuario_id) {
-      const users = await sb(`usuarios?id=eq.${req.body.usuario_id}&select=nombre,email`);
-      if (users.length) emailPedidoRecibido(users[0].nombre, users[0].email, req.body.servicio);
-    }
+    const body = { ...req.body, usuario_id: req.usuario.id }; // nunca confiar en el usuario_id que manda el cliente
+    const data = await sb('pedidos', 'POST', body);
+    const users = await sb(`usuarios?id=eq.${req.usuario.id}&select=nombre,email`);
+    if (users.length) emailPedidoRecibido(users[0].nombre, users[0].email, req.body.servicio);
     res.json(data);
   } catch (e) {
     console.error('❌ Error en POST /pedidos:', e.message, e.supabase || '');
@@ -139,19 +163,32 @@ app.post('/api/pedidos', async (req, res) => {
   }
 });
 
-app.patch('/api/pedidos/:id', async (req, res) => {
-  try { res.json(await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', req.body)); }
+app.patch('/api/pedidos/:id', auth, async (req, res) => {
+  try {
+    const prev = await sb(`pedidos?id=eq.${req.params.id}&select=usuario_id,profesional_id`);
+    if (!prev.length) return res.status(404).json({ error: 'Pedido no encontrado.' });
+    const esParte = req.usuario.id === prev[0].usuario_id || req.usuario.id === prev[0].profesional_id;
+    if (!esParte && req.usuario.tipo !== 'admin') return res.status(403).json({ error: 'No podés modificar este pedido.' });
+    res.json(await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', req.body));
+  }
   catch (e) { console.error('❌ Error en PATCH /pedidos:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo actualizar el pedido.', detalle: e.message }); }
 });
 
 // Eliminar pedido — usado por cliente (cancelados) y por ADMIN (sin penalizar a nadie)
-app.delete('/api/pedidos/:id', async (req, res) => {
-  try { await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH }); res.json({ ok: true }); }
+app.delete('/api/pedidos/:id', auth, async (req, res) => {
+  try {
+    const prev = await sb(`pedidos?id=eq.${req.params.id}&select=usuario_id`);
+    if (prev.length && req.usuario.id !== prev[0].usuario_id && req.usuario.tipo !== 'admin') {
+      return res.status(403).json({ error: 'No podés eliminar este pedido.' });
+    }
+    await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
+    res.json({ ok: true });
+  }
   catch (e) { console.error('❌ Error en DELETE /pedidos:', e.message); res.status(500).json({ error: 'No se pudo eliminar.' }); }
 });
 
 // Endpoint específico para que el ADMIN elimine un trabajo sin afectar reputación de nadie
-app.post('/api/pedidos/:id/eliminar-admin', async (req, res) => {
+app.post('/api/pedidos/:id/eliminar-admin', auth, soloAdmin, async (req, res) => {
   // Marca ofertas relacionadas como rechazadas SIN penalizar (no pasa por /rechazar)
   await sb(`ofertas?pedido_id=eq.${req.params.id}`, 'PATCH', { estado: 'rechazada' });
   await fetch(`${SUPABASE_URL}/rest/v1/pedidos?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
@@ -182,8 +219,9 @@ app.get('/api/ofertas', async (req, res) => {
   }
 });
 
-app.post('/api/ofertas', async (req, res) => {
-  const { pedido_id, socio_id, socio_nombre, especialidad, precio_ofertado } = req.body;
+app.post('/api/ofertas', auth, async (req, res) => {
+  const { pedido_id, socio_nombre, especialidad, precio_ofertado } = req.body;
+  const socio_id = req.usuario.id; // nunca confiar en el socio_id que manda el cliente
   const precio_neto = Math.round(precio_ofertado * (1 - COMISION));
   const comision = Math.round(precio_ofertado * COMISION);
   const prev = await sb(`ofertas?pedido_id=eq.${pedido_id}&socio_id=eq.${socio_id}&select=id`);
@@ -193,19 +231,38 @@ app.post('/api/ofertas', async (req, res) => {
   res.json(await sb('ofertas', 'POST', { pedido_id, socio_id, socio_nombre, especialidad, precio_ofertado, precio_neto, comision, ultima_oferta_de: 'socio' }));
 });
 
-app.post('/api/ofertas/:id/contraoferta', async (req, res) => {
-  const { nuevo_precio, rol } = req.body;
-  if (!nuevo_precio || nuevo_precio <= 0) return res.status(400).json({ error: 'Precio inválido.' });
-  const precio_neto = Math.round(nuevo_precio * 0.8);
-  const comision = Math.round(nuevo_precio * 0.2);
-  res.json(await sb(`ofertas?id=eq.${req.params.id}`, 'PATCH', { precio_ofertado: nuevo_precio, precio_neto, comision, estado: 'negociando', ultima_oferta_de: rol }));
+app.post('/api/ofertas/:id/contraoferta', auth, async (req, res) => {
+  try {
+    const { nuevo_precio } = req.body;
+    if (!nuevo_precio || nuevo_precio <= 0) return res.status(400).json({ error: 'Precio inválido.' });
+    const ofertas = await sb(`ofertas?id=eq.${req.params.id}&select=*`);
+    if (!ofertas.length) return res.status(404).json({ error: 'Oferta no encontrada' });
+    const o = ofertas[0];
+    let rol;
+    if (req.usuario.id === o.socio_id) rol = 'socio';
+    else {
+      const pedidos = await sb(`pedidos?id=eq.${o.pedido_id}&select=usuario_id`);
+      if (pedidos.length && req.usuario.id === pedidos[0].usuario_id) rol = 'cliente';
+      else return res.status(403).json({ error: 'No podés modificar esta oferta.' });
+    }
+    const precio_neto = Math.round(nuevo_precio * 0.8);
+    const comision = Math.round(nuevo_precio * 0.2);
+    res.json(await sb(`ofertas?id=eq.${req.params.id}`, 'PATCH', { precio_ofertado: nuevo_precio, precio_neto, comision, estado: 'negociando', ultima_oferta_de: rol }));
+  } catch (e) {
+    console.error('❌ Error en /contraoferta:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar la contraoferta.' });
+  }
 });
 
-app.post('/api/ofertas/:id/aceptar', async (req, res) => {
+app.post('/api/ofertas/:id/aceptar', auth, async (req, res) => {
   try {
     const oferta = await sb(`ofertas?id=eq.${req.params.id}&select=*`);
     if (!oferta.length) return res.status(404).json({ error: 'Oferta no encontrada' });
     const o = oferta[0];
+    const pedidoPrev = await sb(`pedidos?id=eq.${o.pedido_id}&select=usuario_id`);
+    if (!pedidoPrev.length || req.usuario.id !== pedidoPrev[0].usuario_id) {
+      return res.status(403).json({ error: 'Solo quien publicó el trabajo puede aceptar una oferta.' });
+    }
     const codigo = Math.floor(1000 + Math.random() * 9000); // número, no texto (la columna es numérica)
     await sb(`pedidos?id=eq.${o.pedido_id}`, 'PATCH', {
       profesional_id: o.socio_id, estado: 'en_proceso', estado_pago: 'pagado',
@@ -226,10 +283,11 @@ app.post('/api/ofertas/:id/aceptar', async (req, res) => {
 });
 
 // Rechazar trabajo (SOLO el socio puede hacer esto) → penaliza reputación
-app.post('/api/ofertas/:id/rechazar', async (req, res) => {
+app.post('/api/ofertas/:id/rechazar', auth, async (req, res) => {
   const oferta = await sb(`ofertas?id=eq.${req.params.id}&select=*`);
   if (!oferta.length) return res.status(404).json({ error: 'Oferta no encontrada' });
   const o = oferta[0];
+  if (req.usuario.id !== o.socio_id) return res.status(403).json({ error: 'No podés rechazar esta oferta.' });
   await sb(`ofertas?id=eq.${o.id}`, 'PATCH', { estado: 'rechazada' });
   const socio = await sb(`usuarios?id=eq.${o.socio_id}&select=promedio_estrellas`);
   if (socio.length) {
@@ -239,7 +297,9 @@ app.post('/api/ofertas/:id/rechazar', async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/pedidos/:id/buscar-otro-socio', async (req, res) => {
+app.post('/api/pedidos/:id/buscar-otro-socio', auth, async (req, res) => {
+  const prev = await sb(`pedidos?id=eq.${req.params.id}&select=usuario_id`);
+  if (!prev.length || req.usuario.id !== prev[0].usuario_id) return res.status(403).json({ error: 'No podés hacer esto en este pedido.' });
   await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', {
     profesional_id: null, estado: 'nuevo', estado_pago: 'sin_pagar',
     precio_cliente: 0, precio_socio: 0, comision: 0,
@@ -249,12 +309,13 @@ app.post('/api/pedidos/:id/buscar-otro-socio', async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/pedidos/:id/verificar-codigo', async (req, res) => {
+app.post('/api/pedidos/:id/verificar-codigo', auth, async (req, res) => {
   try {
     const { codigo } = req.body;
     const pedidos = await sb(`pedidos?id=eq.${req.params.id}&select=*`);
     if (!pedidos.length) return res.status(404).json({ error: 'Pedido no encontrado' });
     const p = pedidos[0];
+    if (req.usuario.id !== p.profesional_id) return res.status(403).json({ error: 'Solo el socio asignado puede ingresar el código.' });
     if (p.codigo_usado) return res.status(400).json({ error: 'Este código ya fue usado.' });
     if (p.intentos_codigo >= 4) return res.status(400).json({ error: 'Límite de 4 intentos alcanzado. Contactá a ChamBA.' });
     if (String(p.codigo_verificacion) !== String(codigo)) {
@@ -282,11 +343,15 @@ app.get('/api/mensajes/:pedido_id', async (req, res) => {
   try { res.json(await sb(`mensajes?pedido_id=eq.${req.params.pedido_id}&select=*&order=created_at.asc`)); }
   catch (e) { console.error('❌ Error en GET /mensajes:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudieron cargar los mensajes.' }); }
 });
-app.post('/api/mensajes', async (req, res) => {
+app.post('/api/mensajes', auth, async (req, res) => {
   try {
-    const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado`);
+    const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado,usuario_id,profesional_id`);
     if (!pedido.length || !pedido[0].chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
-    res.json(await sb('mensajes', 'POST', req.body));
+    if (req.usuario.id !== pedido[0].usuario_id && req.usuario.id !== pedido[0].profesional_id) {
+      return res.status(403).json({ error: 'No sos parte de esta conversación.' });
+    }
+    const rol = req.usuario.id === pedido[0].profesional_id ? 'socio' : 'cliente';
+    res.json(await sb('mensajes', 'POST', { ...req.body, autor: req.usuario.nombre || req.body.autor, rol }));
   } catch (e) {
     console.error('❌ Error en POST /mensajes:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo enviar el mensaje.', detalle: e.message });
@@ -303,17 +368,17 @@ app.get('/api/solicitudes-matricula', async (req, res) => {
     res.status(500).json({ error: 'No se pudieron cargar las solicitudes.' });
   }
 });
-app.post('/api/solicitudes-matricula', async (req, res) => {
+app.post('/api/solicitudes-matricula', auth, async (req, res) => {
   try {
-    const { socio_id, matricula_nueva, especialidad } = req.body;
-    if (!socio_id || !matricula_nueva) return res.status(400).json({ error: 'Faltan datos.' });
-    res.json(await sb('solicitudes_matricula', 'POST', { socio_id, matricula_nueva, especialidad, estado: 'pendiente' }));
+    const { matricula_nueva, especialidad } = req.body;
+    if (!matricula_nueva) return res.status(400).json({ error: 'Faltan datos.' });
+    res.json(await sb('solicitudes_matricula', 'POST', { socio_id: req.usuario.id, matricula_nueva, especialidad, estado: 'pendiente' }));
   } catch (e) {
     console.error('❌ Error en POST /solicitudes-matricula:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo enviar la solicitud.', detalle: e.message });
   }
 });
-app.patch('/api/solicitudes-matricula/:id', async (req, res) => {
+app.patch('/api/solicitudes-matricula/:id', auth, soloAdmin, async (req, res) => {
   try {
     const { estado } = req.body; // 'aprobada' | 'rechazada'
     const sol = await sb(`solicitudes_matricula?id=eq.${req.params.id}&select=*`);
@@ -337,8 +402,10 @@ app.patch('/api/solicitudes-matricula/:id', async (req, res) => {
     res.status(500).json({ error: 'No se pudo procesar la solicitud.', detalle: e.message });
   }
 });
-app.patch('/api/solicitudes-matricula/:id/visto', async (req, res) => {
+app.patch('/api/solicitudes-matricula/:id/visto', auth, async (req, res) => {
   try {
+    const sol = await sb(`solicitudes_matricula?id=eq.${req.params.id}&select=socio_id`);
+    if (!sol.length || req.usuario.id !== sol[0].socio_id) return res.status(403).json({ error: 'No podés modificar esta solicitud.' });
     await sb(`solicitudes_matricula?id=eq.${req.params.id}`, 'PATCH', { visto: true });
     res.json({ ok: true });
   } catch (e) {
@@ -348,10 +415,14 @@ app.patch('/api/solicitudes-matricula/:id/visto', async (req, res) => {
 });
 
 // ── CALIFICACIONES ──
-app.post('/api/calificaciones', async (req, res) => {
+app.post('/api/calificaciones', auth, async (req, res) => {
   try {
-    const { pedido_id, socio_id, cliente_id, estrellas, comentario } = req.body;
-    const data = await sb('calificaciones', 'POST', { pedido_id, socio_id, cliente_id, estrellas, comentario });
+    const { pedido_id, socio_id, estrellas, comentario } = req.body;
+    const pedidoPrev = await sb(`pedidos?id=eq.${pedido_id}&select=usuario_id`);
+    if (!pedidoPrev.length || req.usuario.id !== pedidoPrev[0].usuario_id) {
+      return res.status(403).json({ error: 'Solo quien pidió el trabajo puede calificarlo.' });
+    }
+    const data = await sb('calificaciones', 'POST', { pedido_id, socio_id, cliente_id: req.usuario.id, estrellas, comentario });
     await sb(`pedidos?id=eq.${pedido_id}`, 'PATCH', { calificado: true });
     const cals = await sb(`calificaciones?socio_id=eq.${socio_id}&select=estrellas`);
     if (Array.isArray(cals) && cals.length) {
@@ -377,11 +448,11 @@ app.get('/api/foro', async (req, res) => {
   try { res.json(await sb('foro?select=*&order=created_at.asc')); }
   catch (e) { console.error('❌ Error en GET /foro:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo cargar el foro.' }); }
 });
-app.post('/api/foro', async (req, res) => {
-  try { res.json(await sb('foro', 'POST', req.body)); }
+app.post('/api/foro', auth, async (req, res) => {
+  try { res.json(await sb('foro', 'POST', { ...req.body, autor_id: req.usuario.id, autor_nombre: req.usuario.nombre, autor_tipo: req.usuario.tipo })); }
   catch (e) { console.error('❌ Error en POST /foro:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo publicar.', detalle: e.message }); }
 });
-app.delete('/api/foro/:id', async (req, res) => {
+app.delete('/api/foro/:id', auth, soloAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/foro?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
   res.json({ ok: true });
 });
