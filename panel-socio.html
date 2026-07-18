@@ -395,7 +395,7 @@ window.onload = async () => {
   cargarForo();
 };
 
-function doLogout() { localStorage.removeItem('chamba_user'); window.location.href = '/'; }
+function doLogout() { localStorage.removeItem('chamba_user'); localStorage.removeItem('chamba_token'); window.location.href = '/'; }
 function iniciales(nombre) { return (nombre || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase(); }
 
 window.addEventListener('storage', (e) => {
@@ -438,11 +438,15 @@ document.addEventListener('click', (e) => {
 });
 
 async function api(path, method='GET', body=null, reintentos=3) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  const token = localStorage.getItem('chamba_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
   for (let i = 0; i < reintentos; i++) {
     try {
       const r = await fetch(BACKEND + path, opts);
+      if (r.status === 401) { localStorage.removeItem('chamba_user'); localStorage.removeItem('chamba_token'); window.location.href = '/login'; return {}; }
       return r.json();
     } catch(e) {
       console.log('[REINTENTO ' + (i+1) + '] ' + path, e.message);
