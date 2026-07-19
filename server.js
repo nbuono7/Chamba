@@ -122,19 +122,24 @@ app.post('/api/usuarios/registro', async (req, res) => {
 
   // Crear las ubicaciones iniciales (no bloquea el registro si el geocodificador falla)
   try {
+    let coordsResidencia = null;
     if (direccion_residencia) {
-      const coords = await geocodificar(direccion_residencia);
+      coordsResidencia = await geocodificar(direccion_residencia);
       await sb('ubicaciones', 'POST', {
         usuario_id: nuevoUsuario.id, etiqueta: 'Casa', direccion: direccion_residencia,
-        lat: coords?.lat ?? null, lng: coords?.lng ?? null, tipo: 'residencia', predeterminada: true
+        lat: coordsResidencia?.lat ?? null, lng: coordsResidencia?.lng ?? null, tipo: 'residencia', predeterminada: true
       });
     }
-    if (tipo === 'socio' && direccion_trabajo) {
-      const coords = await geocodificar(direccion_trabajo);
-      await sb('ubicaciones', 'POST', {
-        usuario_id: nuevoUsuario.id, etiqueta: 'Zona de trabajo', direccion: direccion_trabajo,
-        lat: coords?.lat ?? null, lng: coords?.lng ?? null, tipo: 'trabajo', predeterminada: false
-      });
+    if (tipo === 'socio') {
+      const usaMismaDireccion = !direccion_trabajo;
+      const direccionTrabajoFinal = direccion_trabajo || direccion_residencia;
+      const coordsTrabajo = usaMismaDireccion ? coordsResidencia : await geocodificar(direccion_trabajo);
+      if (direccionTrabajoFinal) {
+        await sb('ubicaciones', 'POST', {
+          usuario_id: nuevoUsuario.id, etiqueta: 'Zona de trabajo', direccion: direccionTrabajoFinal,
+          lat: coordsTrabajo?.lat ?? null, lng: coordsTrabajo?.lng ?? null, tipo: 'trabajo', predeterminada: false
+        });
+      }
     }
   } catch (e) { console.error('❌ Error creando ubicación inicial:', e.message); }
 
