@@ -296,6 +296,13 @@ window.onload = async () => {
   cargarTodo();
 };
 function doLogout() { localStorage.removeItem('chamba_user'); localStorage.removeItem('chamba_token'); window.location.href = '/'; }
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'chamba_user' && e.newValue) {
+    const nuevo = JSON.parse(e.newValue);
+    if (nuevo.id !== usuario?.id) window.location.reload();
+  }
+});
 function iniciales(nombre) { return (nombre || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase(); }
 
 async function api(path, method='GET', body=null) {
