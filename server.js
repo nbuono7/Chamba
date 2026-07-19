@@ -55,6 +55,29 @@ const sb = async (path, method='GET', body=null) => {
   return data;
 };
 
+// Convierte una dirección de texto en coordenadas (lat/lng) usando OpenStreetMap. Devuelve null si no la encuentra.
+async function geocodificar(direccion) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=${encodeURIComponent(direccion)}`;
+    const r = await fetch(url, { headers: { 'User-Agent': 'ChamBA-App (contacto@chamba.com)' } });
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) return null;
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch (e) {
+    console.error('❌ Error geocodificando:', e.message);
+    return null;
+  }
+}
+// Distancia entre dos puntos en km (fórmula de Haversine)
+function distanciaKm(lat1, lng1, lat2, lng2) {
+  if ([lat1, lng1, lat2, lng2].some(v => v === null || v === undefined)) return null;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
 app.get('/', (req, res) => res.json({ status: 'Chamba API ✅' }));
 
 // ── IA ──
@@ -87,7 +110,7 @@ app.get('/api/usuarios', async (req, res) => {
 });
 
 app.post('/api/usuarios/registro', async (req, res) => {
-  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password } = req.body;
+  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password, direccion_residencia, direccion_trabajo } = req.body;
   const exists = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
   if (exists.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email.' });
   const bcrypt = require('bcryptjs');
@@ -95,6 +118,26 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const estado = tipo === 'cliente' ? 'aprobado' : 'pendiente';
   const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password_hash, estado });
   if (data.error || (Array.isArray(data) && data[0]?.code)) return res.status(400).json({ error: 'Error al registrar.' });
+  const nuevoUsuario = data[0];
+
+  // Crear las ubicaciones iniciales (no bloquea el registro si el geocodificador falla)
+  try {
+    if (direccion_residencia) {
+      const coords = await geocodificar(direccion_residencia);
+      await sb('ubicaciones', 'POST', {
+        usuario_id: nuevoUsuario.id, etiqueta: 'Casa', direccion: direccion_residencia,
+        lat: coords?.lat ?? null, lng: coords?.lng ?? null, tipo: 'residencia', predeterminada: true
+      });
+    }
+    if (tipo === 'socio' && direccion_trabajo) {
+      const coords = await geocodificar(direccion_trabajo);
+      await sb('ubicaciones', 'POST', {
+        usuario_id: nuevoUsuario.id, etiqueta: 'Zona de trabajo', direccion: direccion_trabajo,
+        lat: coords?.lat ?? null, lng: coords?.lng ?? null, tipo: 'trabajo', predeterminada: false
+      });
+    }
+  } catch (e) { console.error('❌ Error creando ubicación inicial:', e.message); }
+
   if (tipo === 'cliente') emailBienvenidaCliente(nombre, email);
   res.json({ ok: true, tipo, estado });
 });
@@ -138,6 +181,60 @@ app.delete('/api/usuarios/:id', auth, soloAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── UBICACIONES ──
+app.get('/api/ubicaciones', auth, async (req, res) => {
+  try {
+    const usuario_id = req.query.usuario_id || req.usuario.id;
+    if (usuario_id !== req.usuario.id && req.usuario.tipo !== 'admin') return res.status(403).json({ error: 'No autorizado.' });
+    res.json(await sb(`ubicaciones?usuario_id=eq.${usuario_id}&select=*&order=created_at.asc`));
+  } catch (e) {
+    console.error('❌ Error en GET /ubicaciones:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudieron cargar las ubicaciones.' });
+  }
+});
+
+app.post('/api/ubicaciones', auth, async (req, res) => {
+  try {
+    const { etiqueta, direccion, tipo } = req.body;
+    if (!etiqueta || !direccion) return res.status(400).json({ error: 'Faltan datos.' });
+    const coords = await geocodificar(direccion);
+    if (!coords) return res.status(400).json({ error: 'No pudimos encontrar esa dirección. Probá escribirla con más detalle (calle, ciudad).' });
+    const data = await sb('ubicaciones', 'POST', {
+      usuario_id: req.usuario.id, etiqueta, direccion, lat: coords.lat, lng: coords.lng,
+      tipo: tipo || 'otra', predeterminada: false
+    });
+    res.json(data);
+  } catch (e) {
+    console.error('❌ Error en POST /ubicaciones:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo agregar la ubicación.', detalle: e.message });
+  }
+});
+
+app.patch('/api/ubicaciones/:id/predeterminada', auth, async (req, res) => {
+  try {
+    const ub = await sb(`ubicaciones?id=eq.${req.params.id}&select=usuario_id,tipo`);
+    if (!ub.length || req.usuario.id !== ub[0].usuario_id) return res.status(403).json({ error: 'No podés modificar esta ubicación.' });
+    await sb(`ubicaciones?usuario_id=eq.${req.usuario.id}&tipo=eq.${ub[0].tipo}`, 'PATCH', { predeterminada: false });
+    await sb(`ubicaciones?id=eq.${req.params.id}`, 'PATCH', { predeterminada: true });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en PATCH /ubicaciones/predeterminada:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo actualizar.' });
+  }
+});
+
+app.delete('/api/ubicaciones/:id', auth, async (req, res) => {
+  try {
+    const ub = await sb(`ubicaciones?id=eq.${req.params.id}&select=usuario_id`);
+    if (!ub.length || req.usuario.id !== ub[0].usuario_id) return res.status(403).json({ error: 'No podés eliminar esta ubicación.' });
+    await fetch(`${SUPABASE_URL}/rest/v1/ubicaciones?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en DELETE /ubicaciones:', e.message);
+    res.status(500).json({ error: 'No se pudo eliminar.' });
+  }
+});
+
 // ── PEDIDOS ──
 app.get('/api/pedidos', async (req, res) => {
   try {
@@ -152,7 +249,12 @@ app.get('/api/pedidos', async (req, res) => {
 
 app.post('/api/pedidos', auth, async (req, res) => {
   try {
-    const body = { ...req.body, usuario_id: req.usuario.id }; // nunca confiar en el usuario_id que manda el cliente
+    const { ubicacion_id, ...resto } = req.body;
+    const body = { ...resto, usuario_id: req.usuario.id }; // nunca confiar en el usuario_id que manda el cliente
+    if (ubicacion_id) {
+      const ub = await sb(`ubicaciones?id=eq.${ubicacion_id}&select=lat,lng,etiqueta,direccion`);
+      if (ub.length) { body.lat = ub[0].lat; body.lng = ub[0].lng; body.zona = ub[0].etiqueta; }
+    }
     const data = await sb('pedidos', 'POST', body);
     const users = await sb(`usuarios?id=eq.${req.usuario.id}&select=nombre,email`);
     if (users.length) emailPedidoRecibido(users[0].nombre, users[0].email, req.body.servicio);
