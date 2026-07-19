@@ -62,6 +62,14 @@
     .badge-red { background: var(--red-light); color: var(--red); }
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-gray { background: #f1f1f1; color: #666; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:600px) { .form-row { grid-template-columns: 1fr; } }
+    .ubicacion-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); gap: 10px; }
+    .ubicacion-item:first-child { border-top: none; padding-top: 0; }
+    .ubicacion-info { font-size: 14px; }
+    .ubicacion-info .etiqueta { font-weight: 600; }
+    .ubicacion-info .direccion { color: var(--text-soft); font-size: 12px; margin-top: 1px; }
+    .ubicacion-acciones { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; margin-bottom: 3px; }
     .perfil-val { font-size: 15px; color: var(--text); }
@@ -207,6 +215,10 @@
           <select id="p-servicio"><option value="">Elegí el servicio</option><option>Plomería</option><option>Electricidad</option><option>Gas</option><option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option></select>
         </div>
         <div class="form-group"><label>Descripción del problema</label><textarea id="p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
+        <div class="form-group"><label>¿Dónde es el trabajo?</label>
+          <select id="p-ubicacion"><option value="">Elegí una ubicación...</option></select>
+          <div class="hint" style="font-size:12px;color:var(--text-soft);margin-top:4px">¿No está la dirección que buscás? Agregala en <strong>Mi perfil → Mis ubicaciones</strong>.</div>
+        </div>
         <div id="ia-sugerencia" style="display:none" class="trabajo-ia"></div>
         <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="consultarIA()">🤖 Consultar precio a la IA</button></div>
         <button class="btn btn-teal" onclick="publicarTrabajo()">Publicar trabajo</button>
@@ -249,6 +261,17 @@
         <div class="perfil-grid" id="perfil-grid"></div>
         <button class="btn btn-teal btn-sm" style="margin-top:14px" onclick="guardarPerfil()">💾 Guardar cambios</button>
       </div></div>
+
+      <div class="card"><div class="card-body">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">📍 Mis ubicaciones</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Agregá las direcciones donde solés necesitar un servicio (tu casa, tu trabajo, la casa de un familiar...).</div>
+        <div id="lista-ubicaciones" style="margin-bottom:16px"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Etiqueta</label><input type="text" id="ub-etiqueta" placeholder="Ej: Casa, Trabajo, Depto de mi mamá..."/></div>
+          <div class="form-group"><label>Dirección</label><input type="text" id="ub-direccion" placeholder="Calle, número, ciudad..."/></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="agregarUbicacion()">➕ Agregar ubicación</button>
+      </div></div>
     </div>
 
   </main>
@@ -267,6 +290,7 @@
 <script>
 const BACKEND = 'https://chamba-production-0c2d.up.railway.app';
 let usuario = null;
+let misUbicaciones = [];
 let misPedidos = [];
 let todasOfertas = {};
 let iaSugerencia = null;
@@ -315,6 +339,7 @@ window.onload = async () => {
   document.getElementById('user-avatar').textContent = iniciales(usuario.nombre);
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
   renderPerfil();
+  cargarUbicaciones();
   await cargarTodo();
   setInterval(cargarTodo, 30000);
 };
@@ -337,6 +362,60 @@ function renderPerfil() {
     <div class="form-group"><label>Nombre</label><input type="text" id="perfil-nombre" value="${usuario.nombre||''}"/></div>
     <div><div class="perfil-label">Email</div><div class="perfil-val">${usuario.email}</div></div>
     <div class="form-group"><label>Teléfono</label><input type="text" id="perfil-telefono" value="${usuario.telefono||''}"/></div>`;
+}
+
+async function cargarUbicaciones() {
+  try {
+    const ubs = await api('/api/ubicaciones');
+    misUbicaciones = Array.isArray(ubs) ? ubs : [];
+    const box = document.getElementById('lista-ubicaciones');
+    if (box) {
+      box.innerHTML = misUbicaciones.length ? misUbicaciones.map(u => `
+        <div class="ubicacion-item">
+          <div class="ubicacion-info">
+            <div class="etiqueta">📍 ${u.etiqueta} ${u.predeterminada ? '<span class="badge badge-green" style="margin-left:6px">Predeterminada</span>' : ''}</div>
+            <div class="direccion">${u.direccion}</div>
+          </div>
+          <div class="ubicacion-acciones">
+            ${!u.predeterminada ? `<button class="btn btn-ghost btn-sm" onclick="marcarPredeterminada('${u.id}')">Usar como predeterminada</button>` : ''}
+            <button class="btn btn-red btn-sm" onclick="eliminarUbicacion('${u.id}')">🗑️</button>
+          </div>
+        </div>`).join('') : '<div style="font-size:13px;color:var(--text-soft)">Todavía no agregaste ninguna ubicación.</div>';
+    }
+    const select = document.getElementById('p-ubicacion');
+    if (select) {
+      const actual = select.value;
+      select.innerHTML = '<option value="">Elegí una ubicación...</option>' + misUbicaciones.map(u => `<option value="${u.id}">${u.etiqueta} — ${u.direccion}</option>`).join('');
+      if (actual) select.value = actual;
+      else { const pred = misUbicaciones.find(u => u.predeterminada); if (pred) select.value = pred.id; }
+    }
+  } catch(e) {}
+}
+
+async function agregarUbicacion() {
+  const etiqueta = document.getElementById('ub-etiqueta').value.trim();
+  const direccion = document.getElementById('ub-direccion').value.trim();
+  if (!etiqueta || !direccion) return showInfo('⚠️', 'Faltan datos', 'Completá la etiqueta y la dirección.');
+  const r = await api('/api/ubicaciones', 'POST', { etiqueta, direccion, tipo: 'otra' });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  document.getElementById('ub-etiqueta').value = '';
+  document.getElementById('ub-direccion').value = '';
+  showInfo('✅', 'Ubicación agregada', 'Ya la podés usar al publicar un trabajo.');
+  cargarUbicaciones();
+}
+
+async function marcarPredeterminada(id) {
+  const r = await api(`/api/ubicaciones/${id}/predeterminada`, 'PATCH');
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  cargarUbicaciones();
+}
+
+async function eliminarUbicacion(id) {
+  showConfirm('🗑️', '¿Eliminar ubicación?', 'No vas a poder usarla más al publicar trabajos.', async () => {
+    const r = await api(`/api/ubicaciones/${id}`, 'DELETE');
+    if (r.error) return showInfo('❌', 'Error', r.error);
+    cargarUbicaciones();
+  }, 'Sí, eliminar');
 }
 
 async function guardarPerfil() {
@@ -685,10 +764,19 @@ async function consultarIA() {
 async function publicarTrabajo() {
   const servicio = document.getElementById('p-servicio').value;
   const descripcion = document.getElementById('p-desc').value.trim();
+  const ubicacion_id = document.getElementById('p-ubicacion').value;
   document.getElementById('pedido-ok').style.display = 'none';
   document.getElementById('pedido-err').style.display = 'none';
   if (!servicio || !descripcion) { const e=document.getElementById('pedido-err'); e.textContent='Completá todos los campos.'; e.style.display='block'; return; }
-  const body = { servicio, descripcion, usuario_id: usuario.id, estado: 'nuevo' };
+  if (!ubicacion_id) { const e=document.getElementById('pedido-err'); e.textContent='Elegí dónde es el trabajo.'; e.style.display='block'; return; }
+  const ubicacion = misUbicaciones.find(u => u.id === ubicacion_id);
+  showConfirm('📍', 'Confirmá la zona del trabajo',
+    `Estás por solicitar un trabajo de ${servicio} en la zona "${ubicacion?.etiqueta}" (${ubicacion?.direccion}). Los socios cercanos a esa zona van a ver tu pedido primero. ¿Confirmás?`,
+    () => confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id), '✅ Sí, publicar');
+}
+
+async function confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id) {
+  const body = { servicio, descripcion, ubicacion_id, estado: 'nuevo' };
   if (iaSugerencia) body.precio_sugerido_ia = iaSugerencia.precio_cliente;
   try {
     const r = await api('/api/pedidos', 'POST', body);
