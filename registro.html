@@ -149,6 +149,12 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label>Dirección donde vivís <span class="required">*</span></label>
+        <input type="text" id="f-direccion" placeholder="Ej: Alsina 450, Bahía Blanca" />
+        <div class="hint">La usamos para mostrarte trabajos y socios cercanos a vos.</div>
+      </div>
+
       <!-- CAMPOS SOCIO -->
       <div class="socio-fields" id="socio-fields">
         <div class="form-section">Información profesional</div>
@@ -181,6 +187,11 @@
             <input type="text" id="f-matricula" placeholder="Ej: MAT-PLO-1234" />
             <div class="hint">Si no tenés, dejalo vacío</div>
           </div>
+        </div>
+        <div class="form-group">
+          <label>Zona donde trabajás</label>
+          <input type="text" id="f-direccion-trabajo" placeholder="Ej: Barrio Palihue, Bahía Blanca" />
+          <div class="hint">Completalo solo si es distinta a donde vivís. Si la dejás vacía, usamos la misma dirección.</div>
         </div>
         <div class="form-group">
           <label>¿Por qué querés unirte a ChamBA? <span class="required">*</span></label>
@@ -224,12 +235,13 @@ async function registrar() {
   const email = document.getElementById('f-email').value.trim();
   const password = document.getElementById('f-password').value;
   const password2 = document.getElementById('f-password2').value;
+  const direccion_residencia = document.getElementById('f-direccion').value.trim();
 
-  if (!nombre || !email || !telefono || !password) return showError('Completá todos los campos obligatorios.');
+  if (!nombre || !email || !telefono || !password || !direccion_residencia) return showError('Completá todos los campos obligatorios.');
   if (password.length < 8) return showError('La contraseña debe tener al menos 8 caracteres.');
   if (password !== password2) return showError('Las contraseñas no coinciden.');
 
-  const body = { nombre, email, telefono, tipo: tipoSeleccionado, password };
+  const body = { nombre, email, telefono, tipo: tipoSeleccionado, password, direccion_residencia };
 
   if (tipoSeleccionado === 'socio') {
     const dni = document.getElementById('f-dni').value.trim();
@@ -237,8 +249,9 @@ async function registrar() {
     const experiencia = document.getElementById('f-experiencia').value.trim();
     const matricula = document.getElementById('f-matricula').value.trim();
     const mensaje = document.getElementById('f-mensaje').value.trim();
+    const direccion_trabajo = document.getElementById('f-direccion-trabajo').value.trim();
     if (!dni || !especialidad || !experiencia || !mensaje) return showError('Completá todos los campos obligatorios para socios.');
-    Object.assign(body, { dni, especialidad, experiencia, matricula, mensaje_solicitud: mensaje });
+    Object.assign(body, { dni, especialidad, experiencia, matricula, mensaje_solicitud: mensaje, direccion_trabajo });
   }
 
   btn.disabled = true;
