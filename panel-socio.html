@@ -62,6 +62,14 @@
     .badge-red { background: var(--red-light); color: var(--red); }
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-gray { background: #f1f1f1; color: #666; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    @media(max-width:700px) { .form-row { grid-template-columns: 1fr; } }
+    .ubicacion-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); gap: 10px; }
+    .ubicacion-item:first-child { border-top: none; padding-top: 0; }
+    .ubicacion-info { font-size: 14px; }
+    .ubicacion-info .etiqueta { font-weight: 600; }
+    .ubicacion-info .direccion { color: var(--text-soft); font-size: 12px; margin-top: 1px; }
+    .ubicacion-acciones { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     #notif-banner { display:none; position:sticky; top:0; z-index:100; padding:10px 20px; font-size:14px; font-weight:500; align-items:center; justify-content:space-between; cursor:pointer; color:#fff; }
     #notif-banner.notif-aprobada { background: var(--teal); }
     #notif-banner.notif-rechazada { background: var(--red); }
@@ -79,8 +87,8 @@
     .refresh-btn { font-size: 12px; color: var(--teal); cursor: pointer; background: none; border: none; font-family: inherit; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
-    .form-group input, .form-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; }
-    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; background: #fff; color: var(--text); }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
 
     .trabajo-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; background: #fff; position: relative; }
     .trabajo-card.nuevo { border-left: 4px solid var(--teal); }
@@ -316,6 +324,24 @@
         <button class="btn btn-teal btn-sm" onclick="solicitarMatricula()">Enviar solicitud</button>
         <div id="lista-solicitudes-matricula" style="margin-top:16px"></div>
       </div></div>
+
+      <div class="card" style="margin-top:16px"><div class="card-body">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">📍 Mis ubicaciones</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Tu zona de trabajo se usa para mostrarte primero los trabajos más cercanos. Podés agregar otras zonas si trabajás en más de un lugar.</div>
+        <div id="lista-ubicaciones" style="margin-bottom:16px"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Etiqueta</label><input type="text" id="ub-etiqueta" placeholder="Ej: Casa, Zona centro..."/></div>
+          <div class="form-group"><label>Dirección</label><input type="text" id="ub-direccion" placeholder="Calle, número, ciudad..."/></div>
+          <div class="form-group"><label>Tipo</label>
+            <select id="ub-tipo">
+              <option value="trabajo">Zona de trabajo</option>
+              <option value="residencia">Donde vivo</option>
+              <option value="otra">Otra</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="agregarUbicacion()">➕ Agregar ubicación</button>
+      </div></div>
     </div>
 
   </main>
@@ -392,6 +418,7 @@ window.onload = async () => {
   }
   renderPerfil();
   cargarSolicitudesMatricula();
+  cargarUbicaciones();
   cargarForo();
 };
 
@@ -975,6 +1002,53 @@ function renderPerfil() {
     <div><div class="perfil-label">Reputación</div><div class="perfil-val">${usuario.promedio_estrellas ? usuario.promedio_estrellas+' ⭐ ('+(usuario.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
     <div><div class="perfil-label">Trabajos completados</div><div class="perfil-val">${usuario.trabajos_completados||0}</div></div>
     <div><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado==='aprobado'?'✅ Aprobado':'⏳ Pendiente'}</div></div>`;
+}
+
+async function cargarUbicaciones() {
+  try {
+    const ubs = await api('/api/ubicaciones');
+    const box = document.getElementById('lista-ubicaciones');
+    if (!box) return;
+    const tipoLabel = { residencia: '🏠 Donde vivo', trabajo: '🔧 Zona de trabajo', otra: '📍 Otra' };
+    box.innerHTML = Array.isArray(ubs) && ubs.length ? ubs.map(u => `
+      <div class="ubicacion-item">
+        <div class="ubicacion-info">
+          <div class="etiqueta">${u.etiqueta} <span class="badge badge-gray" style="margin-left:6px">${tipoLabel[u.tipo]||u.tipo}</span> ${u.predeterminada ? '<span class="badge badge-green" style="margin-left:4px">Predeterminada</span>' : ''}</div>
+          <div class="direccion">${u.direccion}</div>
+        </div>
+        <div class="ubicacion-acciones">
+          ${!u.predeterminada ? `<button class="btn btn-ghost btn-sm" onclick="marcarPredeterminada('${u.id}')">Usar como predeterminada</button>` : ''}
+          <button class="btn btn-red btn-sm" onclick="eliminarUbicacion('${u.id}')">🗑️</button>
+        </div>
+      </div>`).join('') : '<div style="font-size:13px;color:var(--text-soft)">Todavía no agregaste ninguna ubicación.</div>';
+  } catch(e) {}
+}
+
+async function agregarUbicacion() {
+  const etiqueta = document.getElementById('ub-etiqueta').value.trim();
+  const direccion = document.getElementById('ub-direccion').value.trim();
+  const tipo = document.getElementById('ub-tipo').value;
+  if (!etiqueta || !direccion) return showInfo('⚠️', 'Faltan datos', 'Completá la etiqueta y la dirección.');
+  const r = await api('/api/ubicaciones', 'POST', { etiqueta, direccion, tipo });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  document.getElementById('ub-etiqueta').value = '';
+  document.getElementById('ub-direccion').value = '';
+  showInfo('✅', 'Ubicación agregada', 'Ya la vamos a tener en cuenta para mostrarte trabajos cercanos.');
+  cargarUbicaciones();
+}
+
+async function marcarPredeterminada(id) {
+  const r = await api(`/api/ubicaciones/${id}/predeterminada`, 'PATCH');
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  cargarUbicaciones();
+}
+
+async function eliminarUbicacion(id) {
+  showConfirm('🗑️', '¿Eliminar ubicación?', 'No la vamos a tener más en cuenta para mostrarte trabajos cercanos.', async () => {
+    const r = await api(`/api/ubicaciones/${id}`, 'DELETE');
+    if (r.error) return showInfo('❌', 'Error', r.error);
+    cargarUbicaciones();
+  }, 'Sí, eliminar');
 }
 
 async function guardarPerfil() {
