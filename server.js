@@ -82,6 +82,39 @@ function distanciaKm(lat1, lng1, lat2, lng2) {
   const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+// Convierte coordenadas (por ejemplo, al arrastrar un pin en el mapa) en una dirección legible + zona.
+async function geocodificarInverso(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&zoom=18`;
+    const r = await fetch(url, { headers: { 'User-Agent': 'ChamBA-App (contacto@chamba.com)' } });
+    const d = await r.json();
+    if (!d || d.error) return null;
+    const a = d.address || {};
+    const barrio = a.suburb || a.neighbourhood || a.quarter || a.city_district || '';
+    const ciudad = a.city || a.town || a.village || a.municipality || '';
+    const zona = [barrio, ciudad].filter(Boolean).join(', ') || ciudad || a.state || null;
+    return { direccion: d.display_name, zona };
+  } catch (e) {
+    console.error('❌ Error en geocodificación inversa:', e.message);
+    return null;
+  }
+}
+
+// Rutas públicas de geocodificación, para el mapa interactivo (registro y "Mis ubicaciones")
+app.get('/api/geocodificar', async (req, res) => {
+  const q = req.query.q;
+  if (!q) return res.status(400).json({ error: 'Falta la dirección.' });
+  const coords = await geocodificar(q);
+  if (!coords) return res.status(404).json({ error: 'No pudimos encontrar esa dirección.' });
+  res.json(coords);
+});
+app.get('/api/geocodificar-inverso', async (req, res) => {
+  const lat = parseFloat(req.query.lat), lng = parseFloat(req.query.lng);
+  if (isNaN(lat) || isNaN(lng)) return res.status(400).json({ error: 'Coordenadas inválidas.' });
+  const r = await geocodificarInverso(lat, lng);
+  if (!r) return res.status(404).json({ error: 'No pudimos identificar esa ubicación.' });
+  res.json(r);
+});
 
 app.get('/', (req, res) => res.json({ status: 'Chamba API ✅' }));
 
@@ -207,10 +240,17 @@ app.get('/api/ubicaciones', auth, async (req, res) => {
 
 app.post('/api/ubicaciones', auth, async (req, res) => {
   try {
-    const { etiqueta, direccion, tipo } = req.body;
+    const { etiqueta, direccion, tipo, lat, lng } = req.body;
     if (!etiqueta || !direccion) return res.status(400).json({ error: 'Faltan datos.' });
-    const coords = await geocodificar(direccion);
-    if (!coords) return res.status(400).json({ error: 'No pudimos encontrar esa dirección. Probá escribirla con más detalle (calle, ciudad).' });
+    let coords;
+    if (lat != null && lng != null) {
+      // Ya viene confirmado desde el mapa: solo necesitamos la zona
+      const rev = await geocodificarInverso(lat, lng);
+      coords = { lat, lng, zona: rev?.zona || null };
+    } else {
+      coords = await geocodificar(direccion);
+      if (!coords) return res.status(400).json({ error: 'No pudimos encontrar esa dirección. Probá escribirla con más detalle (calle, ciudad).' });
+    }
     const data = await sb('ubicaciones', 'POST', {
       usuario_id: req.usuario.id, etiqueta, direccion, lat: coords.lat, lng: coords.lng, zona: coords.zona,
       tipo: tipo || 'otra', predeterminada: false
@@ -273,7 +313,7 @@ app.get('/api/pedidos', auth, async (req, res) => {
         distancia_km = Math.min(...origenes.map(o => distanciaKm(o.lat, o.lng, p.lat, p.lng)));
       }
       if (distancia_km === null || distancia_km > 15) continue; // fuera de rango o sin ubicación: no se muestra
-      const { lat, lng, ...sinCoordenadas } = p;
+      const { lat, lng, direccion, ...sinCoordenadas } = p;
       resultado.push({ ...sinCoordenadas, distancia_km: Math.round(distancia_km * 10) / 10 });
     }
     res.json(resultado);
@@ -289,7 +329,7 @@ app.post('/api/pedidos', auth, async (req, res) => {
     const body = { ...resto, usuario_id: req.usuario.id }; // nunca confiar en el usuario_id que manda el cliente
     if (ubicacion_id) {
       const ub = await sb(`ubicaciones?id=eq.${ubicacion_id}&select=lat,lng,zona,etiqueta,direccion`);
-      if (ub.length) { body.lat = ub[0].lat; body.lng = ub[0].lng; body.zona = ub[0].zona || ub[0].etiqueta; }
+      if (ub.length) { body.lat = ub[0].lat; body.lng = ub[0].lng; body.zona = ub[0].zona || ub[0].etiqueta; body.direccion = ub[0].direccion; }
     }
     const data = await sb('pedidos', 'POST', body);
     const users = await sb(`usuarios?id=eq.${req.usuario.id}&select=nombre,email`);
