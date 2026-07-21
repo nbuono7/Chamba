@@ -58,11 +58,16 @@ const sb = async (path, method='GET', body=null) => {
 // Convierte una dirección de texto en coordenadas (lat/lng) usando OpenStreetMap. Devuelve null si no la encuentra.
 async function geocodificar(direccion) {
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=${encodeURIComponent(direccion)}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&addressdetails=1&q=${encodeURIComponent(direccion)}`;
     const r = await fetch(url, { headers: { 'User-Agent': 'ChamBA-App (contacto@chamba.com)' } });
     const data = await r.json();
     if (!Array.isArray(data) || !data.length) return null;
-    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    const d = data[0];
+    const a = d.address || {};
+    const barrio = a.suburb || a.neighbourhood || a.quarter || a.city_district || '';
+    const ciudad = a.city || a.town || a.village || a.municipality || '';
+    const zona = [barrio, ciudad].filter(Boolean).join(', ') || ciudad || a.state || null;
+    return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), zona };
   } catch (e) {
     console.error('❌ Error geocodificando:', e.message);
     return null;
@@ -113,6 +118,18 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password, direccion_residencia, direccion_trabajo } = req.body;
   const exists = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
   if (exists.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email.' });
+
+  // La dirección tiene que ser una dirección real (no se acepta cualquier texto)
+  if (!direccion_residencia) return res.status(400).json({ error: 'Ingresá tu dirección.' });
+  const coordsResidencia = await geocodificar(direccion_residencia);
+  if (!coordsResidencia) return res.status(400).json({ error: 'No pudimos encontrar esa dirección. Revisá que esté bien escrita (calle, número y ciudad).' });
+  let coordsTrabajo = coordsResidencia;
+  const direccionTrabajoFinal = direccion_trabajo || direccion_residencia;
+  if (tipo === 'socio' && direccion_trabajo) {
+    coordsTrabajo = await geocodificar(direccion_trabajo);
+    if (!coordsTrabajo) return res.status(400).json({ error: 'No pudimos encontrar la zona de trabajo. Revisá que esté bien escrita.' });
+  }
+
   const bcrypt = require('bcryptjs');
   const password_hash = await bcrypt.hash(password, 10);
   const estado = tipo === 'cliente' ? 'aprobado' : 'pendiente';
@@ -120,26 +137,16 @@ app.post('/api/usuarios/registro', async (req, res) => {
   if (data.error || (Array.isArray(data) && data[0]?.code)) return res.status(400).json({ error: 'Error al registrar.' });
   const nuevoUsuario = data[0];
 
-  // Crear las ubicaciones iniciales (no bloquea el registro si el geocodificador falla)
   try {
-    let coordsResidencia = null;
-    if (direccion_residencia) {
-      coordsResidencia = await geocodificar(direccion_residencia);
-      await sb('ubicaciones', 'POST', {
-        usuario_id: nuevoUsuario.id, etiqueta: 'Casa', direccion: direccion_residencia,
-        lat: coordsResidencia?.lat ?? null, lng: coordsResidencia?.lng ?? null, tipo: 'residencia', predeterminada: true
-      });
-    }
+    await sb('ubicaciones', 'POST', {
+      usuario_id: nuevoUsuario.id, etiqueta: 'Casa', direccion: direccion_residencia,
+      lat: coordsResidencia.lat, lng: coordsResidencia.lng, zona: coordsResidencia.zona, tipo: 'residencia', predeterminada: true
+    });
     if (tipo === 'socio') {
-      const usaMismaDireccion = !direccion_trabajo;
-      const direccionTrabajoFinal = direccion_trabajo || direccion_residencia;
-      const coordsTrabajo = usaMismaDireccion ? coordsResidencia : await geocodificar(direccion_trabajo);
-      if (direccionTrabajoFinal) {
-        await sb('ubicaciones', 'POST', {
-          usuario_id: nuevoUsuario.id, etiqueta: 'Zona de trabajo', direccion: direccionTrabajoFinal,
-          lat: coordsTrabajo?.lat ?? null, lng: coordsTrabajo?.lng ?? null, tipo: 'trabajo', predeterminada: false
-        });
-      }
+      await sb('ubicaciones', 'POST', {
+        usuario_id: nuevoUsuario.id, etiqueta: 'Zona de trabajo', direccion: direccionTrabajoFinal,
+        lat: coordsTrabajo.lat, lng: coordsTrabajo.lng, zona: coordsTrabajo.zona, tipo: 'trabajo', predeterminada: false
+      });
     }
   } catch (e) { console.error('❌ Error creando ubicación inicial:', e.message); }
 
@@ -205,7 +212,7 @@ app.post('/api/ubicaciones', auth, async (req, res) => {
     const coords = await geocodificar(direccion);
     if (!coords) return res.status(400).json({ error: 'No pudimos encontrar esa dirección. Probá escribirla con más detalle (calle, ciudad).' });
     const data = await sb('ubicaciones', 'POST', {
-      usuario_id: req.usuario.id, etiqueta, direccion, lat: coords.lat, lng: coords.lng,
+      usuario_id: req.usuario.id, etiqueta, direccion, lat: coords.lat, lng: coords.lng, zona: coords.zona,
       tipo: tipo || 'otra', predeterminada: false
     });
     res.json(data);
@@ -241,11 +248,35 @@ app.delete('/api/ubicaciones/:id', auth, async (req, res) => {
 });
 
 // ── PEDIDOS ──
-app.get('/api/pedidos', async (req, res) => {
+app.get('/api/pedidos', auth, async (req, res) => {
   try {
-    const usuario_id = req.query.usuario_id ? `&usuario_id=eq.${req.query.usuario_id}` : '';
+    const usuario_id_q = req.query.usuario_id ? `&usuario_id=eq.${req.query.usuario_id}` : '';
     const estado = req.query.estado ? `&estado=eq.${req.query.estado}` : '';
-    res.json(await sb(`pedidos?select=*&order=created_at.desc${usuario_id}${estado}`));
+    const pedidos = await sb(`pedidos?select=*&order=created_at.desc${usuario_id_q}${estado}`);
+    if (!Array.isArray(pedidos)) return res.json(pedidos);
+
+    // Admin ve todo tal cual, sin filtrar ni redactar
+    if (req.usuario.tipo === 'admin') return res.json(pedidos);
+
+    // Mis propias ubicaciones (para calcular qué tan cerca me queda cada pedido ajeno)
+    const misUbs = await sb(`ubicaciones?usuario_id=eq.${req.usuario.id}&select=lat,lng,tipo`);
+    const misTrabajo = misUbs.filter(u => u.tipo === 'trabajo' && u.lat != null && u.lng != null);
+    const origenes = misTrabajo.length ? misTrabajo : misUbs.filter(u => u.lat != null && u.lng != null);
+
+    const resultado = [];
+    for (const p of pedidos) {
+      const esPropio = req.usuario.id === p.usuario_id || req.usuario.id === p.profesional_id;
+      if (esPropio) { resultado.push(p); continue; }
+      // No es mío: nunca se manda lat/lng exacto, solo la zona y la distancia calculada acá adentro
+      let distancia_km = null;
+      if (origenes.length && p.lat != null && p.lng != null) {
+        distancia_km = Math.min(...origenes.map(o => distanciaKm(o.lat, o.lng, p.lat, p.lng)));
+      }
+      if (distancia_km === null || distancia_km > 15) continue; // fuera de rango o sin ubicación: no se muestra
+      const { lat, lng, ...sinCoordenadas } = p;
+      resultado.push({ ...sinCoordenadas, distancia_km: Math.round(distancia_km * 10) / 10 });
+    }
+    res.json(resultado);
   } catch (e) {
     console.error('❌ Error en GET /pedidos:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudieron cargar los pedidos.' });
@@ -257,8 +288,8 @@ app.post('/api/pedidos', auth, async (req, res) => {
     const { ubicacion_id, ...resto } = req.body;
     const body = { ...resto, usuario_id: req.usuario.id }; // nunca confiar en el usuario_id que manda el cliente
     if (ubicacion_id) {
-      const ub = await sb(`ubicaciones?id=eq.${ubicacion_id}&select=lat,lng,etiqueta,direccion`);
-      if (ub.length) { body.lat = ub[0].lat; body.lng = ub[0].lng; body.zona = ub[0].etiqueta; }
+      const ub = await sb(`ubicaciones?id=eq.${ubicacion_id}&select=lat,lng,zona,etiqueta,direccion`);
+      if (ub.length) { body.lat = ub[0].lat; body.lng = ub[0].lng; body.zona = ub[0].zona || ub[0].etiqueta; }
     }
     const data = await sb('pedidos', 'POST', body);
     const users = await sb(`usuarios?id=eq.${req.usuario.id}&select=nombre,email`);
