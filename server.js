@@ -73,6 +73,25 @@ async function geocodificar(direccion) {
     return null;
   }
 }
+// Devuelve una LISTA de direcciones reales que coinciden con lo que la persona va escribiendo (autocompletar, como Google Maps / PedidosYa).
+async function buscarDirecciones(texto) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=ar&addressdetails=1&q=${encodeURIComponent(texto)}`;
+    const r = await fetch(url, { headers: { 'User-Agent': 'ChamBA-App (contacto@chamba.com)' } });
+    const data = await r.json();
+    if (!Array.isArray(data)) return [];
+    return data.map(d => {
+      const a = d.address || {};
+      const barrio = a.suburb || a.neighbourhood || a.quarter || a.city_district || '';
+      const ciudad = a.city || a.town || a.village || a.municipality || '';
+      const zona = [barrio, ciudad].filter(Boolean).join(', ') || ciudad || a.state || null;
+      return { display_name: d.display_name, lat: parseFloat(d.lat), lng: parseFloat(d.lon), zona };
+    });
+  } catch (e) {
+    console.error('❌ Error buscando direcciones:', e.message);
+    return [];
+  }
+}
 // Distancia entre dos puntos en km (fórmula de Haversine)
 function distanciaKm(lat1, lng1, lat2, lng2) {
   if ([lat1, lng1, lat2, lng2].some(v => v === null || v === undefined)) return null;
@@ -107,6 +126,11 @@ app.get('/api/geocodificar', async (req, res) => {
   const coords = await geocodificar(q);
   if (!coords) return res.status(404).json({ error: 'No pudimos encontrar esa dirección.' });
   res.json(coords);
+});
+app.get('/api/geocodificar-buscar', async (req, res) => {
+  const q = req.query.q;
+  if (!q || q.trim().length < 3) return res.json([]);
+  res.json(await buscarDirecciones(q));
 });
 app.get('/api/geocodificar-inverso', async (req, res) => {
   const lat = parseFloat(req.query.lat), lng = parseFloat(req.query.lng);
@@ -240,7 +264,7 @@ app.get('/api/ubicaciones', auth, async (req, res) => {
 
 app.post('/api/ubicaciones', auth, async (req, res) => {
   try {
-    const { etiqueta, direccion, tipo, lat, lng } = req.body;
+    const { etiqueta, direccion, tipo, lat, lng, piso_depto, referencias } = req.body;
     if (!etiqueta || !direccion) return res.status(400).json({ error: 'Faltan datos.' });
     let coords;
     if (lat != null && lng != null) {
@@ -253,12 +277,34 @@ app.post('/api/ubicaciones', auth, async (req, res) => {
     }
     const data = await sb('ubicaciones', 'POST', {
       usuario_id: req.usuario.id, etiqueta, direccion, lat: coords.lat, lng: coords.lng, zona: coords.zona,
+      piso_depto: piso_depto || null, referencias: referencias || null,
       tipo: tipo || 'otra', predeterminada: false
     });
     res.json(data);
   } catch (e) {
     console.error('❌ Error en POST /ubicaciones:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo agregar la ubicación.', detalle: e.message });
+  }
+});
+
+app.patch('/api/ubicaciones/:id', auth, async (req, res) => {
+  try {
+    const ub = await sb(`ubicaciones?id=eq.${req.params.id}&select=usuario_id`);
+    if (!ub.length || req.usuario.id !== ub[0].usuario_id) return res.status(403).json({ error: 'No podés editar esta ubicación.' });
+    const { etiqueta, tipo, piso_depto, referencias, direccion, lat, lng } = req.body;
+    const patch = {};
+    if (etiqueta !== undefined) patch.etiqueta = etiqueta;
+    if (tipo !== undefined) patch.tipo = tipo;
+    if (piso_depto !== undefined) patch.piso_depto = piso_depto || null;
+    if (referencias !== undefined) patch.referencias = referencias || null;
+    if (direccion !== undefined && lat != null && lng != null) {
+      const rev = await geocodificarInverso(lat, lng);
+      Object.assign(patch, { direccion, lat, lng, zona: rev?.zona || null });
+    }
+    res.json(await sb(`ubicaciones?id=eq.${req.params.id}`, 'PATCH', patch));
+  } catch (e) {
+    console.error('❌ Error en PATCH /ubicaciones:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo actualizar la ubicación.', detalle: e.message });
   }
 });
 
@@ -328,8 +374,12 @@ app.post('/api/pedidos', auth, async (req, res) => {
     const { ubicacion_id, ...resto } = req.body;
     const body = { ...resto, usuario_id: req.usuario.id }; // nunca confiar en el usuario_id que manda el cliente
     if (ubicacion_id) {
-      const ub = await sb(`ubicaciones?id=eq.${ubicacion_id}&select=lat,lng,zona,etiqueta,direccion`);
-      if (ub.length) { body.lat = ub[0].lat; body.lng = ub[0].lng; body.zona = ub[0].zona || ub[0].etiqueta; body.direccion = ub[0].direccion; }
+      const ub = await sb(`ubicaciones?id=eq.${ubicacion_id}&select=lat,lng,zona,etiqueta,direccion,piso_depto,referencias`);
+      if (ub.length) {
+        const u = ub[0];
+        body.lat = u.lat; body.lng = u.lng; body.zona = u.zona || u.etiqueta;
+        body.direccion = [u.direccion, u.piso_depto, u.referencias ? `(${u.referencias})` : null].filter(Boolean).join(' — ');
+      }
     }
     const data = await sb('pedidos', 'POST', body);
     const users = await sb(`usuarios?id=eq.${req.usuario.id}&select=nombre,email`);
