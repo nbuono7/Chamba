@@ -72,6 +72,17 @@
     .ubicacion-info .etiqueta { font-weight: 600; }
     .ubicacion-info .direccion { color: var(--text-soft); font-size: 12px; margin-top: 1px; }
     .ubicacion-acciones { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .ub-sugerencias-box { position: absolute; top: 100%; left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(22,35,63,0.12); z-index: 40; max-height: 260px; overflow-y: auto; margin-top: 4px; display: none; }
+    .ub-sugerencias-box.open { display: block; }
+    .ub-sugerencia-item { display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px; cursor: pointer; font-size: 13px; border-top: 1px solid var(--border); }
+    .ub-sugerencia-item:first-child { border-top: none; }
+    .ub-sugerencia-item:hover { background: var(--bg); }
+    .ub-sugerencia-item .icono { flex-shrink: 0; margin-top: 1px; }
+    .mapa-info-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+    .chip-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: #fff; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer; }
+    .chip-btn:hover { border-color: var(--teal); }
+    .chip-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
     .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; margin-bottom: 3px; }
     .perfil-val { font-size: 15px; color: var(--text); }
@@ -272,31 +283,51 @@
 
       <div class="card"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">➕ Agregar una ubicación</div>
-        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Completá la dirección y confirmala en el mapa antes de guardarla.</div>
-        <div class="form-row">
-          <div class="form-group"><label>Calle</label><input type="text" id="ub-calle" placeholder="Ej: Arévalo"/></div>
-          <div class="form-group"><label>Número</label><input type="text" id="ub-numero" placeholder="Ej: 2769"/></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Piso / Depto <span style="font-weight:400;color:var(--text-soft)">(opcional)</span></label><input type="text" id="ub-piso" placeholder="Ej: Piso 3, Depto B"/></div>
-          <div class="form-group"><label>Ciudad</label><input type="text" id="ub-ciudad" placeholder="Ej: Buenos Aires"/></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label>Tipo</label>
-            <select id="ub-tipo" onchange="onCambioTipoUbicacion()">
-              <option value="residencia">Casa</option>
-              <option value="otra" selected>Otra</option>
-            </select>
-          </div>
-          <div class="form-group" id="ub-etiqueta-wrap"><label>¿Qué ubicación es?</label><input type="text" id="ub-etiqueta" placeholder="Ej: Casa de mi mamá, Oficina..."/></div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="buscarEnMapa()">🗺️ Ubicar en el mapa</button>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Buscá tu dirección real y confirmala en el mapa, igual que en cualquier app de delivery.</div>
 
-        <div id="mapa-picker-wrap" style="display:none;margin-top:16px">
-          <div id="mapa-picker" style="height:280px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
-          <div style="font-size:13px;font-weight:500;margin-top:10px" id="mapa-direccion-detectada"></div>
-          <div style="font-size:12px;color:var(--text-soft);margin:4px 0 12px">Arrastrá el pin si no coincide exactamente con tu dirección.</div>
-          <button class="btn btn-teal btn-sm" onclick="confirmarUbicacionMapa()">✅ Confirmar esta ubicación</button>
+        <!-- PASO 1: BUSCAR -->
+        <div id="ub-paso-buscar">
+          <div class="form-group" style="position:relative">
+            <label>Dirección</label>
+            <input type="text" id="ub-busqueda" placeholder="Ej: Av. Santa Fe 2000, Buenos Aires" autocomplete="off" oninput="onBuscarDireccion(this.value)"/>
+            <div id="ub-sugerencias" class="ub-sugerencias-box"></div>
+          </div>
+        </div>
+
+        <!-- PASO 2: CONFIRMAR EN MAPA -->
+        <div id="ub-paso-mapa" style="display:none">
+          <div id="mapa-picker" style="height:300px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
+          <div class="mapa-info-box">
+            <div style="font-size:12px;color:var(--text-soft);margin-bottom:2px">📍 ¿El pin no coincide con tu dirección? Arrastralo para ajustarlo.</div>
+            <div style="font-size:14px;font-weight:500" id="mapa-direccion-detectada"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-ghost btn-sm" onclick="volverABuscar()">← Buscar otra dirección</button>
+            <button class="btn btn-teal btn-sm" onclick="irADetalles()">Confirmar ubicación →</button>
+          </div>
+        </div>
+
+        <!-- PASO 3: DETALLES -->
+        <div id="ub-paso-detalles" style="display:none">
+          <div class="form-group">
+            <label>Dirección</label>
+            <div style="font-size:14px;padding:10px 12px;background:var(--bg);border-radius:8px" id="ub-detalle-direccion"></div>
+          </div>
+          <div class="form-group"><label>Piso / Departamento <span style="font-weight:400;color:var(--text-soft)">(opcional)</span></label><input type="text" id="ub-piso" placeholder="Ej: Piso 3, Depto B"/></div>
+          <div class="form-group"><label>Referencias / Indicaciones <span style="font-weight:400;color:var(--text-soft)">(opcional)</span></label><textarea id="ub-referencias" rows="2" placeholder="Ej: Timbre roto, tocar puerta del fondo..."></textarea></div>
+          <div class="form-group">
+            <label>¿Qué nombre le damos a esta dirección?</label>
+            <div class="chip-selector">
+              <button type="button" class="chip-btn active" data-tipo="residencia" onclick="elegirTipoUbicacion('residencia', this)">🏠 Casa</button>
+              <button type="button" class="chip-btn" data-tipo="trabajo" onclick="elegirTipoUbicacion('trabajo', this)">🔧 Trabajo</button>
+              <button type="button" class="chip-btn" data-tipo="otra" onclick="elegirTipoUbicacion('otra', this)">✏️ Otro</button>
+            </div>
+            <input type="text" id="ub-etiqueta-custom" placeholder="Ej: Casa de mi mamá, Oficina..." style="display:none;margin-top:8px"/>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="volverAMapa()">← Volver</button>
+            <button class="btn btn-teal btn-sm" onclick="guardarUbicacionFinal()" id="ub-btn-guardar">Guardar dirección</button>
+          </div>
         </div>
       </div></div>
     </div>
@@ -401,10 +432,11 @@ async function cargarUbicaciones() {
         <div class="ubicacion-item">
           <div class="ubicacion-info">
             <div class="etiqueta">📍 ${u.etiqueta} ${u.predeterminada ? '<span class="badge badge-green" style="margin-left:6px">Predeterminada</span>' : ''}</div>
-            <div class="direccion">${u.direccion}</div>
+            <div class="direccion">${u.direccion}${u.piso_depto ? ' — ' + u.piso_depto : ''}</div>
           </div>
           <div class="ubicacion-acciones">
             ${!u.predeterminada ? `<button class="btn btn-ghost btn-sm" onclick="marcarPredeterminada('${u.id}')">Usar como predeterminada</button>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="editarUbicacion('${u.id}')">✏️</button>
             <button class="btn btn-red btn-sm" onclick="eliminarUbicacion('${u.id}')">🗑️</button>
           </div>
         </div>`).join('') : '<div style="font-size:13px;color:var(--text-soft)">Todavía no agregaste ninguna ubicación.</div>';
@@ -419,34 +451,37 @@ async function cargarUbicaciones() {
   } catch(e) {}
 }
 
-function onCambioTipoUbicacion() {
-  const tipo = document.getElementById('ub-tipo').value;
-  const wrap = document.getElementById('ub-etiqueta-wrap');
-  if (tipo === 'otra') { wrap.style.display = ''; }
-  else { wrap.style.display = 'none'; }
+// ── UBICACIONES: buscar → confirmar en mapa → detalles (estilo PedidosYa) ──
+let mapaPicker = null, marcadorPicker = null;
+let ubSugerenciasCache = [];
+let ubBusquedaTimer = null;
+let ubSeleccionActual = null; // { direccion, lat, lng }
+let ubEditandoId = null; // si no es null, "Guardar" hace PATCH en vez de POST
+
+function onBuscarDireccion(texto) {
+  clearTimeout(ubBusquedaTimer);
+  const box = document.getElementById('ub-sugerencias');
+  if (!texto || texto.trim().length < 3) { box.classList.remove('open'); return; }
+  ubBusquedaTimer = setTimeout(async () => {
+    const r = await api('/api/geocodificar-buscar?q=' + encodeURIComponent(texto));
+    ubSugerenciasCache = Array.isArray(r) ? r : [];
+    if (!ubSugerenciasCache.length) { box.innerHTML = '<div class="ub-sugerencia-item" style="color:var(--text-soft)">No encontramos direcciones. Probá con calle, número y ciudad.</div>'; box.classList.add('open'); return; }
+    box.innerHTML = ubSugerenciasCache.map((s,i) => `<div class="ub-sugerencia-item" onclick="seleccionarSugerencia(${i})"><span class="icono">📍</span><span>${s.display_name}</span></div>`).join('');
+    box.classList.add('open');
+  }, 400);
 }
 
-function construirDireccionTexto() {
-  const calle = document.getElementById('ub-calle').value.trim();
-  const numero = document.getElementById('ub-numero').value.trim();
-  const piso = document.getElementById('ub-piso').value.trim();
-  const ciudad = document.getElementById('ub-ciudad').value.trim();
-  if (!calle || !numero || !ciudad) return null;
-  return `${calle} ${numero}${piso ? ', ' + piso : ''}, ${ciudad}`;
-}
-
-let mapaPicker = null, marcadorPicker = null, ubicacionConfirmadaMapa = null;
-
-async function buscarEnMapa() {
-  const direccion = construirDireccionTexto();
-  if (!direccion) return showInfo('⚠️', 'Faltan datos', 'Completá calle, número y ciudad.');
-  const r = await api('/api/geocodificar?q=' + encodeURIComponent(direccion));
-  if (r.error || r.lat == null) return showInfo('❌', 'No encontramos esa dirección', 'Revisá que esté bien escrita (calle, número y ciudad reales).');
-  mostrarMapaPicker(r.lat, r.lng);
+function seleccionarSugerencia(i) {
+  const s = ubSugerenciasCache[i];
+  document.getElementById('ub-sugerencias').classList.remove('open');
+  document.getElementById('ub-busqueda').value = s.display_name;
+  document.getElementById('ub-paso-buscar').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'block';
+  ubSeleccionActual = { direccion: s.display_name, lat: s.lat, lng: s.lng };
+  mostrarMapaPicker(s.lat, s.lng);
 }
 
 function mostrarMapaPicker(lat, lng) {
-  document.getElementById('mapa-picker-wrap').style.display = 'block';
   if (!mapaPicker) {
     mapaPicker = L.map('mapa-picker').setView([lat, lng], 17);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(mapaPicker);
@@ -461,26 +496,94 @@ function mostrarMapaPicker(lat, lng) {
 }
 
 async function actualizarDireccionDetectada(lat, lng) {
-  document.getElementById('mapa-direccion-detectada').textContent = '📍 Identificando la dirección...';
+  document.getElementById('mapa-direccion-detectada').textContent = 'Identificando la dirección...';
   const r = await api(`/api/geocodificar-inverso?lat=${lat}&lng=${lng}`);
-  if (r.error) { document.getElementById('mapa-direccion-detectada').textContent = '⚠️ No pudimos identificar este punto exacto.'; ubicacionConfirmadaMapa = null; return; }
-  ubicacionConfirmadaMapa = { lat, lng, zona: r.zona };
-  document.getElementById('mapa-direccion-detectada').textContent = '📍 ' + r.direccion;
+  if (r.error) { document.getElementById('mapa-direccion-detectada').textContent = '⚠️ No pudimos identificar este punto exacto.'; return; }
+  ubSeleccionActual = { direccion: r.direccion, lat, lng };
+  document.getElementById('mapa-direccion-detectada').textContent = r.direccion;
 }
 
-async function confirmarUbicacionMapa() {
-  if (!ubicacionConfirmadaMapa) return showInfo('⚠️', 'Esperá un momento', 'Todavía estamos identificando la ubicación del pin.');
-  const tipo = document.getElementById('ub-tipo').value;
-  const etiqueta = tipo === 'otra' ? document.getElementById('ub-etiqueta').value.trim() : 'Casa';
-  const direccion = construirDireccionTexto();
+function volverABuscar() {
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-buscar').style.display = 'block';
+}
+
+function irADetalles() {
+  if (!ubSeleccionActual) return showInfo('⚠️', 'Esperá un momento', 'Todavía estamos identificando la ubicación del pin.');
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-detalles').style.display = 'block';
+  document.getElementById('ub-detalle-direccion').textContent = ubSeleccionActual.direccion;
+}
+
+function volverAMapa() {
+  document.getElementById('ub-paso-detalles').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'block';
+  setTimeout(() => mapaPicker && mapaPicker.invalidateSize(), 150);
+}
+
+function elegirTipoUbicacion(tipo, btn) {
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ub-etiqueta-custom').style.display = tipo === 'otra' ? 'block' : 'none';
+}
+
+function resetFormularioUbicacion() {
+  document.getElementById('ub-busqueda').value = '';
+  document.getElementById('ub-piso').value = '';
+  document.getElementById('ub-referencias').value = '';
+  document.getElementById('ub-etiqueta-custom').value = '';
+  document.getElementById('ub-etiqueta-custom').style.display = 'none';
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.chip-btn[data-tipo="residencia"]').classList.add('active');
+  document.getElementById('ub-paso-detalles').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-buscar').style.display = 'block';
+  ubSeleccionActual = null;
+  ubEditandoId = null;
+  document.getElementById('ub-btn-guardar').textContent = 'Guardar dirección';
+}
+
+async function guardarUbicacionFinal() {
+  if (!ubSeleccionActual && !ubEditandoId) return showInfo('⚠️', 'Faltan datos', 'Elegí una dirección primero.');
+  const tipoBtn = document.querySelector('.chip-btn.active');
+  const tipo = tipoBtn ? tipoBtn.dataset.tipo : 'residencia';
+  const nombres = { residencia: 'Casa', trabajo: 'Trabajo' };
+  const etiqueta = tipo === 'otra' ? document.getElementById('ub-etiqueta-custom').value.trim() : nombres[tipo];
   if (tipo === 'otra' && !etiqueta) return showInfo('⚠️', 'Faltan datos', 'Contanos qué ubicación es (ej: Casa de mi mamá).');
-  const r = await api('/api/ubicaciones', 'POST', { etiqueta, direccion, tipo, lat: ubicacionConfirmadaMapa.lat, lng: ubicacionConfirmadaMapa.lng });
+  const piso_depto = document.getElementById('ub-piso').value.trim();
+  const referencias = document.getElementById('ub-referencias').value.trim();
+
+  const body = { etiqueta, tipo, piso_depto, referencias };
+  let r;
+  if (ubEditandoId) {
+    r = await api(`/api/ubicaciones/${ubEditandoId}`, 'PATCH', body);
+  } else {
+    r = await api('/api/ubicaciones', 'POST', { ...body, direccion: ubSeleccionActual.direccion, lat: ubSeleccionActual.lat, lng: ubSeleccionActual.lng });
+  }
   if (r.error) return showInfo('❌', 'Error', r.error);
-  ['ub-calle','ub-numero','ub-piso','ub-ciudad','ub-etiqueta'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('mapa-picker-wrap').style.display = 'none';
-  ubicacionConfirmadaMapa = null;
-  showInfo('✅', 'Ubicación agregada', 'Ya la podés usar al publicar un trabajo.');
+  resetFormularioUbicacion();
+  showInfo('✅', ubEditandoId ? 'Ubicación actualizada' : 'Ubicación agregada', 'Ya la podés usar al publicar un trabajo.');
   cargarUbicaciones();
+}
+
+function editarUbicacion(id) {
+  const u = misUbicaciones.find(x => x.id === id);
+  if (!u) return;
+  ubEditandoId = id;
+  ubSeleccionActual = { direccion: u.direccion, lat: u.lat, lng: u.lng };
+  document.getElementById('ub-paso-buscar').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-detalles').style.display = 'block';
+  document.getElementById('ub-detalle-direccion').textContent = u.direccion;
+  document.getElementById('ub-piso').value = u.piso_depto || '';
+  document.getElementById('ub-referencias').value = u.referencias || '';
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  const tipoValido = ['residencia','trabajo','otra'].includes(u.tipo) ? u.tipo : 'otra';
+  document.querySelector(`.chip-btn[data-tipo="${tipoValido}"]`).classList.add('active');
+  document.getElementById('ub-etiqueta-custom').style.display = tipoValido === 'otra' ? 'block' : 'none';
+  document.getElementById('ub-etiqueta-custom').value = tipoValido === 'otra' ? u.etiqueta : '';
+  document.getElementById('ub-btn-guardar').textContent = 'Guardar cambios';
+  document.getElementById('page-mi-perfil').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function marcarPredeterminada(id) {
@@ -543,6 +646,7 @@ function toggleDropdown(id) {
 }
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.nav-dropdown')) document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
+  if (!e.target.closest('#ub-paso-buscar')) { const s = document.getElementById('ub-sugerencias'); if (s) s.classList.remove('open'); }
 });
 
 async function api(path, method='GET', body=null) {
