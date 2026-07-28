@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ChamBA — Panel Socio</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -70,6 +72,17 @@
     .ubicacion-info .etiqueta { font-weight: 600; }
     .ubicacion-info .direccion { color: var(--text-soft); font-size: 12px; margin-top: 1px; }
     .ubicacion-acciones { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .ub-sugerencias-box { position: absolute; top: 100%; left: 0; right: 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(22,35,63,0.12); z-index: 40; max-height: 260px; overflow-y: auto; margin-top: 4px; display: none; }
+    .ub-sugerencias-box.open { display: block; }
+    .ub-sugerencia-item { display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px; cursor: pointer; font-size: 13px; border-top: 1px solid var(--border); }
+    .ub-sugerencia-item:first-child { border-top: none; }
+    .ub-sugerencia-item:hover { background: var(--bg); }
+    .ub-sugerencia-item .icono { flex-shrink: 0; margin-top: 1px; }
+    .mapa-info-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+    .chip-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: #fff; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer; }
+    .chip-btn:hover { border-color: var(--teal); }
+    .chip-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
     #notif-banner { display:none; position:sticky; top:0; z-index:100; padding:10px 20px; font-size:14px; font-weight:500; align-items:center; justify-content:space-between; cursor:pointer; color:#fff; }
     #notif-banner.notif-aprobada { background: var(--teal); }
     #notif-banner.notif-rechazada { background: var(--red); }
@@ -269,6 +282,10 @@
             <select id="cli-p-servicio"><option value="">Elegí el servicio</option><option>Plomería</option><option>Electricidad</option><option>Gas</option><option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option></select>
           </div>
           <div class="form-group"><label>Descripción del problema</label><textarea id="cli-p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
+          <div class="form-group"><label>¿Dónde es el trabajo?</label>
+            <select id="cli-p-ubicacion"><option value="">Elegí una ubicación...</option></select>
+            <div class="hint" style="font-size:12px;color:var(--text-soft);margin-top:4px">¿No está la dirección que buscás? Agregala en <strong>Mi perfil → Mis ubicaciones</strong>.</div>
+          </div>
           <div id="cli-ia-sugerencia" style="display:none" class="trabajo-ia"></div>
           <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="consultarIACliente()">🤖 Consultar precio a la IA</button></div>
           <button class="btn btn-teal" onclick="publicarTrabajoCliente()">Publicar trabajo</button>
@@ -329,18 +346,56 @@
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">📍 Mis ubicaciones</div>
         <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Tu zona de trabajo se usa para mostrarte primero los trabajos más cercanos. Podés agregar otras zonas si trabajás en más de un lugar.</div>
         <div id="lista-ubicaciones" style="margin-bottom:16px"></div>
-        <div class="form-row">
-          <div class="form-group"><label>Etiqueta</label><input type="text" id="ub-etiqueta" placeholder="Ej: Casa, Zona centro..."/></div>
-          <div class="form-group"><label>Dirección</label><input type="text" id="ub-direccion" placeholder="Calle, número, ciudad..."/></div>
-          <div class="form-group"><label>Tipo</label>
-            <select id="ub-tipo">
-              <option value="trabajo">Zona de trabajo</option>
-              <option value="residencia">Donde vivo</option>
-              <option value="otra">Otra</option>
-            </select>
+      </div></div>
+
+      <div class="card" style="margin-top:16px;overflow:visible"><div class="card-body">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">➕ Agregar una ubicación</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Buscá tu dirección real y confirmala en el mapa, igual que en cualquier app de delivery.</div>
+
+        <!-- PASO 1: BUSCAR -->
+        <div id="ub-paso-buscar">
+          <div class="form-group" style="position:relative">
+            <label>Dirección</label>
+            <input type="text" id="ub-busqueda" placeholder="Ej: Av. Santa Fe 2000, Buenos Aires" autocomplete="off" oninput="onBuscarDireccion(this.value)"/>
+            <div id="ub-sugerencias" class="ub-sugerencias-box"></div>
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="agregarUbicacion()">➕ Agregar ubicación</button>
+
+        <!-- PASO 2: CONFIRMAR EN MAPA -->
+        <div id="ub-paso-mapa" style="display:none">
+          <div id="mapa-picker" style="height:300px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
+          <div class="mapa-info-box">
+            <div style="font-size:12px;color:var(--text-soft);margin-bottom:2px">📍 ¿El pin no coincide con tu dirección? Arrastralo para ajustarlo.</div>
+            <div style="font-size:14px;font-weight:500" id="mapa-direccion-detectada"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn btn-ghost btn-sm" onclick="volverABuscar()">← Buscar otra dirección</button>
+            <button class="btn btn-teal btn-sm" onclick="irADetalles()">Confirmar ubicación →</button>
+          </div>
+        </div>
+
+        <!-- PASO 3: DETALLES -->
+        <div id="ub-paso-detalles" style="display:none">
+          <div class="form-group">
+            <label>Dirección</label>
+            <div style="font-size:14px;padding:10px 12px;background:var(--bg);border-radius:8px" id="ub-detalle-direccion"></div>
+          </div>
+          <div class="form-group"><label>Piso / Departamento <span style="font-weight:400;color:var(--text-soft)">(opcional)</span></label><input type="text" id="ub-piso" placeholder="Ej: Piso 3, Depto B"/></div>
+          <div class="form-group"><label>Referencias / Indicaciones <span style="font-weight:400;color:var(--text-soft)">(opcional)</span></label><textarea id="ub-referencias" rows="2" placeholder="Ej: Timbre roto, tocar puerta del fondo..."></textarea></div>
+          <div class="form-group">
+            <label>¿Qué nombre le damos a esta dirección?</label>
+            <div class="chip-selector">
+              <button type="button" class="chip-btn active" data-tipo="trabajo" onclick="elegirTipoUbicacion('trabajo', this)">🔧 Zona de trabajo</button>
+              <button type="button" class="chip-btn" data-tipo="residencia" onclick="elegirTipoUbicacion('residencia', this)">🏠 Donde vivo</button>
+              <button type="button" class="chip-btn" data-tipo="otra" onclick="elegirTipoUbicacion('otra', this)">✏️ Otra</button>
+            </div>
+            <input type="text" id="ub-etiqueta-custom" placeholder="Ej: Otra zona donde trabajo..." style="display:none;margin-top:8px"/>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="volverAMapa()">← Volver</button>
+            <button class="btn btn-teal btn-sm" onclick="guardarUbicacionFinal()" id="ub-btn-guardar">Guardar dirección</button>
+          </div>
+        </div>
       </div></div>
     </div>
 
@@ -462,6 +517,7 @@ function toggleDropdown(id) {
 }
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.nav-dropdown')) document.querySelectorAll('.nav-dropdown-menu').forEach(m => m.classList.remove('open'));
+  if (!e.target.closest('#ub-paso-buscar')) { const s = document.getElementById('ub-sugerencias'); if (s) s.classList.remove('open'); }
 });
 
 async function api(path, method='GET', body=null, reintentos=3) {
@@ -974,15 +1030,25 @@ async function consultarIACliente() {
 async function publicarTrabajoCliente() {
   const servicio = document.getElementById('cli-p-servicio').value;
   const descripcion = document.getElementById('cli-p-desc').value.trim();
+  const ubicacion_id = document.getElementById('cli-p-ubicacion').value;
   document.getElementById('cli-pedido-ok').style.display = 'none';
   document.getElementById('cli-pedido-err').style.display = 'none';
   if (!servicio || !descripcion) { const e=document.getElementById('cli-pedido-err'); e.textContent='Completá todos los campos.'; e.style.display='block'; return; }
-  const body = { servicio, descripcion, usuario_id: usuario.id, estado: 'nuevo' };
+  if (!ubicacion_id) { const e=document.getElementById('cli-pedido-err'); e.textContent='Elegí dónde es el trabajo.'; e.style.display='block'; return; }
+  const ubicacion = misUbicaciones.find(u => u.id === ubicacion_id);
+  showConfirm('📍', 'Confirmá la zona del trabajo',
+    `Estás por solicitar un trabajo de ${servicio} en la zona "${ubicacion?.etiqueta}" (${ubicacion?.direccion}). Los socios cercanos a esa zona van a ver tu pedido primero. ¿Confirmás?`,
+    () => confirmarPublicarTrabajoCliente(servicio, descripcion, ubicacion_id), '✅ Sí, publicar');
+}
+
+async function confirmarPublicarTrabajoCliente(servicio, descripcion, ubicacion_id) {
+  const body = { servicio, descripcion, ubicacion_id, estado: 'nuevo' };
   if (iaSugerenciaCliente) body.precio_sugerido_ia = iaSugerenciaCliente.precio_cliente;
   try {
     const r = await api('/api/pedidos', 'POST', body);
     if (r.error) throw new Error(r.error);
     document.getElementById('cli-pedido-ok').style.display = 'block';
+    setTimeout(() => { document.getElementById('cli-pedido-ok').style.display = 'none'; }, 8000);
     document.getElementById('cli-p-servicio').value = '';
     document.getElementById('cli-p-desc').value = '';
     document.getElementById('cli-ia-sugerencia').style.display = 'none';
@@ -1004,37 +1070,169 @@ function renderPerfil() {
     <div><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado==='aprobado'?'✅ Aprobado':'⏳ Pendiente'}</div></div>`;
 }
 
+// ── UBICACIONES: buscar → confirmar en mapa → detalles (estilo PedidosYa) ──
+let misUbicaciones = [];
+let mapaPicker = null, marcadorPicker = null;
+let ubSugerenciasCache = [];
+let ubBusquedaTimer = null;
+let ubSeleccionActual = null; // { direccion, lat, lng }
+let ubEditandoId = null; // si no es null, "Guardar" hace PATCH en vez de POST
+
 async function cargarUbicaciones() {
   try {
     const ubs = await api('/api/ubicaciones');
+    misUbicaciones = Array.isArray(ubs) ? ubs : [];
     const box = document.getElementById('lista-ubicaciones');
     if (!box) return;
     const tipoLabel = { residencia: '🏠 Donde vivo', trabajo: '🔧 Zona de trabajo', otra: '📍 Otra' };
-    box.innerHTML = Array.isArray(ubs) && ubs.length ? ubs.map(u => `
+    box.innerHTML = misUbicaciones.length ? misUbicaciones.map(u => `
       <div class="ubicacion-item">
         <div class="ubicacion-info">
           <div class="etiqueta">${u.etiqueta} <span class="badge badge-gray" style="margin-left:6px">${tipoLabel[u.tipo]||u.tipo}</span> ${u.predeterminada ? '<span class="badge badge-green" style="margin-left:4px">Predeterminada</span>' : ''}</div>
-          <div class="direccion">${u.direccion}</div>
+          <div class="direccion">${u.direccion}${u.piso_depto ? ' — ' + u.piso_depto : ''}</div>
         </div>
         <div class="ubicacion-acciones">
           ${!u.predeterminada ? `<button class="btn btn-ghost btn-sm" onclick="marcarPredeterminada('${u.id}')">Usar como predeterminada</button>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="editarUbicacion('${u.id}')">✏️</button>
           <button class="btn btn-red btn-sm" onclick="eliminarUbicacion('${u.id}')">🗑️</button>
         </div>
       </div>`).join('') : '<div style="font-size:13px;color:var(--text-soft)">Todavía no agregaste ninguna ubicación.</div>';
+    const select = document.getElementById('cli-p-ubicacion');
+    if (select) {
+      const actual = select.value;
+      select.innerHTML = '<option value="">Elegí una ubicación...</option>' + misUbicaciones.map(u => `<option value="${u.id}">${u.etiqueta} — ${u.direccion}</option>`).join('');
+      if (actual) select.value = actual;
+      else { const pred = misUbicaciones.find(u => u.predeterminada); if (pred) select.value = pred.id; }
+    }
   } catch(e) {}
 }
 
-async function agregarUbicacion() {
-  const etiqueta = document.getElementById('ub-etiqueta').value.trim();
-  const direccion = document.getElementById('ub-direccion').value.trim();
-  const tipo = document.getElementById('ub-tipo').value;
-  if (!etiqueta || !direccion) return showInfo('⚠️', 'Faltan datos', 'Completá la etiqueta y la dirección.');
-  const r = await api('/api/ubicaciones', 'POST', { etiqueta, direccion, tipo });
+function onBuscarDireccion(texto) {
+  clearTimeout(ubBusquedaTimer);
+  const box = document.getElementById('ub-sugerencias');
+  if (!texto || texto.trim().length < 3) { box.classList.remove('open'); return; }
+  ubBusquedaTimer = setTimeout(async () => {
+    const r = await api('/api/geocodificar-buscar?q=' + encodeURIComponent(texto));
+    ubSugerenciasCache = Array.isArray(r) ? r : [];
+    if (!ubSugerenciasCache.length) { box.innerHTML = '<div class="ub-sugerencia-item" style="color:var(--text-soft)">No encontramos direcciones. Probá con calle, número y ciudad.</div>'; box.classList.add('open'); return; }
+    box.innerHTML = ubSugerenciasCache.map((s,i) => `<div class="ub-sugerencia-item" onclick="seleccionarSugerencia(${i})"><span class="icono">📍</span><span>${s.display_name}</span></div>`).join('');
+    box.classList.add('open');
+  }, 400);
+}
+
+function seleccionarSugerencia(i) {
+  const s = ubSugerenciasCache[i];
+  document.getElementById('ub-sugerencias').classList.remove('open');
+  document.getElementById('ub-busqueda').value = s.display_name;
+  document.getElementById('ub-paso-buscar').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'block';
+  ubSeleccionActual = { direccion: s.display_name, lat: s.lat, lng: s.lng };
+  mostrarMapaPicker(s.lat, s.lng);
+}
+
+function mostrarMapaPicker(lat, lng) {
+  if (!mapaPicker) {
+    mapaPicker = L.map('mapa-picker').setView([lat, lng], 17);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(mapaPicker);
+    marcadorPicker = L.marker([lat, lng], { draggable: true }).addTo(mapaPicker);
+    marcadorPicker.on('dragend', () => { const pos = marcadorPicker.getLatLng(); actualizarDireccionDetectada(pos.lat, pos.lng); });
+  } else {
+    mapaPicker.setView([lat, lng], 17);
+    marcadorPicker.setLatLng([lat, lng]);
+  }
+  setTimeout(() => mapaPicker.invalidateSize(), 150);
+  actualizarDireccionDetectada(lat, lng);
+}
+
+async function actualizarDireccionDetectada(lat, lng) {
+  document.getElementById('mapa-direccion-detectada').textContent = 'Identificando la dirección...';
+  const r = await api(`/api/geocodificar-inverso?lat=${lat}&lng=${lng}`);
+  if (r.error) { document.getElementById('mapa-direccion-detectada').textContent = '⚠️ No pudimos identificar este punto exacto.'; return; }
+  ubSeleccionActual = { direccion: r.direccion, lat, lng };
+  document.getElementById('mapa-direccion-detectada').textContent = r.direccion;
+}
+
+function volverABuscar() {
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-buscar').style.display = 'block';
+}
+
+function irADetalles() {
+  if (!ubSeleccionActual) return showInfo('⚠️', 'Esperá un momento', 'Todavía estamos identificando la ubicación del pin.');
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-detalles').style.display = 'block';
+  document.getElementById('ub-detalle-direccion').textContent = ubSeleccionActual.direccion;
+}
+
+function volverAMapa() {
+  document.getElementById('ub-paso-detalles').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'block';
+  setTimeout(() => mapaPicker && mapaPicker.invalidateSize(), 150);
+}
+
+function elegirTipoUbicacion(tipo, btn) {
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ub-etiqueta-custom').style.display = tipo === 'otra' ? 'block' : 'none';
+}
+
+function resetFormularioUbicacion() {
+  document.getElementById('ub-busqueda').value = '';
+  document.getElementById('ub-piso').value = '';
+  document.getElementById('ub-referencias').value = '';
+  document.getElementById('ub-etiqueta-custom').value = '';
+  document.getElementById('ub-etiqueta-custom').style.display = 'none';
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.chip-btn[data-tipo="trabajo"]').classList.add('active');
+  document.getElementById('ub-paso-detalles').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-buscar').style.display = 'block';
+  ubSeleccionActual = null;
+  ubEditandoId = null;
+  document.getElementById('ub-btn-guardar').textContent = 'Guardar dirección';
+}
+
+async function guardarUbicacionFinal() {
+  if (!ubSeleccionActual && !ubEditandoId) return showInfo('⚠️', 'Faltan datos', 'Elegí una dirección primero.');
+  const tipoBtn = document.querySelector('.chip-btn.active');
+  const tipo = tipoBtn ? tipoBtn.dataset.tipo : 'trabajo';
+  const nombres = { residencia: 'Casa', trabajo: 'Zona de trabajo' };
+  const etiqueta = tipo === 'otra' ? document.getElementById('ub-etiqueta-custom').value.trim() : nombres[tipo];
+  if (tipo === 'otra' && !etiqueta) return showInfo('⚠️', 'Faltan datos', 'Contanos qué ubicación es.');
+  const piso_depto = document.getElementById('ub-piso').value.trim();
+  const referencias = document.getElementById('ub-referencias').value.trim();
+
+  const body = { etiqueta, tipo, piso_depto, referencias };
+  let r;
+  if (ubEditandoId) {
+    r = await api(`/api/ubicaciones/${ubEditandoId}`, 'PATCH', body);
+  } else {
+    r = await api('/api/ubicaciones', 'POST', { ...body, direccion: ubSeleccionActual.direccion, lat: ubSeleccionActual.lat, lng: ubSeleccionActual.lng });
+  }
   if (r.error) return showInfo('❌', 'Error', r.error);
-  document.getElementById('ub-etiqueta').value = '';
-  document.getElementById('ub-direccion').value = '';
-  showInfo('✅', 'Ubicación agregada', 'Ya la vamos a tener en cuenta para mostrarte trabajos cercanos.');
+  resetFormularioUbicacion();
+  showInfo('✅', ubEditandoId ? 'Ubicación actualizada' : 'Ubicación agregada', 'Ya la vamos a tener en cuenta para mostrarte trabajos cercanos.');
   cargarUbicaciones();
+}
+
+function editarUbicacion(id) {
+  const u = misUbicaciones.find(x => x.id === id);
+  if (!u) return;
+  ubEditandoId = id;
+  ubSeleccionActual = { direccion: u.direccion, lat: u.lat, lng: u.lng };
+  document.getElementById('ub-paso-buscar').style.display = 'none';
+  document.getElementById('ub-paso-mapa').style.display = 'none';
+  document.getElementById('ub-paso-detalles').style.display = 'block';
+  document.getElementById('ub-detalle-direccion').textContent = u.direccion;
+  document.getElementById('ub-piso').value = u.piso_depto || '';
+  document.getElementById('ub-referencias').value = u.referencias || '';
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  const tipoValido = ['residencia','trabajo','otra'].includes(u.tipo) ? u.tipo : 'otra';
+  document.querySelector(`.chip-btn[data-tipo="${tipoValido}"]`).classList.add('active');
+  document.getElementById('ub-etiqueta-custom').style.display = tipoValido === 'otra' ? 'block' : 'none';
+  document.getElementById('ub-etiqueta-custom').value = tipoValido === 'otra' ? u.etiqueta : '';
+  document.getElementById('ub-btn-guardar').textContent = 'Guardar cambios';
+  document.getElementById('page-mi-perfil').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function marcarPredeterminada(id) {
