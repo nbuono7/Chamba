@@ -966,6 +966,7 @@ async function confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id) {
     const r = await api('/api/pedidos', 'POST', body);
     if (r.error) throw new Error(r.error);
     document.getElementById('pedido-ok').style.display = 'block';
+    setTimeout(() => { document.getElementById('pedido-ok').style.display = 'none'; }, 8000);
     document.getElementById('p-servicio').value = '';
     document.getElementById('p-desc').value = '';
     document.getElementById('ia-sugerencia').style.display = 'none';
