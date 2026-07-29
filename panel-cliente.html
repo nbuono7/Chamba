@@ -531,7 +531,7 @@ function volverAMapa() {
 }
 
 function elegirTipoUbicacion(tipo, btn) {
-  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.chip-btn[data-tipo]').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('ub-etiqueta-custom').style.display = tipo === 'otra' ? 'block' : 'none';
 }
@@ -554,7 +554,7 @@ function resetFormularioUbicacion() {
 
 async function guardarUbicacionFinal() {
   if (!ubSeleccionActual && !ubEditandoId) return showInfo('⚠️', 'Faltan datos', 'Elegí una dirección primero.');
-  const tipoBtn = document.querySelector('.chip-btn.active');
+  const tipoBtn = document.querySelector('.chip-btn[data-tipo].active');
   const tipo = tipoBtn ? tipoBtn.dataset.tipo : 'residencia';
   const nombres = { residencia: 'Casa', trabajo: 'Trabajo' };
   const etiqueta = tipo === 'otra' ? document.getElementById('ub-etiqueta-custom').value.trim() : nombres[tipo];
@@ -586,7 +586,7 @@ function editarUbicacion(id) {
   document.getElementById('ub-detalle-direccion').textContent = u.direccion;
   document.getElementById('ub-piso').value = u.piso_depto || '';
   document.getElementById('ub-referencias').value = u.referencias || '';
-  document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.chip-btn[data-tipo]').forEach(b => b.classList.remove('active'));
   const tipoValido = ['residencia','trabajo','otra'].includes(u.tipo) ? u.tipo : 'otra';
   document.querySelector(`.chip-btn[data-tipo="${tipoValido}"]`).classList.add('active');
   document.getElementById('ub-etiqueta-custom').style.display = tipoValido === 'otra' ? 'block' : 'none';
