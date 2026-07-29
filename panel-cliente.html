@@ -83,6 +83,9 @@
     .chip-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: #fff; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer; }
     .chip-btn:hover { border-color: var(--teal); }
     .chip-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .info-tip { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--border); color: var(--text-mid); font-size: 11px; font-style: normal; cursor: help; margin-left: 4px; }
+    .info-tip-text { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 240px; background: var(--navy); color: #fff; font-size: 12px; font-weight: 400; line-height: 1.4; padding: 10px 12px; border-radius: 8px; z-index: 50; text-align: left; }
+    .info-tip:hover .info-tip-text, .info-tip:focus .info-tip-text { display: block; }
     .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .perfil-label { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; margin-bottom: 3px; }
     .perfil-val { font-size: 15px; color: var(--text); }
@@ -225,7 +228,7 @@
         <div class="alert alert-success" id="pedido-ok">✅ ¡Trabajo publicado! Los socios ya pueden ver tu solicitud.</div>
         <div class="alert alert-error" id="pedido-err"></div>
         <div class="form-group"><label>Tipo de servicio</label>
-          <select id="p-servicio"><option value="">Elegí el servicio</option></select>
+          <select id="p-servicio" onchange="onCambioServicioPublicar()"><option value="">Elegí el servicio</option></select>
         </div>
         <div class="form-group"><label>Descripción del problema</label><textarea id="p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
         <div class="form-group"><label>¿Dónde es el trabajo?</label>
@@ -240,6 +243,14 @@
             <button type="button" class="chip-btn" data-urgencia="Alta" onclick="elegirUrgencia('Alta', this)">🔴 Urgente</button>
           </div>
           <div class="hint" style="font-size:12px;color:var(--text-soft);margin-top:6px">Si marcás "Urgente", los socios van a ver que podés necesitar el trabajo cuanto antes (y pueden llegar a cobrar un poco más por eso).</div>
+        </div>
+        <div class="form-group">
+          <label>¿A quién se lo ofrecés? <span class="info-tip" tabindex="0">ⓘ<span class="info-tip-text">Si elegís un favorito, el trabajo se le ofrece únicamente a esa persona — nadie más lo va a ver. Si preferís que lo vea cualquier socio disponible cerca tuyo, dejá la primera opción.</span></span></label>
+          <select id="p-destinatario" onchange="onCambioDestinatario()">
+            <option value="cualquiera">Cualquier socio disponible</option>
+            <option value="favorito">Elegir un favorito</option>
+          </select>
+          <select id="p-favorito" style="display:none;margin-top:8px"><option value="">Elegí un favorito...</option></select>
         </div>
         <div id="ia-sugerencia" style="display:none" class="trabajo-ia"></div>
         <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="consultarIA()">🤖 Consultar precio a la IA</button></div>
@@ -359,6 +370,7 @@ const BACKEND = 'https://chamba-backend-vurx.onrender.com';
 let usuario = null;
 let misUbicaciones = [];
 let misDisputas = [];
+let misRelacionesSocio = [];
 let misPedidos = [];
 let todasOfertas = {};
 let iaSugerencia = null;
@@ -691,6 +703,7 @@ function starsHtml(n) { return n ? '⭐'.repeat(Math.min(5, Math.round(n))) + ' 
 async function cargarTodo() {
   try {
     await cargarDisputas();
+    await cargarRelacionesSocio();
     // Cargar TODOS los pedidos y filtrar en el cliente por usuario_id
     const todos = await api('/api/pedidos');
     misPedidos = Array.isArray(todos) ? todos.filter(p => p.usuario_id === usuario.id) : [];
@@ -796,6 +809,7 @@ function renderCardNegociacion(p) {
   const sorted = [...ofertas].sort((a,b) => (b.rep_promedio||0) - (a.rep_promedio||0) || a.precio_ofertado - b.precio_ofertado);
   return `<div class="trabajo-card con-ofertas">
     <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-amber">${ofertas.length} oferta${ofertas.length!==1?'s':''}</span></div>
+    ${p.socio_preferido_id ? '<div style="font-size:12px;color:var(--teal-dark);font-weight:500;margin-bottom:4px">⭐ Trabajo dirigido a tu favorito</div>' : ''}
     <div class="trabajo-desc">${p.descripcion||''}</div>
     ${p.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido: <strong>${fmt(p.precio_sugerido_ia)}</strong></div>` : ''}
     <div style="font-size:12px;color:var(--text-soft);margin-top:6px">💡 Tené en cuenta que el precio incluye mano de obra, insumos y traslados si correspondiera.</div>
@@ -863,7 +877,7 @@ function renderCardCompletado(p) {
     <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-green">✅ Completado</span></div>
     <div class="trabajo-desc">${p.descripcion||''}</div>
     <div style="font-size:14px;color:var(--teal-dark);font-weight:500;margin-bottom:10px">Precio final: ${fmt(p.precio_cliente)} · ${fmtDate(p.created_at)}</div>
-    ${p.calificado ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text-soft);font-size:14px">✅ Ya calificaste a este socio. ¡Gracias!</div>` : p.profesional_id ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px">
+    ${p.calificado ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text-soft);font-size:14px">✅ Ya calificaste a este socio. ¡Gracias!${renderRelacionSocio(p.profesional_id)}</div>` : p.profesional_id ? `<div style="background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:14px">
       <div style="font-size:14px;font-weight:600;margin-bottom:8px">⭐ Calificá al socio</div>
       <div class="stars-input" id="stars-${p.id}">${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="selStar('${p.id}',${n})">⭐</button>`).join('')}</div>
       <div style="margin-top:10px" id="tags-${p.id}">${TAGS_CALIFICACION.map(tag=>`<button class="tag-chip" onclick="toggleTag('${p.id}','${tag}')">${tag}</button>`).join('')}</div>
@@ -874,6 +888,61 @@ function renderCardCompletado(p) {
 }
 
 function toggleNeg(id) { const el=document.getElementById(id); el.style.display=el.style.display==='none'?'block':'none'; }
+
+// ── FAVORITOS / BLOQUEO DE SOCIOS ──
+async function cargarRelacionesSocio() {
+  try { misRelacionesSocio = await api('/api/relaciones-socio'); if (!Array.isArray(misRelacionesSocio)) misRelacionesSocio = []; } catch(e) { misRelacionesSocio = []; }
+}
+
+function renderRelacionSocio(socioId) {
+  const rel = misRelacionesSocio.find(r => r.socio_id === socioId);
+  if (rel && rel.tipo === 'favorito') {
+    return `<div style="margin-top:8px">⭐ Es uno de tus favoritos — <a href="#" onclick="quitarRelacionSocio('${socioId}');return false" style="color:var(--text-soft)">quitar</a></div>`;
+  }
+  if (rel && rel.tipo === 'bloqueado') {
+    return `<div style="margin-top:8px">🚫 Bloqueaste a este socio — <a href="#" onclick="quitarRelacionSocio('${socioId}');return false" style="color:var(--text-soft)">desbloquear</a></div>`;
+  }
+  return `<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm" onclick="marcarRelacionSocio('${socioId}','favorito')">☆ Agregar a favoritos</button>
+    <button class="btn btn-ghost btn-sm" onclick="marcarRelacionSocio('${socioId}','bloqueado')">🚫 Bloquear socio</button>
+  </div>`;
+}
+
+async function marcarRelacionSocio(socioId, tipo) {
+  const r = await api('/api/relaciones-socio', 'POST', { socio_id: socioId, tipo });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  await cargarRelacionesSocio();
+  await cargarTodo();
+  showInfo(tipo === 'favorito' ? '⭐' : '🚫', tipo === 'favorito' ? 'Agregado a favoritos' : 'Socio bloqueado',
+    tipo === 'favorito' ? 'Vas a poder elegirlo directamente la próxima vez que pidas un servicio.' : 'Este socio no va a poder ver tus próximos trabajos. No se le va a avisar.');
+}
+
+async function quitarRelacionSocio(socioId) {
+  const r = await api(`/api/relaciones-socio/${socioId}`, 'DELETE');
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  await cargarRelacionesSocio();
+  await cargarTodo();
+}
+
+function onCambioDestinatario() {
+  const tipo = document.getElementById('p-destinatario').value;
+  const sel = document.getElementById('p-favorito');
+  sel.style.display = tipo === 'favorito' ? 'block' : 'none';
+  if (tipo === 'favorito') poblarFavoritosParaServicio();
+}
+
+function onCambioServicioPublicar() {
+  if (document.getElementById('p-destinatario').value === 'favorito') poblarFavoritosParaServicio();
+}
+
+function poblarFavoritosParaServicio() {
+  const servicio = document.getElementById('p-servicio').value;
+  const sel = document.getElementById('p-favorito');
+  const favoritos = misRelacionesSocio.filter(r => r.tipo === 'favorito' && r.socio && (!servicio || (r.socio.especialidad || '').split(',').map(s => s.trim()).includes(servicio)));
+  sel.innerHTML = favoritos.length
+    ? '<option value="">Elegí un favorito...</option>' + favoritos.map(f => `<option value="${f.socio_id}">${f.socio.nombre}${f.socio.promedio_estrellas ? ' — ⭐' + f.socio.promedio_estrellas : ''}</option>`).join('')
+    : '<option value="">No tenés favoritos para este servicio</option>';
+}
 
 // ── DISPUTAS (reportar un problema) ──
 async function cargarDisputas() {
@@ -1063,16 +1132,22 @@ async function publicarTrabajo() {
   document.getElementById('pedido-err').style.display = 'none';
   if (!servicio || !descripcion) { const e=document.getElementById('pedido-err'); e.textContent='Completá todos los campos.'; e.style.display='block'; return; }
   if (!ubicacion_id) { const e=document.getElementById('pedido-err'); e.textContent='Elegí dónde es el trabajo.'; e.style.display='block'; return; }
+  const destinatario = document.getElementById('p-destinatario').value;
+  const socio_preferido_id = destinatario === 'favorito' ? document.getElementById('p-favorito').value : '';
+  if (destinatario === 'favorito' && !socio_preferido_id) { const e=document.getElementById('pedido-err'); e.textContent='Elegí a qué favorito se lo ofrecés (o cambiá a "Cualquier socio disponible").'; e.style.display='block'; return; }
   const ubicacion = misUbicaciones.find(u => u.id === ubicacion_id);
-  showConfirm('📍', 'Confirmá la zona del trabajo',
-    `Estás por solicitar un trabajo de ${servicio} en la zona "${ubicacion?.etiqueta}" (${ubicacion?.direccion}). Los socios cercanos a esa zona van a ver tu pedido primero. ¿Confirmás?`,
-    () => confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id), '✅ Sí, publicar');
+  const mensajeConfirmacion = socio_preferido_id
+    ? `Estás por solicitar un trabajo de ${servicio} en la zona "${ubicacion?.etiqueta}" (${ubicacion?.direccion}), dirigido únicamente a tu favorito elegido. Nadie más lo va a ver. ¿Confirmás?`
+    : `Estás por solicitar un trabajo de ${servicio} en la zona "${ubicacion?.etiqueta}" (${ubicacion?.direccion}). Los socios cercanos a esa zona van a ver tu pedido primero. ¿Confirmás?`;
+  showConfirm('📍', 'Confirmá la zona del trabajo', mensajeConfirmacion,
+    () => confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id, socio_preferido_id), '✅ Sí, publicar');
 }
 
-async function confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id) {
+async function confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id, socio_preferido_id) {
   const chipUrgencia = document.querySelector('.chip-btn[data-urgencia].active');
   const urgencia = chipUrgencia ? chipUrgencia.dataset.urgencia : 'Media';
   const body = { servicio, descripcion, ubicacion_id, estado: 'nuevo', urgencia };
+  if (socio_preferido_id) body.socio_preferido_id = socio_preferido_id;
   if (iaSugerencia) body.precio_sugerido_ia = iaSugerencia.precio_cliente;
   try {
     const r = await api('/api/pedidos', 'POST', body);
@@ -1081,6 +1156,8 @@ async function confirmarPublicarTrabajo(servicio, descripcion, ubicacion_id) {
     setTimeout(() => { document.getElementById('pedido-ok').style.display = 'none'; }, 8000);
     document.getElementById('p-servicio').value = '';
     document.getElementById('p-desc').value = '';
+    document.getElementById('p-destinatario').value = 'cualquiera';
+    onCambioDestinatario();
     document.getElementById('ia-sugerencia').style.display = 'none';
     document.querySelectorAll('.chip-btn[data-urgencia]').forEach(b => b.classList.remove('active'));
     document.querySelector('.chip-btn[data-urgencia="Media"]').classList.add('active');
