@@ -81,4 +81,22 @@ async function emailPedidoRecibido(nombreCliente, emailCliente, servicio) {
     </div>`);
 }
 
-module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido };
+// Email: código de verificación (registro) o de inicio de sesión
+async function emailCodigoVerificacion(nombre, email, codigo, tipo) {
+  const titulo = tipo === 'registro' ? 'Confirmá tu email' : 'Tu código para iniciar sesión';
+  const texto = tipo === 'registro'
+    ? 'Usá este código para confirmar tu email y activar tu cuenta en ChamBA.'
+    : 'Usá este código para iniciar sesión en ChamBA.';
+  await sendEmail(email, `${titulo} — Tu código es ${codigo}`, `
+    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+      <h2 style="color:#1D9E75">Hola ${nombre} 👋</h2>
+      <p>${texto}</p>
+      <div style="background:#f4f5f4;border-radius:8px;padding:20px;margin:20px 0;text-align:center">
+        <span style="font-size:32px;font-weight:700;letter-spacing:6px;color:#111">${codigo}</span>
+      </div>
+      <p style="color:#888;font-size:13px">Este código vence en 10 minutos. Si no lo pediste vos, ignorá este mensaje.</p>
+      <p style="color:#888;font-size:12px;margin-top:24px">ChamBA — Profesionales del hogar</p>
+    </div>`);
+}
+
+module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion };
