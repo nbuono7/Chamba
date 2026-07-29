@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 require('dotenv').config();
-const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido } = require('./emailService');
+const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido, emailCodigoVerificacion } = require('./emailService');
 
 const app = express();
 app.use(cors());
@@ -289,7 +289,7 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const bcrypt = require('bcryptjs');
   const password_hash = await bcrypt.hash(password, 10);
   const estado = tipo === 'cliente' ? 'aprobado' : 'pendiente';
-  const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password_hash, estado });
+  const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password_hash, estado, email_verificado: false });
   if (data.error || (Array.isArray(data) && data[0]?.code)) return res.status(400).json({ error: 'Error al registrar.' });
   const nuevoUsuario = data[0];
 
@@ -306,7 +306,11 @@ app.post('/api/usuarios/registro', async (req, res) => {
     }
   } catch (e) { console.error('❌ Error creando ubicación inicial:', e.message); }
 
-  if (tipo === 'cliente') emailBienvenidaCliente(nombre, email);
+  try {
+    const codigo = await generarYEnviarCodigo(email, 'registro');
+    await emailCodigoVerificacion(nombre, email, codigo, 'registro');
+  } catch (e) { console.error('❌ Error enviando código de registro:', e.message); }
+
   res.json({ ok: true, tipo, estado });
 });
 
@@ -318,11 +322,73 @@ app.post('/api/usuarios/login', async (req, res) => {
   const bcrypt = require('bcryptjs');
   const ok = await bcrypt.compare(password, user.password_hash || '');
   if (!ok) return res.status(401).json({ error: 'Email o contraseña incorrectos.' });
+  if (!user.email_verificado) return res.status(403).json({ error: 'Todavía no confirmaste tu email. Revisá tu bandeja de entrada.' });
   if (user.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
   if (user.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
   const { password_hash, ...safeUser } = user;
   const token = jwt.sign({ id: user.id, tipo: user.tipo, email: user.email, nombre: user.nombre }, JWT_SECRET, { expiresIn: '30d' });
   res.json({ ok: true, usuario: safeUser, token });
+});
+
+// ── CÓDIGOS DE EMAIL (confirmar registro / iniciar sesión sin contraseña) ──
+async function generarYEnviarCodigo(email, tipo) {
+  // Invalida cualquier código anterior sin usar de ese email+tipo (si llega tarde, ya no sirve)
+  await sb(`codigos_login?email=eq.${encodeURIComponent(email)}&tipo=eq.${tipo}&usado=eq.false`, 'PATCH', { usado: true });
+  const codigo = String(Math.floor(100000 + Math.random() * 900000));
+  const expira_at = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  await sb('codigos_login', 'POST', { email, codigo, tipo, expira_at, usado: false });
+  return codigo;
+}
+
+app.post('/api/enviar-codigo', async (req, res) => {
+  try {
+    const { email, tipo } = req.body;
+    if (!email || !['login', 'registro'].includes(tipo)) return res.status(400).json({ error: 'Datos inválidos.' });
+    const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id,nombre,estado,tipo,email_verificado`);
+    if (!users.length) return res.status(404).json({ error: 'No encontramos una cuenta con ese email.' });
+    const u = users[0];
+    if (tipo === 'login') {
+      if (!u.email_verificado) return res.status(403).json({ error: 'Todavía no confirmaste tu email. Revisá tu bandeja de entrada.' });
+      if (u.tipo === 'socio' && u.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
+      if (u.tipo === 'socio' && u.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
+    }
+    const codigo = await generarYEnviarCodigo(email, tipo);
+    await emailCodigoVerificacion(u.nombre, email, codigo, tipo);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en /enviar-codigo:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar el código.' });
+  }
+});
+
+app.post('/api/verificar-codigo', async (req, res) => {
+  try {
+    const { email, codigo, tipo } = req.body;
+    if (!email || !codigo || !['login', 'registro'].includes(tipo)) return res.status(400).json({ error: 'Datos inválidos.' });
+    const rows = await sb(`codigos_login?email=eq.${encodeURIComponent(email)}&tipo=eq.${tipo}&codigo=eq.${codigo}&usado=eq.false&select=*&order=created_at.desc&limit=1`);
+    if (!rows.length) return res.status(400).json({ error: 'Código incorrecto.' });
+    const c = rows[0];
+    if (new Date(c.expira_at) < new Date()) return res.status(400).json({ error: 'El código expiró. Pedí uno nuevo.' });
+    await sb(`codigos_login?id=eq.${c.id}`, 'PATCH', { usado: true });
+
+    if (tipo === 'registro') {
+      const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=nombre,tipo`);
+      await sb(`usuarios?email=eq.${encodeURIComponent(email)}`, 'PATCH', { email_verificado: true });
+      if (users.length && users[0].tipo === 'cliente') emailBienvenidaCliente(users[0].nombre, email);
+      return res.json({ ok: true });
+    }
+
+    // tipo === 'login': generar la sesión, igual que el login tradicional
+    const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
+    if (!users.length) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    const user = users[0];
+    const { password_hash, ...safeUser } = user;
+    const token = jwt.sign({ id: user.id, tipo: user.tipo, email: user.email, nombre: user.nombre }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ ok: true, usuario: safeUser, token });
+  } catch (e) {
+    console.error('❌ Error en /verificar-codigo:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo verificar el código.' });
+  }
 });
 
 app.patch('/api/usuarios/:id', auth, async (req, res) => {
