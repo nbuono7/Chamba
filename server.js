@@ -195,25 +195,33 @@ async function firmarUrl(bucket, path, expiresIn = 3600) {
 // ── VERIFICACIÓN DE IDENTIDAD (comprobantes de monotributo u otra prueba, además de la matrícula) ──
 app.post('/api/verificaciones-identidad', auth, async (req, res) => {
   try {
-    const { archivos } = req.body; // [{ data: base64SinPrefijo, mime: 'image/jpeg' }, ...] hasta 3
-    if (!Array.isArray(archivos) || !archivos.length) return res.status(400).json({ error: 'Subí al menos un comprobante.' });
-    if (archivos.length > 3) return res.status(400).json({ error: 'Máximo 3 archivos.' });
+    const { monotributo, facturas } = req.body; // monotributo: {data,mime}; facturas: [{data,mime}, ...] hasta 3
+    if (!monotributo || !monotributo.data || !monotributo.mime) return res.status(400).json({ error: 'Subí el comprobante de pago del monotributo (el más reciente).' });
+    if (!Array.isArray(facturas) || !facturas.length) return res.status(400).json({ error: 'Subí al menos una factura reciente hecha a un cliente.' });
+    if (facturas.length > 3) return res.status(400).json({ error: 'Máximo 3 facturas.' });
 
-    // Validar TODOS antes de subir ninguno (tipo real de archivo + tamaño)
-    for (const a of archivos) {
-      const v = validarArchivo(a.data, a.mime);
-      if (!v.ok) return res.status(400).json({ error: v.error });
+    // Validar TODO antes de subir nada (tipo real de archivo + tamaño)
+    const vMono = validarArchivo(monotributo.data, monotributo.mime);
+    if (!vMono.ok) return res.status(400).json({ error: 'Comprobante de monotributo: ' + vMono.error });
+    for (const f of facturas) {
+      const v = validarArchivo(f.data, f.mime);
+      if (!v.ok) return res.status(400).json({ error: 'Factura: ' + v.error });
     }
 
-    const paths = [];
-    for (let i = 0; i < archivos.length; i++) {
-      const ext = (archivos[i].mime.split('/')[1] || 'bin').replace('jpeg', 'jpg');
-      const path = `${req.usuario.id}/${Date.now()}_${i}.${ext}`;
-      await subirArchivo('identificaciones', path, archivos[i].data, archivos[i].mime);
-      paths.push(path);
+    const extMono = (monotributo.mime.split('/')[1] || 'bin').replace('jpeg', 'jpg');
+    const pathMono = `${req.usuario.id}/monotributo_${Date.now()}.${extMono}`;
+    await subirArchivo('identificaciones', pathMono, monotributo.data, monotributo.mime);
+
+    const pathsFacturas = [];
+    for (let i = 0; i < facturas.length; i++) {
+      const ext = (facturas[i].mime.split('/')[1] || 'bin').replace('jpeg', 'jpg');
+      const path = `${req.usuario.id}/factura_${Date.now()}_${i}.${ext}`;
+      await subirArchivo('identificaciones', path, facturas[i].data, facturas[i].mime);
+      pathsFacturas.push(path);
     }
-    const body = { socio_id: req.usuario.id, estado: 'pendiente' };
-    ['archivo_1', 'archivo_2', 'archivo_3'].forEach((campo, i) => { if (paths[i]) body[campo] = paths[i]; });
+
+    const body = { socio_id: req.usuario.id, estado: 'pendiente', comprobante_monotributo: pathMono };
+    ['factura_cliente_1', 'factura_cliente_2', 'factura_cliente_3'].forEach((campo, i) => { if (pathsFacturas[i]) body[campo] = pathsFacturas[i]; });
     res.json(await sb('verificaciones_identidad', 'POST', body));
   } catch (e) {
     console.error('❌ Error en POST /verificaciones-identidad:', e.message, e.supabase || '');
@@ -228,9 +236,15 @@ app.get('/api/verificaciones-identidad', auth, async (req, res) => {
     const filtro = socio_id ? `&socio_id=eq.${socio_id}` : '';
     const rows = await sb(`verificaciones_identidad?select=*&order=created_at.desc${filtro}`);
     for (const row of rows) {
-      row.urls = [];
-      for (const campo of ['archivo_1', 'archivo_2', 'archivo_3']) {
-        if (row[campo]) { const url = await firmarUrl('identificaciones', row[campo]); if (url) row.urls.push(url); }
+      row.archivos = []; // [{ label, url }]
+      if (row.comprobante_monotributo) {
+        const url = await firmarUrl('identificaciones', row.comprobante_monotributo);
+        if (url) row.archivos.push({ label: 'Monotributo', url });
+      }
+      let n = 1;
+      for (const campo of ['factura_cliente_1', 'factura_cliente_2', 'factura_cliente_3']) {
+        if (row[campo]) { const url = await firmarUrl('identificaciones', row[campo]); if (url) row.archivos.push({ label: 'Factura ' + n, url }); }
+        n++;
       }
     }
     res.json(rows);
@@ -572,10 +586,26 @@ app.get('/api/pedidos', auth, async (req, res) => {
     const misUbs = await sb(`ubicaciones?usuario_id=eq.${req.usuario.id}&predeterminada=eq.true&select=lat,lng`);
     const origenes = misUbs.filter(u => u.lat != null && u.lng != null);
 
+    // Clientes que me bloquearon a mí (nunca debo ver sus pedidos — de forma confidencial, sin que ellos lo sepan)
+    const bloqueosContraMi = await sb(`relaciones_socio?socio_id=eq.${req.usuario.id}&tipo=eq.bloqueado&select=cliente_id`);
+    const clientesQueMeBloquearon = new Set(bloqueosContraMi.map(b => b.cliente_id));
+
     const resultado = [];
     for (const p of pedidos) {
       const esPropio = req.usuario.id === p.usuario_id || req.usuario.id === p.profesional_id;
       if (esPropio) { resultado.push(p); continue; }
+
+      // El cliente que publicó esto me bloqueó: nunca lo veo, sin ningún aviso
+      if (clientesQueMeBloquearon.has(p.usuario_id)) continue;
+
+      // Trabajo dirigido a un socio favorito: solo esa persona lo ve, sin importar la distancia
+      if (p.socio_preferido_id) {
+        if (p.socio_preferido_id !== req.usuario.id) continue;
+        const { lat, lng, direccion, ...sinCoordenadas } = p;
+        resultado.push({ ...sinCoordenadas, distancia_km: null, es_favorito: true });
+        continue;
+      }
+
       // No es mío: nunca se manda lat/lng exacto, solo la zona y la distancia calculada acá adentro
       let distancia_km = null;
       if (origenes.length && p.lat != null && p.lng != null) {
@@ -594,8 +624,13 @@ app.get('/api/pedidos', auth, async (req, res) => {
 
 app.post('/api/pedidos', auth, async (req, res) => {
   try {
-    const { ubicacion_id, ...resto } = req.body;
+    const { ubicacion_id, socio_preferido_id, ...resto } = req.body;
     const body = { ...resto, usuario_id: req.usuario.id }; // nunca confiar en el usuario_id que manda el cliente
+    if (socio_preferido_id) {
+      const esFavorito = await sb(`relaciones_socio?cliente_id=eq.${req.usuario.id}&socio_id=eq.${socio_preferido_id}&tipo=eq.favorito&select=id`);
+      if (!esFavorito.length) return res.status(400).json({ error: 'Ese socio no está en tus favoritos.' });
+      body.socio_preferido_id = socio_preferido_id;
+    }
     if (ubicacion_id) {
       const ub = await sb(`ubicaciones?id=eq.${ubicacion_id}&select=lat,lng,zona,etiqueta,direccion,piso_depto,referencias`);
       if (ub.length) {
@@ -781,7 +816,7 @@ app.post('/api/pedidos/:id/buscar-otro-socio', auth, async (req, res) => {
   await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', {
     profesional_id: null, estado: 'nuevo', estado_pago: 'sin_pagar',
     precio_cliente: 0, precio_socio: 0, comision: 0,
-    codigo_verificacion: null, intentos_codigo: 0, chat_habilitado: false, mensaje_email_enviado: false
+    codigo_verificacion: null, intentos_codigo: 0, chat_habilitado: false, mensaje_email_enviado: false, socio_preferido_id: null
   });
   await sb(`ofertas?pedido_id=eq.${req.params.id}`, 'PATCH', { estado: 'rechazada' });
   res.json({ ok: true });
@@ -988,6 +1023,46 @@ app.patch('/api/disputas/:id', auth, soloAdmin, async (req, res) => {
   } catch (e) {
     console.error('❌ Error en PATCH /disputas:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo actualizar la disputa.' });
+  }
+});
+
+// ── FAVORITOS / BLOQUEO DE SOCIOS (siempre desde el punto de vista del cliente) ──
+app.post('/api/relaciones-socio', auth, async (req, res) => {
+  try {
+    const { socio_id, tipo } = req.body;
+    if (!socio_id || !['favorito', 'bloqueado'].includes(tipo)) return res.status(400).json({ error: 'Datos inválidos.' });
+    const existente = await sb(`relaciones_socio?cliente_id=eq.${req.usuario.id}&socio_id=eq.${socio_id}&select=id`);
+    if (existente.length) {
+      return res.json(await sb(`relaciones_socio?id=eq.${existente[0].id}`, 'PATCH', { tipo }));
+    }
+    res.json(await sb('relaciones_socio', 'POST', { cliente_id: req.usuario.id, socio_id, tipo }));
+  } catch (e) {
+    console.error('❌ Error en POST /relaciones-socio:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo guardar.' });
+  }
+});
+
+app.delete('/api/relaciones-socio/:socio_id', auth, async (req, res) => {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/relaciones_socio?cliente_id=eq.${req.usuario.id}&socio_id=eq.${req.params.socio_id}`, { method: 'DELETE', headers: sbH });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en DELETE /relaciones-socio:', e.message);
+    res.status(500).json({ error: 'No se pudo eliminar.' });
+  }
+});
+
+app.get('/api/relaciones-socio', auth, async (req, res) => {
+  try {
+    const rows = await sb(`relaciones_socio?cliente_id=eq.${req.usuario.id}&select=*&order=created_at.desc`);
+    const ids = [...new Set(rows.map(r => r.socio_id))];
+    const socios = ids.length ? await sb(`usuarios?id=in.(${ids.join(',')})&select=id,nombre,especialidad,promedio_estrellas,trabajos_completados`) : [];
+    const mapa = {}; socios.forEach(s => mapa[s.id] = s);
+    rows.forEach(r => r.socio = mapa[r.socio_id] || null);
+    res.json(rows);
+  } catch (e) {
+    console.error('❌ Error en GET /relaciones-socio:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudieron cargar tus relaciones con socios.' });
   }
 });
 
