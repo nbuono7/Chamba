@@ -580,6 +580,7 @@ function fmtDate(d) { return d ? new Date(d).toLocaleDateString('es-AR') : '—'
 
 async function cargarTodo() {
   try {
+    await cargarDisputas();
     const [todosPedidos, ofertas] = await Promise.all([api('/api/pedidos'), api('/api/ofertas?socio_id=' + usuario.id)]);
     const lista = Array.isArray(todosPedidos) ? todosPedidos : [];
     lista.forEach(p => pedidosCache[p.id] = p);
@@ -729,6 +730,7 @@ function renderCardProceso(t) {
         </div>
       </div>
     </div>
+    ${renderBloqueDisputa(t.id)}
   </div>`;
 }
 
@@ -737,6 +739,7 @@ function renderCardCompletado(t) {
     <div class="trabajo-header"><div class="trabajo-servicio">${t.servicio}</div><span class="badge badge-green">✅ Completado</span></div>
     <div class="trabajo-desc">${t.descripcion||''}</div>
     <div style="font-size:14px;font-weight:500;color:var(--teal-dark)">Cobrado: ${fmt(t.precio_socio)} · ${fmtDate(t.created_at)}</div>
+    ${renderBloqueDisputa(t.id)}
   </div>`;
 }
 
@@ -973,6 +976,7 @@ function renderCardCliProceso(p) {
         </div>
       </div>
     </div>
+    ${renderBloqueDisputa(p.id)}
   </div>`;
 }
 
@@ -987,6 +991,7 @@ function renderCardCliCompletado(p) {
       <div style="margin-top:10px" id="tags-${p.id}">${TAGS_CALIFICACION.map(tag=>`<button class="tag-chip" onclick="toggleTag('${p.id}','${tag}')">${tag}</button>`).join('')}</div>
       <button class="btn btn-teal btn-sm" style="margin-top:10px" onclick="calificar('${p.id}','${p.profesional_id}')">Enviar calificación</button>
     </div>` : ''}
+    ${renderBloqueDisputa(p.id)}
   </div>`;
 }
 
@@ -1147,6 +1152,57 @@ function renderPerfil() {
 
 // ── UBICACIONES: buscar → confirmar en mapa → detalles (estilo PedidosYa) ──
 let misUbicaciones = [];
+let misDisputas = [];
+
+// ── DISPUTAS (reportar un problema) ──
+async function cargarDisputas() {
+  try { misDisputas = await api('/api/disputas'); if (!Array.isArray(misDisputas)) misDisputas = []; } catch(e) { misDisputas = []; }
+}
+
+function renderBloqueDisputa(pedidoId) {
+  const existente = misDisputas.find(d => d.pedido_id === pedidoId);
+  const badge = { abierta: 'badge-amber|⏳ Reportado, en espera', en_revision: 'badge-amber|🔎 En revisión', resuelta: 'badge-green|✅ Resuelto' };
+  if (existente) {
+    const [cls, label] = (badge[existente.estado] || 'badge-gray|' + existente.estado).split('|');
+    return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <span class="badge ${cls}">${label}</span>
+      <div style="font-size:12px;color:var(--text-soft);margin-top:4px">Reportaste: ${existente.motivo}${existente.resolucion ? '<br>Respuesta de ChamBA: ' + existente.resolucion : ''}</div>
+    </div>`;
+  }
+  return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+    <button class="btn btn-ghost btn-sm" onclick="toggleDisputaForm('${pedidoId}')">⚠️ Reportar un problema</button>
+    <div id="disputa-form-${pedidoId}" style="display:none;margin-top:10px">
+      <div class="form-group"><label>¿Qué pasó?</label>
+        <select id="disputa-motivo-${pedidoId}">
+          <option value="">Elegí un motivo</option>
+          <option>El cliente/socio no se presentó</option>
+          <option>El trabajo quedó mal hecho</option>
+          <option>No coincide con lo acordado</option>
+          <option>Problema con el pago</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Contanos más</label><textarea id="disputa-desc-${pedidoId}" rows="3" placeholder="Describí qué pasó con el mayor detalle posible..."></textarea></div>
+      <button class="btn btn-red btn-sm" onclick="enviarDisputa('${pedidoId}')">Enviar reporte</button>
+    </div>
+  </div>`;
+}
+
+function toggleDisputaForm(pedidoId) {
+  const el = document.getElementById('disputa-form-' + pedidoId);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function enviarDisputa(pedidoId) {
+  const motivo = document.getElementById('disputa-motivo-' + pedidoId).value;
+  const descripcion = document.getElementById('disputa-desc-' + pedidoId).value.trim();
+  if (!motivo || !descripcion) return showInfo('⚠️', 'Faltan datos', 'Elegí un motivo y contanos qué pasó.');
+  const r = await api('/api/disputas', 'POST', { pedido_id: pedidoId, motivo, descripcion });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+  showInfo('✅', 'Reporte enviado', 'Nuestro equipo lo va a revisar y te va a contactar.');
+  await cargarDisputas();
+  await cargarTodo();
+}
 let mapaPicker = null, marcadorPicker = null;
 let ubSugerenciasCache = [];
 let ubBusquedaTimer = null;
