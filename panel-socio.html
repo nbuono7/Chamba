@@ -353,7 +353,7 @@
 
       <div class="card" style="margin-top:16px"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">📍 Mis ubicaciones</div>
-        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Tu zona de trabajo se usa para mostrarte primero los trabajos más cercanos. Podés agregar otras zonas si trabajás en más de un lugar.</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Solo tu ubicación <strong>predeterminada</strong> se usa para mostrarte trabajos cercanos. Si querés recibir trabajos de otra zona, marcá esa ubicación como predeterminada.</div>
         <div id="lista-ubicaciones" style="margin-bottom:16px"></div>
       </div></div>
 
@@ -620,6 +620,7 @@ function renderDisponibles() {
     ? trabajosDisponibles.map(t => `
         <div class="trabajo-card nuevo">
           <div class="trabajo-header"><div class="trabajo-servicio">${t.servicio} ${t.urgencia === 'Alta' ? '<span class="badge" style="background:var(--red-light);color:var(--red);margin-left:6px">🔥 BONUS POR URGENCIA</span>' : ''}</div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(t.created_at)}</div></div>
+          ${t.zona || t.distancia_km != null ? `<div style="font-size:12px;color:var(--teal-dark);font-weight:500;margin-bottom:4px">📍 ${t.zona||'Zona sin especificar'}${t.distancia_km != null ? ` · a ${t.distancia_km} km de tu zona de trabajo` : ''}</div>` : ''}
           <div class="trabajo-desc">${t.descripcion||''}</div>
           ${t.urgencia === 'Alta' ? `<div style="font-size:12px;color:var(--red);margin-bottom:6px">⚠️ El cliente necesita que esto se resuelva rápido — podés cobrar un poco más por la prioridad.</div>` : ''}
           ${t.precio_sugerido_ia ? `<div class="trabajo-ia">🤖 Precio sugerido al cliente: <strong>${fmt(t.precio_sugerido_ia)}</strong><br>Tu parte: <strong>${fmt(t.precio_sugerido_ia*0.8)}</strong> · ChamBA: ${fmt(t.precio_sugerido_ia*0.2)} (20%)</div>` : ''}
