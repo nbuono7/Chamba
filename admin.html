@@ -125,6 +125,7 @@
       <button class="nav-item" onclick="goTo('pedidos',this)">Pedidos <span class="nav-badge" id="badge-pedidos" style="display:none">0</span></button>
       <button class="nav-item" onclick="goTo('pagos',this)">Pagos</button>
       <button class="nav-item" id="nav-usuarios" onclick="goTo('usuarios',this)">Usuarios <span class="nav-badge" id="badge-usuarios-total" style="display:none">0</span></button>
+      <button class="nav-item" onclick="goTo('disputas',this)">Disputas <span class="nav-badge" id="badge-disputas" style="display:none">0</span></button>
       <button class="nav-item" onclick="goTo('foro',this)">Foro</button>
     </nav>
     <div class="topbar-right">
@@ -268,6 +269,23 @@
         </div>
       </div>
 
+      <!-- DISPUTAS -->
+      <div class="page" id="page-disputas">
+        <div class="page-title">Disputas</div>
+        <div class="page-sub">Reportes de problemas en trabajos, cargados por clientes o socios.</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="filter-tabs">
+              <button class="filter-tab active" onclick="filtrarDisputas('todos',this)">Todas</button>
+              <button class="filter-tab" onclick="filtrarDisputas('abierta',this)">Abiertas</button>
+              <button class="filter-tab" onclick="filtrarDisputas('en_revision',this)">En revisión</button>
+              <button class="filter-tab" onclick="filtrarDisputas('resuelta',this)">Resueltas</button>
+            </div>
+          </div>
+          <table><thead><tr><th>Servicio</th><th>Reportado por</th><th>Motivo</th><th>Descripción</th><th>Fecha</th><th>Estado</th><th></th></tr></thead><tbody id="disputas-tbody"></tbody></table>
+        </div>
+      </div>
+
       <!-- FORO -->
       <div class="page" id="page-foro">
         <div class="page-title">Foro de la comunidad</div>
@@ -307,7 +325,8 @@
 <script>
 const BACKEND = 'https://chamba-backend-vurx.onrender.com';
 let usuario = null;
-let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [], especialidades = [], verificacionesIdentidad = [];
+let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [], especialidades = [], verificacionesIdentidad = [], disputas = [];
+let filtroDisputas = 'todos';
 let filtroPedidos = 'todos', filtroSocios = 'todos', filtroSolicitudes = 'todos', filtroIdentificacion = 'todos';
 
 window.onload = async () => {
@@ -342,15 +361,16 @@ async function api(path, method='GET', body=null) {
 }
 
 async function cargarTodo() {
-  [pedidos, usuarios, solicitudesMatricula, especialidades, verificacionesIdentidad] = await Promise.all([
-    api('/api/pedidos'), api('/api/usuarios'), api('/api/solicitudes-matricula'), api('/api/especialidades'), api('/api/verificaciones-identidad')
+  [pedidos, usuarios, solicitudesMatricula, especialidades, verificacionesIdentidad, disputas] = await Promise.all([
+    api('/api/pedidos'), api('/api/usuarios'), api('/api/solicitudes-matricula'), api('/api/especialidades'), api('/api/verificaciones-identidad'), api('/api/disputas')
   ]);
   if (!Array.isArray(pedidos)) pedidos = [];
   if (!Array.isArray(usuarios)) usuarios = [];
   if (!Array.isArray(solicitudesMatricula)) solicitudesMatricula = [];
   if (!Array.isArray(especialidades)) especialidades = [];
   if (!Array.isArray(verificacionesIdentidad)) verificacionesIdentidad = [];
-  renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); renderSolicitudes(); renderEspecialidades(); renderIdentificacion(); updateBadges();
+  if (!Array.isArray(disputas)) disputas = [];
+  renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); renderSolicitudes(); renderEspecialidades(); renderIdentificacion(); renderDisputas(); updateBadges();
 }
 
 function goTo(page, btn) {
@@ -385,13 +405,14 @@ function updateBadges() {
   const ns = usuarios.filter(u => u.tipo === 'socio' && u.estado === 'pendiente').length;
   const nm = solicitudesMatricula.filter(s => s.estado === 'pendiente').length;
   const ni = verificacionesIdentidad.filter(v => v.estado === 'pendiente').length;
-  set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns); set('badge-solicitudes', nm); set('badge-identificacion', ni);
+  const nd = disputas.filter(d => d.estado === 'abierta').length;
+  set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns); set('badge-solicitudes', nm); set('badge-identificacion', ni); set('badge-disputas', nd);
   set('badge-usuarios-total', ns + nm + ni);
 }
 function set(id, val) { const el=document.getElementById(id); el.textContent=val; el.style.display=val?'inline':'none'; }
 
 function badge(e) {
-  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado', pendiente:'badge-amber|Pendiente', aprobado:'badge-green|Aprobado', rechazado:'badge-red|Rechazado', aprobada:'badge-green|Aprobada', rechazada:'badge-red|Rechazada' };
+  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado', pendiente:'badge-amber|Pendiente', aprobado:'badge-green|Aprobado', rechazado:'badge-red|Rechazado', aprobada:'badge-green|Aprobada', rechazada:'badge-red|Rechazada', abierta:'badge-red|Abierta', en_revision:'badge-amber|En revisión', resuelta:'badge-green|Resuelta' };
   const [cls, label] = (map[e] || 'badge-gray|' + e).split('|');
   return `<span class="badge ${cls}">${label}</span>`;
 }
@@ -483,6 +504,34 @@ async function resolverSolicitud(id, estado) {
   if (r && r.error) return toast(r.error);
   await cargarTodo();
   toast(estado === 'aprobada' ? 'Matrícula aprobada ✅' : 'Solicitud rechazada');
+}
+
+function renderDisputas(lista) {
+  const data = (lista || disputas).filter(d => filtroDisputas === 'todos' || d.estado === filtroDisputas);
+  document.getElementById('disputas-tbody').innerHTML = data.length ? data.map(d => {
+    const pedido = pedidos.find(p => p.id === d.pedido_id);
+    const reportante = usuarios.find(u => u.id === d.creado_por);
+    return `<tr>
+      <td class="td-primary">${pedido ? pedido.servicio : '—'}</td>
+      <td>${reportante ? reportante.nombre : '—'}</td>
+      <td>${d.motivo}</td>
+      <td style="max-width:220px;white-space:normal">${d.descripcion}</td>
+      <td>${fmtDate(d.created_at)}</td>
+      <td>${badge(d.estado)}</td>
+      <td>${d.estado !== 'resuelta' ? `<button class="btn btn-ghost btn-sm" onclick="resolverDisputa('${d.id}')">Gestionar</button>` : ''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" class="empty">No hay disputas</td></tr>';
+}
+function filtrarDisputas(f, btn) { filtroDisputas=f; document.querySelectorAll('#page-disputas .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderDisputas(); }
+async function resolverDisputa(id) {
+  const d = disputas.find(x => x.id === id);
+  const nota = prompt('Nota de resolución (se le va a mostrar al cliente y al socio):', d?.resolucion || '');
+  if (nota === null) return; // canceló
+  const estado = confirm('¿Marcar como RESUELTA? Aceptar = Resuelta, Cancelar = En revisión (todavía no resuelta)') ? 'resuelta' : 'en_revision';
+  const r = await api(`/api/disputas/${id}`, 'PATCH', { estado, resolucion: nota });
+  if (r && r.error) return toast(r.error);
+  await cargarTodo();
+  toast('Disputa actualizada ✅');
 }
 
 function renderIdentificacion(lista) {
