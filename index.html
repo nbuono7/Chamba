@@ -3,10 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChamBA — Profesionales del hogar</title>
+  <title>ChamBA — Encontrá plomeros, electricistas y más cerca tuyo</title>
+  <meta name="description" content="ChamBA conecta a vecinos con plomeros, electricistas, gasistas, cerrajeros y otros profesionales del hogar verificados. Publicá tu trabajo, recibí ofertas y pagá seguro, todo desde la app." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://chamba-vert.vercel.app/" />
+
+  <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://chamba-vert.vercel.app/" />
+  <meta property="og:title" content="ChamBA — El profesional que necesitás, cuando lo necesitás" />
+  <meta property="og:description" content="Plomeros, electricistas, gasistas y más. Coordinamos todo por vos, con precios claros desde el inicio." />
+  <meta property="og:image" content="https://chamba-vert.vercel.app/og-image.png" />
+  <meta property="og:locale" content="es_AR" />
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ChamBA — El profesional que necesitás, cuando lo necesitás" />
+  <meta name="twitter:description" content="Plomeros, electricistas, gasistas y más. Coordinamos todo por vos, con precios claros desde el inicio." />
+  <meta name="twitter:image" content="https://chamba-vert.vercel.app/og-image.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
+
+  <!-- Datos estructurados para buscadores -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "ChamBA",
+    "url": "https://chamba-vert.vercel.app/",
+    "description": "Marketplace de profesionales del hogar (plomería, electricidad, gas, cerrajería y más) en Argentina.",
+    "areaServed": "AR"
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -320,6 +350,18 @@
       .stat { min-width: 140px; }
     }
   </style>
+  <!--
+    Google Analytics (GA4): cuando tengas tu cuenta creada en analytics.google.com,
+    reemplazá G-XXXXXXXXXX por tu Measurement ID y sacá los comentarios de estas 2 líneas.
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+  -->
 </head>
 <body>
 
