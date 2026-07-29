@@ -121,6 +121,19 @@
       <a href="/" style="color:var(--teal);font-weight:500">Volver al inicio →</a>
     </div>
 
+    <div id="verificar-box" style="display:none">
+      <div class="form-group">
+        <label>Te mandamos un código a <strong id="verif-email-destino"></strong></label>
+        <input type="text" id="verif-codigo" placeholder="Código de 6 dígitos" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarCodigoRegistro()"/>
+      </div>
+      <div class="error-box" id="verif-error-box"></div>
+      <button class="btn-submit" id="btn-verif" onclick="confirmarCodigoRegistro()">Confirmar</button>
+      <div style="text-align:center;margin-top:14px;font-size:13px">
+        <span id="verif-reenviar-timer" style="color:var(--text-soft)"></span>
+        <button type="button" id="btn-reenviar-codigo" onclick="reenviarCodigoRegistro()" style="display:none;background:none;border:none;color:var(--teal);font-weight:500;cursor:pointer;font-size:13px">Reenviar código</button>
+      </div>
+    </div>
+
     <div id="form-content">
       <!-- DATOS PERSONALES -->
       <div class="form-section">Datos personales</div>
@@ -205,6 +218,8 @@
 <script>
 const BACKEND = 'https://chamba-backend-vurx.onrender.com';
 let tipoSeleccionado = null;
+let emailRegistrado = '';
+let timerReenvio = null;
 
 function selectTipo(tipo) {
   tipoSeleccionado = tipo;
@@ -258,20 +273,80 @@ async function registrar() {
     if (!r.ok) return showError(data.error || 'Error al registrar.');
 
     document.getElementById('form-content').style.display = 'none';
-    const box = document.getElementById('success-box');
-    box.style.display = 'block';
-    if (tipoSeleccionado === 'cliente') {
-      document.getElementById('success-title').textContent = '¡Bienvenido a ChamBA!';
-      document.getElementById('success-msg').textContent = 'Tu cuenta fue creada exitosamente. Ya podés pedir servicios.';
-    } else {
-      document.getElementById('success-title').textContent = '¡Solicitud enviada!';
-      document.getElementById('success-msg').textContent = 'Recibimos tu solicitud. Nuestro equipo la va a revisar y te avisamos por email en las próximas 48hs.';
-    }
+    emailRegistrado = email;
+    document.getElementById('verif-email-destino').textContent = email;
+    document.getElementById('verificar-box').style.display = 'block';
+    iniciarTimerReenvio();
   } catch (e) {
     showError('No se pudo conectar al servidor. Intentá de nuevo.');
   } finally {
     btn.disabled = false;
     btn.textContent = tipoSeleccionado === 'cliente' ? 'Crear cuenta' : 'Enviar solicitud';
+  }
+}
+
+function iniciarTimerReenvio() {
+  clearInterval(timerReenvio);
+  let restante = 60;
+  const timerEl = document.getElementById('verif-reenviar-timer');
+  const btn = document.getElementById('btn-reenviar-codigo');
+  btn.style.display = 'none';
+  timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
+  timerReenvio = setInterval(() => {
+    restante--;
+    if (restante <= 0) {
+      clearInterval(timerReenvio);
+      timerEl.textContent = '';
+      btn.style.display = 'inline';
+    } else {
+      timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
+    }
+  }, 1000);
+}
+
+async function confirmarCodigoRegistro() {
+  const codigo = document.getElementById('verif-codigo').value.trim();
+  const errorBox = document.getElementById('verif-error-box');
+  errorBox.style.display = 'none';
+  if (!codigo) { errorBox.textContent = 'Ingresá el código que te mandamos.'; errorBox.style.display = 'block'; return; }
+  const btn = document.getElementById('btn-verif');
+  btn.disabled = true; btn.textContent = 'Confirmando...';
+  try {
+    const r = await fetch(`${BACKEND}/api/verificar-codigo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailRegistrado, codigo, tipo: 'registro' })
+    });
+    const data = await r.json();
+    if (!r.ok) { errorBox.textContent = data.error || 'Código incorrecto.'; errorBox.style.display = 'block'; return; }
+    clearInterval(timerReenvio);
+    document.getElementById('verificar-box').style.display = 'none';
+    const box = document.getElementById('success-box');
+    box.style.display = 'block';
+    if (tipoSeleccionado === 'cliente') {
+      document.getElementById('success-title').textContent = '¡Bienvenido a ChamBA!';
+      document.getElementById('success-msg').textContent = 'Confirmamos tu email. Ya podés iniciar sesión y pedir servicios.';
+    } else {
+      document.getElementById('success-title').textContent = '¡Email confirmado!';
+      document.getElementById('success-msg').textContent = 'Ahora nuestro equipo va a revisar tu solicitud y te avisamos por email en las próximas 48hs.';
+    }
+  } catch (e) {
+    errorBox.textContent = 'No se pudo conectar al servidor. Intentá de nuevo.'; errorBox.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Confirmar';
+  }
+}
+
+async function reenviarCodigoRegistro() {
+  const btn = document.getElementById('btn-reenviar-codigo');
+  btn.disabled = true;
+  try {
+    await fetch(`${BACKEND}/api/enviar-codigo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailRegistrado, tipo: 'registro' })
+    });
+    iniciarTimerReenvio();
+  } finally {
+    btn.disabled = false;
   }
 }
 
