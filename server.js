@@ -577,7 +577,8 @@ app.patch('/api/pedidos/:id', auth, async (req, res) => {
     if (!prev.length) return res.status(404).json({ error: 'Pedido no encontrado.' });
     const esParte = req.usuario.id === prev[0].usuario_id || req.usuario.id === prev[0].profesional_id;
     if (!esParte && req.usuario.tipo !== 'admin') return res.status(403).json({ error: 'No podés modificar este pedido.' });
-    res.json(await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', req.body));
+    const body = req.body.estado ? { ...req.body, mensaje_email_enviado: false } : req.body;
+    res.json(await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', body));
   }
   catch (e) { console.error('❌ Error en PATCH /pedidos:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo actualizar el pedido.', detalle: e.message }); }
 });
@@ -701,7 +702,7 @@ app.post('/api/ofertas/:id/aceptar', auth, async (req, res) => {
     await sb(`pedidos?id=eq.${o.pedido_id}`, 'PATCH', {
       profesional_id: o.socio_id, estado: 'en_proceso', estado_pago: 'pagado',
       precio_cliente: o.precio_ofertado, precio_socio: o.precio_neto,
-      comision: o.comision, codigo_verificacion: codigo, intentos_codigo: 0, chat_habilitado: true
+      comision: o.comision, codigo_verificacion: codigo, intentos_codigo: 0, chat_habilitado: true, mensaje_email_enviado: false
     });
     // El pago del cliente queda "bloqueado" hasta que se verifique el código de finalización
     const socio = await sb(`usuarios?id=eq.${o.socio_id}&select=saldo_bloqueado`);
@@ -737,7 +738,7 @@ app.post('/api/pedidos/:id/buscar-otro-socio', auth, async (req, res) => {
   await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', {
     profesional_id: null, estado: 'nuevo', estado_pago: 'sin_pagar',
     precio_cliente: 0, precio_socio: 0, comision: 0,
-    codigo_verificacion: null, intentos_codigo: 0, chat_habilitado: false
+    codigo_verificacion: null, intentos_codigo: 0, chat_habilitado: false, mensaje_email_enviado: false
   });
   await sb(`ofertas?pedido_id=eq.${req.params.id}`, 'PATCH', { estado: 'rechazada' });
   res.json({ ok: true });
@@ -757,7 +758,7 @@ app.post('/api/pedidos/:id/verificar-codigo', auth, async (req, res) => {
       const restantes = 4 - (p.intentos_codigo + 1);
       return res.status(400).json({ error: `Código incorrecto. Te quedan ${restantes} intento${restantes !== 1 ? 's' : ''}.` });
     }
-    await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { codigo_usado: true, estado: 'completado', dinero_liberado: true, estado_pago: 'liberado' });
+    await sb(`pedidos?id=eq.${req.params.id}`, 'PATCH', { codigo_usado: true, estado: 'completado', dinero_liberado: true, estado_pago: 'liberado', mensaje_email_enviado: false });
     const socio = await sb(`usuarios?id=eq.${p.profesional_id}&select=saldo_disponible,saldo_bloqueado`);
     const saldoActual = socio.length ? parseFloat(socio[0].saldo_disponible) || 0 : 0;
     const bloqueadoActual = socio.length ? parseFloat(socio[0].saldo_bloqueado) || 0 : 0;
@@ -779,21 +780,26 @@ app.get('/api/mensajes/:pedido_id', async (req, res) => {
 });
 app.post('/api/mensajes', auth, async (req, res) => {
   try {
-    const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado,usuario_id,profesional_id,servicio`);
+    const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado,usuario_id,profesional_id,servicio,mensaje_email_enviado`);
     if (!pedido.length || !pedido[0].chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
     if (req.usuario.id !== pedido[0].usuario_id && req.usuario.id !== pedido[0].profesional_id) {
       return res.status(403).json({ error: 'No sos parte de esta conversación.' });
     }
     const rol = req.usuario.id === pedido[0].profesional_id ? 'socio' : 'cliente';
     const data = await sb('mensajes', 'POST', { ...req.body, autor: req.usuario.nombre || req.body.autor, rol });
-    // Avisar a la otra persona de la conversación
-    try {
-      const destinatarioId = rol === 'socio' ? pedido[0].usuario_id : pedido[0].profesional_id;
-      if (destinatarioId) {
-        const destinatarios = await sb(`usuarios?id=eq.${destinatarioId}&select=nombre,email`);
-        if (destinatarios.length) emailNuevoMensaje(destinatarios[0].nombre, destinatarios[0].email, pedido[0].servicio, req.usuario.nombre, req.body.contenido);
-      }
-    } catch (e) { console.error('❌ Error avisando nuevo mensaje:', e.message); }
+    // Avisar a la otra persona — una sola vez por trabajo, hasta que el pedido cambie de estado
+    if (!pedido[0].mensaje_email_enviado) {
+      try {
+        const destinatarioId = rol === 'socio' ? pedido[0].usuario_id : pedido[0].profesional_id;
+        if (destinatarioId) {
+          const destinatarios = await sb(`usuarios?id=eq.${destinatarioId}&select=nombre,email`);
+          if (destinatarios.length) {
+            await emailNuevoMensaje(destinatarios[0].nombre, destinatarios[0].email, pedido[0].servicio);
+            await sb(`pedidos?id=eq.${req.body.pedido_id}`, 'PATCH', { mensaje_email_enviado: true });
+          }
+        }
+      } catch (e) { console.error('❌ Error avisando nuevo mensaje:', e.message); }
+    }
     res.json(data);
   } catch (e) {
     console.error('❌ Error en POST /mensajes:', e.message, e.supabase || '');
