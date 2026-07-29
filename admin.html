@@ -538,7 +538,7 @@ function renderIdentificacion(lista) {
   const data = (lista || verificacionesIdentidad).filter(v => filtroIdentificacion === 'todos' || v.estado === filtroIdentificacion);
   document.getElementById('identificacion-tbody').innerHTML = data.length ? data.map(v => {
     const socio = usuarios.find(u => u.id === v.socio_id);
-    const links = (v.urls || []).map((url, i) => `<a href="${url}" target="_blank" rel="noopener">Ver ${i+1}</a>`).join(' · ');
+    const links = (v.archivos || []).map(a => `<a href="${a.url}" target="_blank" rel="noopener">${a.label}</a>`).join(' · ');
     return `<tr>
       <td class="td-primary">${socio ? socio.nombre : '—'}</td>
       <td>${fmtDate(v.created_at)}</td>
