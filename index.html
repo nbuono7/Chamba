@@ -5,21 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ChamBA — Profesionales del hogar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --teal: #1D9E75;
-      --teal-dark: #0F6E56;
-      --teal-deeper: #085041;
-      --teal-light: #E1F5EE;
-      --teal-mid: #5DCAA5;
+      --teal: #E2662D;
+      --teal-dark: #B84F1F;
+      --teal-deeper: #8F3C17;
+      --teal-light: #FBE9DC;
+      --teal-mid: #F0955F;
+      --navy: #16233F;
+      --navy-mid: #223655;
       --bg: #ffffff;
-      --bg-off: #f9faf9;
-      --bg-dark: #0f1512;
-      --text: #111;
+      --bg-off: #F7F2E7;
+      --bg-dark: #16233F;
+      --text: #1E2430;
       --text-mid: #444;
       --text-soft: #888;
       --border: rgba(0,0,0,0.08);
@@ -45,7 +47,7 @@
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
-    .nav-logo { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; text-decoration: none; color: var(--text); }
+    .nav-logo { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; text-decoration: none; color: var(--text); }
     .nav-logo span { color: var(--teal); }
     .nav-links { display: flex; align-items: center; gap: 32px; }
     .nav-links a { font-size: 14px; color: var(--text-mid); text-decoration: none; transition: color 0.15s; }
@@ -69,20 +71,21 @@
     .hero::before {
       content: '';
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(29,158,117,0.18) 0%, transparent 70%);
+      background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(226,102,45,0.18) 0%, transparent 70%);
     }
     .hero-inner { position: relative; max-width: 720px; margin: 0 auto; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(29,158,117,0.15); border: 1px solid rgba(29,158,117,0.3);
+      background: rgba(226,102,45,0.15); border: 1px solid rgba(226,102,45,0.3);
       color: var(--teal-mid); border-radius: 20px;
       padding: 6px 16px; font-size: 13px; font-weight: 500;
       margin-bottom: 32px;
     }
     .hero-badge::before { content: '●'; font-size: 8px; color: var(--teal); }
     .hero h1 {
+      font-family: 'Sora', sans-serif;
       font-size: clamp(40px, 7vw, 72px);
-      font-weight: 600; line-height: 1.1; letter-spacing: -1.5px;
+      font-weight: 700; line-height: 1.1; letter-spacing: -1.5px;
       color: #fff; margin-bottom: 24px;
     }
     .hero h1 span { color: var(--teal); }
@@ -126,7 +129,8 @@
       text-transform: uppercase; color: var(--teal); margin-bottom: 16px;
     }
     .section-title {
-      font-size: clamp(28px, 4vw, 42px); font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(28px, 4vw, 42px); font-weight: 700;
       letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 16px;
     }
     .section-sub { font-size: 17px; color: var(--text-mid); max-width: 520px; line-height: 1.7; }
@@ -142,7 +146,7 @@
       border-radius: var(--radius); padding: 28px 24px;
       cursor: pointer; transition: all 0.2s; text-align: left;
     }
-    .servicio-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(29,158,117,0.1); }
+    .servicio-card:hover { border-color: var(--teal); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(226,102,45,0.1); }
     .servicio-icon { font-size: 32px; margin-bottom: 16px; }
     .servicio-name { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
     .servicio-desc { font-size: 14px; color: var(--text-soft); line-height: 1.5; }
@@ -178,16 +182,16 @@
     .ia-features li::before {
       content: '✓'; flex-shrink: 0;
       width: 22px; height: 22px; border-radius: 50%;
-      background: rgba(29,158,117,0.2); color: var(--teal-mid);
+      background: rgba(226,102,45,0.2); color: var(--teal-mid);
       display: flex; align-items: center; justify-content: center;
       font-size: 12px; font-weight: 700; margin-top: 1px;
     }
     .ia-demo {
-      background: #1a231f; border: 1px solid rgba(29,158,117,0.2);
+      background: var(--navy-mid); border: 1px solid rgba(226,102,45,0.25);
       border-radius: 16px; padding: 28px; font-size: 14px;
     }
     .ia-demo-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-mid); margin-bottom: 20px; }
-    .demo-msg { background: rgba(29,158,117,0.12); border-radius: 10px; padding: 14px; color: rgba(255,255,255,0.8); line-height: 1.5; margin-bottom: 16px; }
+    .demo-msg { background: rgba(226,102,45,0.12); border-radius: 10px; padding: 14px; color: rgba(255,255,255,0.8); line-height: 1.5; margin-bottom: 16px; }
     .demo-result { display: flex; flex-direction: column; gap: 10px; }
     .demo-chip {
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
@@ -326,7 +330,7 @@
     <a href="#servicios">Servicios</a>
     <a href="#como-funciona">Cómo funciona</a>
     <a href="#ia">IA</a>
-    <a href="/login" style="font-size:14px;color:var(--text-mid);text-decoration:none;padding:8px 16px;border:1px solid var(--border-hover);border-radius:8px;transition:all 0.15s" onmouseover="this.style.borderColor='#1D9E75'" onmouseout="this.style.borderColor='rgba(0,0,0,0.2)'">Ingresar</a><a href="/registro" class="nav-cta" style="margin-left:8px">Registrarse</a>
+    <a href="/login" style="font-size:14px;color:var(--text-mid);text-decoration:none;padding:8px 16px;border:1px solid var(--border-hover);border-radius:8px;transition:all 0.15s" onmouseover="this.style.borderColor='#E2662D'" onmouseout="this.style.borderColor='rgba(0,0,0,0.2)'">Ingresar</a><a href="/registro" class="nav-cta" style="margin-left:8px">Registrarse</a>
   </div>
 </nav>
 
@@ -677,9 +681,9 @@
         <div class="card-label">Mientras esperás</div>
         <div class="card-content">${r.recomendacion}</div>
       </div>
-      ${r.puede_solo ? `<div class="result-card" style="border-color:#5DCAA5;background:#E1F5EE;">
-        <div class="card-label" style="color:#085041">¿Lo podés resolver vos?</div>
-        <div class="card-content" style="color:#085041">Puede que puedas solucionarlo sin un profesional. Si tenés dudas, igual te recomendamos consultar.</div>
+      ${r.puede_solo ? `<div class="result-card" style="border-color:#F0955F;background:#FBE9DC;">
+        <div class="card-label" style="color:var(--teal-deeper)">¿Lo podés resolver vos?</div>
+        <div class="card-content" style="color:var(--teal-deeper)">Puede que puedas solucionarlo sin un profesional. Si tenés dudas, igual te recomendamos consultar.</div>
       </div>` : ''}
       <a href="/panel-cliente" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);color:#fff;padding:13px;border-radius:10px;text-decoration:none;font-weight:500;font-size:15px;margin-top:4px">
         📋 Ir a mi panel para pedir el servicio
