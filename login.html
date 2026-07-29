@@ -50,25 +50,67 @@
 <div class="page">
   <div class="login-card">
     <div class="login-title">Bienvenido de vuelta</div>
-    <div class="login-sub">Ingresá con tu cuenta de ChamBA</div>
+    <div class="login-sub" id="login-sub">Ingresá con tu cuenta de ChamBA</div>
     <div class="error-box" id="error-box"></div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="f-email" placeholder="juan@gmail.com"/>
-    </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <div class="pass-wrap">
-        <input type="password" id="f-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
-        <button type="button" class="pass-toggle" onclick="togglePass()" id="pass-toggle-btn" aria-label="Mostrar contraseña">👁️</button>
+
+    <!-- PASO 1: EMAIL -->
+    <div id="paso-email">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="juan@gmail.com" onkeydown="if(event.key==='Enter')pedirCodigo()"/>
       </div>
+      <button class="btn-submit" id="btn-siguiente" onclick="pedirCodigo()">Siguiente</button>
+      <div class="link-reg"><a href="#" onclick="mostrarPaso('password');return false">Iniciar sesión con contraseña</a></div>
     </div>
-    <button class="btn-submit" id="btn-login" onclick="doLogin()">Ingresar</button>
+
+    <!-- PASO 2: CÓDIGO POR EMAIL -->
+    <div id="paso-codigo" style="display:none">
+      <div class="form-group">
+        <label>Código enviado a <strong id="codigo-email-destino"></strong></label>
+        <input type="text" id="f-codigo" placeholder="Código de 6 dígitos" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarCodigoLogin()"/>
+      </div>
+      <button class="btn-submit" id="btn-confirmar-codigo" onclick="confirmarCodigoLogin()">Ingresar</button>
+      <div style="text-align:center;margin-top:14px;font-size:13px">
+        <span id="codigo-reenviar-timer" style="color:var(--text-soft)"></span>
+        <button type="button" id="btn-reenviar-codigo" onclick="reenviarCodigoLogin()" style="display:none;background:none;border:none;color:var(--teal);font-weight:500;cursor:pointer;font-size:13px">Reenviar código</button>
+      </div>
+      <div class="link-reg"><a href="#" onclick="mostrarPaso('email');return false">← Volver</a></div>
+    </div>
+
+    <!-- ALTERNATIVA: CONTRASEÑA -->
+    <div id="paso-password" style="display:none">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email-pass" placeholder="juan@gmail.com"/>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="pass-wrap">
+          <input type="password" id="f-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+          <button type="button" class="pass-toggle" onclick="togglePass()" id="pass-toggle-btn" aria-label="Mostrar contraseña">👁️</button>
+        </div>
+      </div>
+      <button class="btn-submit" id="btn-login" onclick="doLogin()">Ingresar</button>
+      <div class="link-reg"><a href="#" onclick="mostrarPaso('email');return false">← Usar código por email en su lugar</a></div>
+    </div>
+
     <div class="link-reg">¿No tenés cuenta? <a href="/registro">Registrate acá</a></div>
   </div>
 </div>
 <script>
 const BACKEND = 'https://chamba-backend-vurx.onrender.com';
+let emailLogin = '';
+let timerReenvioLogin = null;
+
+function mostrarPaso(paso) {
+  document.getElementById('error-box').style.display = 'none';
+  document.getElementById('paso-email').style.display = paso === 'email' ? 'block' : 'none';
+  document.getElementById('paso-codigo').style.display = paso === 'codigo' ? 'block' : 'none';
+  document.getElementById('paso-password').style.display = paso === 'password' ? 'block' : 'none';
+  clearInterval(timerReenvioLogin);
+  if (paso === 'password') document.getElementById('f-email-pass').value = document.getElementById('f-email').value.trim();
+}
+
 function togglePass() {
   const input = document.getElementById('f-pass');
   const btn = document.getElementById('pass-toggle-btn');
@@ -76,11 +118,88 @@ function togglePass() {
   input.type = visible ? 'password' : 'text';
   btn.textContent = visible ? '👁️' : '🙈';
 }
+
+async function pedirCodigo() {
+  const btn = document.getElementById('btn-siguiente');
+  const errorBox = document.getElementById('error-box');
+  errorBox.style.display = 'none';
+  const email = document.getElementById('f-email').value.trim();
+  if (!email) return showError('Ingresá tu email.');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch(`${BACKEND}/api/enviar-codigo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, tipo: 'login' })
+    });
+    const data = await r.json();
+    if (!r.ok) return showError(data.error || 'No se pudo enviar el código.');
+    emailLogin = email;
+    document.getElementById('codigo-email-destino').textContent = email;
+    mostrarPaso('codigo');
+    iniciarTimerReenvioLogin();
+  } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
+  finally { btn.disabled = false; btn.textContent = 'Siguiente'; }
+}
+
+function iniciarTimerReenvioLogin() {
+  clearInterval(timerReenvioLogin);
+  let restante = 60;
+  const timerEl = document.getElementById('codigo-reenviar-timer');
+  const btn = document.getElementById('btn-reenviar-codigo');
+  btn.style.display = 'none';
+  timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
+  timerReenvioLogin = setInterval(() => {
+    restante--;
+    if (restante <= 0) {
+      clearInterval(timerReenvioLogin);
+      timerEl.textContent = '';
+      btn.style.display = 'inline';
+    } else {
+      timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
+    }
+  }, 1000);
+}
+
+async function reenviarCodigoLogin() {
+  const btn = document.getElementById('btn-reenviar-codigo');
+  btn.disabled = true;
+  try {
+    await fetch(`${BACKEND}/api/enviar-codigo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailLogin, tipo: 'login' })
+    });
+    iniciarTimerReenvioLogin();
+  } finally { btn.disabled = false; }
+}
+
+async function confirmarCodigoLogin() {
+  const btn = document.getElementById('btn-confirmar-codigo');
+  const errorBox = document.getElementById('error-box');
+  errorBox.style.display = 'none';
+  const codigo = document.getElementById('f-codigo').value.trim();
+  if (!codigo) return showError('Ingresá el código que te mandamos.');
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  try {
+    const r = await fetch(`${BACKEND}/api/verificar-codigo`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: emailLogin, codigo, tipo: 'login' })
+    });
+    const data = await r.json();
+    if (!r.ok) return showError(data.error || 'Código incorrecto.');
+    clearInterval(timerReenvioLogin);
+    localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
+    localStorage.setItem('chamba_token', data.token);
+    const destino = data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
+    window.location.href = destino;
+  } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
+  finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
+}
+
 async function doLogin() {
   const btn = document.getElementById('btn-login');
   const errorBox = document.getElementById('error-box');
   errorBox.style.display = 'none';
-  const email = document.getElementById('f-email').value.trim();
+  const email = document.getElementById('f-email-pass').value.trim();
   const password = document.getElementById('f-pass').value;
   if (!email || !password) return showError('Completá todos los campos.');
   btn.disabled = true; btn.textContent = 'Ingresando...';
@@ -98,11 +217,10 @@ async function doLogin() {
   } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
   finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
 }
+
 function showError(msg) {
   const box = document.getElementById('error-box');
   box.textContent = msg; box.style.display = 'block';
-  document.getElementById('btn-login').disabled = false;
-  document.getElementById('btn-login').textContent = 'Ingresar';
 }
 </script>
 </body>
