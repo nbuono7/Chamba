@@ -112,15 +112,14 @@ async function emailNuevaOferta(nombre, email, servicio, precio, esContraoferta 
 }
 
 // Email: nuevo mensaje en el chat de un trabajo
-async function emailNuevoMensaje(nombre, email, servicio, autorMensaje, contenido) {
-  const preview = (contenido || '').slice(0, 120);
-  await sendEmail(email, `${autorMensaje} te escribió sobre ${servicio}`, `
+async function emailNuevoMensaje(nombre, email, servicio) {
+  await sendEmail(email, `Tenés un mensaje esperando — ${servicio}`, `
     <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
-      <h2 style="color:#E2662D">💬 Nuevo mensaje</h2>
-      <p>Hola <strong>${nombre}</strong>, tenés un mensaje nuevo de <strong>${autorMensaje}</strong> sobre el trabajo de <strong>${servicio}</strong>:</p>
-      <div style="background:#f4f5f4;border-radius:8px;padding:14px 16px;margin:16px 0;font-style:italic">"${preview}${contenido && contenido.length > 120 ? '…' : ''}"</div>
-      <a href="https://chamba-vert.vercel.app/login" style="display:inline-block;background:#E2662D;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:8px">Responder →</a>
-      <p style="color:#888;font-size:12px;margin-top:24px">ChamBA — Profesionales del hogar</p>
+      <h2 style="color:#E2662D">💬 Tenés un mensaje</h2>
+      <p>Hola <strong>${nombre}</strong>, tenés un mensaje del trabajo de <strong>${servicio}</strong> esperando en ChamBA.</p>
+      <a href="https://chamba-vert.vercel.app/login" style="display:inline-block;background:#E2662D;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:8px">Ver mensaje →</a>
+      <p style="color:#888;font-size:13px;margin-top:20px">Este es el último aviso que vas a recibir de este trabajo hasta que cambie de estado (por ejemplo, de "en proceso" a "completado") — estate atento a novedades en ChamBA.</p>
+      <p style="color:#888;font-size:12px;margin-top:16px">ChamBA — Profesionales del hogar</p>
     </div>`);
 }
 
