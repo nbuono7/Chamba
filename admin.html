@@ -262,6 +262,12 @@
         <div class="metrics">
           <div class="metric teal"><div class="metric-label">Comisiones cobradas</div><div class="metric-val" id="p-cobrado">$0</div></div>
           <div class="metric amber"><div class="metric-label">Pendiente de liberar</div><div class="metric-val" id="p-pendiente">$0</div></div>
+          <div class="metric blue"><div class="metric-label">Ticket promedio</div><div class="metric-val" id="p-ticket">$0</div></div>
+          <div class="metric teal"><div class="metric-label">Conversión oferta → pago</div><div class="metric-val" id="p-conversion">0%</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Comisión ganada por día (últimos 14 días)</div></div>
+          <div style="display:flex;gap:6px;align-items:flex-end;padding:20px 20px 8px;height:130px" id="grafico-ingresos"></div>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title">Pedidos con monto</div></div>
@@ -325,7 +331,7 @@
 <script>
 const BACKEND = 'https://chamba-backend-vurx.onrender.com';
 let usuario = null;
-let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [], especialidades = [], verificacionesIdentidad = [], disputas = [];
+let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [], especialidades = [], verificacionesIdentidad = [], disputas = [], ofertas = [];
 let filtroDisputas = 'todos';
 let filtroPedidos = 'todos', filtroSocios = 'todos', filtroSolicitudes = 'todos', filtroIdentificacion = 'todos';
 
@@ -361,8 +367,8 @@ async function api(path, method='GET', body=null) {
 }
 
 async function cargarTodo() {
-  [pedidos, usuarios, solicitudesMatricula, especialidades, verificacionesIdentidad, disputas] = await Promise.all([
-    api('/api/pedidos'), api('/api/usuarios'), api('/api/solicitudes-matricula'), api('/api/especialidades'), api('/api/verificaciones-identidad'), api('/api/disputas')
+  [pedidos, usuarios, solicitudesMatricula, especialidades, verificacionesIdentidad, disputas, ofertas] = await Promise.all([
+    api('/api/pedidos'), api('/api/usuarios'), api('/api/solicitudes-matricula'), api('/api/especialidades'), api('/api/verificaciones-identidad'), api('/api/disputas'), api('/api/ofertas')
   ]);
   if (!Array.isArray(pedidos)) pedidos = [];
   if (!Array.isArray(usuarios)) usuarios = [];
@@ -370,6 +376,7 @@ async function cargarTodo() {
   if (!Array.isArray(especialidades)) especialidades = [];
   if (!Array.isArray(verificacionesIdentidad)) verificacionesIdentidad = [];
   if (!Array.isArray(disputas)) disputas = [];
+  if (!Array.isArray(ofertas)) ofertas = [];
   renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); renderSolicitudes(); renderEspecialidades(); renderIdentificacion(); renderDisputas(); updateBadges();
 }
 
@@ -583,8 +590,33 @@ function buscarUsuarios(tipo, q) {
 
 function renderPagos() {
   const conMonto = pedidos.filter(p => p.precio_cliente > 0);
+  const completados = pedidos.filter(p => p.estado === 'completado');
   document.getElementById('p-cobrado').textContent = '$' + Math.round(pedidos.filter(p=>p.estado==='completado').reduce((s,p)=>s+(p.comision||0),0)).toLocaleString('es-AR');
   document.getElementById('p-pendiente').textContent = '$' + Math.round(pedidos.filter(p=>p.estado==='en_proceso').reduce((s,p)=>s+(p.comision||0),0)).toLocaleString('es-AR');
+
+  const ticketProm = completados.length ? completados.reduce((s,p) => s + (p.precio_cliente||0), 0) / completados.length : 0;
+  document.getElementById('p-ticket').textContent = '$' + Math.round(ticketProm).toLocaleString('es-AR');
+
+  const ofertasAceptadas = ofertas.filter(o => o.estado === 'aceptada').length;
+  const conversion = ofertas.length ? Math.round((ofertasAceptadas / ofertas.length) * 100) : 0;
+  document.getElementById('p-conversion').textContent = conversion + '%';
+
+  // Gráfico: comisión ganada por día, últimos 14 días
+  const dias = [];
+  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); dias.push(d.toISOString().slice(0,10)); }
+  const porDia = {}; dias.forEach(d => porDia[d] = 0);
+  completados.forEach(p => { const dia = (p.created_at||'').slice(0,10); if (porDia[dia] !== undefined) porDia[dia] += (p.comision||0); });
+  const max = Math.max(...Object.values(porDia), 1);
+  document.getElementById('grafico-ingresos').innerHTML = dias.map(d => {
+    const val = porDia[d];
+    const alto = Math.max(Math.round((val / max) * 100), val > 0 ? 4 : 0);
+    const label = new Date(d + 'T12:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;height:100%;justify-content:flex-end">
+      <div style="width:100%;max-width:28px;background:var(--teal);border-radius:4px 4px 0 0;height:${alto}%" title="$${Math.round(val).toLocaleString('es-AR')}"></div>
+      <div style="font-size:10px;color:var(--text-soft);white-space:nowrap">${label}</div>
+    </div>`;
+  }).join('');
+
   document.getElementById('pagos-tbody').innerHTML = conMonto.length ? conMonto.map(p => `<tr><td class="td-primary">${p.servicio||'—'}</td><td>$${Number(p.precio_cliente).toLocaleString('es-AR')}</td><td style="color:var(--teal);font-weight:500">$${Number(p.comision||0).toLocaleString('es-AR')}</td><td>${badge(p.estado)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">No hay pagos</td></tr>';
 }
 
