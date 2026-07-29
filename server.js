@@ -140,6 +140,32 @@ app.get('/api/geocodificar-inverso', async (req, res) => {
   res.json(r);
 });
 
+// Validación real de archivos subidos: tamaño máximo y que el contenido coincida con el tipo declarado (no solo la extensión, que se puede falsificar)
+const MIME_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+const TAMANO_MAX_ARCHIVO = 8 * 1024 * 1024; // 8 MB
+
+function detectarTipoReal(buffer) {
+  if (buffer.length >= 3 && buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) return 'image/jpeg';
+  if (buffer.length >= 8 && buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) return 'image/png';
+  if (buffer.length >= 12 && buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
+  if (buffer.length >= 5 && buffer.toString('ascii', 0, 5) === '%PDF-') return 'application/pdf';
+  return null;
+}
+
+function validarArchivo(base64Data, mimeDeclarado) {
+  if (!MIME_PERMITIDOS.includes(mimeDeclarado)) {
+    return { ok: false, error: `Tipo de archivo no permitido. Solo se aceptan imágenes (JPG, PNG, WEBP) o PDF.` };
+  }
+  let buffer;
+  try { buffer = Buffer.from(base64Data, 'base64'); } catch (e) { return { ok: false, error: 'El archivo está dañado o no se pudo leer.' }; }
+  if (!buffer.length) return { ok: false, error: 'El archivo está vacío.' };
+  if (buffer.length > TAMANO_MAX_ARCHIVO) return { ok: false, error: 'El archivo pesa demasiado (máximo 8MB por archivo).' };
+  const tipoReal = detectarTipoReal(buffer);
+  if (!tipoReal) return { ok: false, error: 'No pudimos verificar que el archivo sea una imagen o PDF válido.' };
+  if (tipoReal !== mimeDeclarado) return { ok: false, error: 'El contenido del archivo no coincide con el tipo esperado. Probá subirlo de nuevo.' };
+  return { ok: true, buffer };
+}
+
 // Sube un archivo (base64) a Supabase Storage. Devuelve la ruta guardada (no la URL, el bucket es privado).
 async function subirArchivo(bucket, path, base64Data, mimeType) {
   const buffer = Buffer.from(base64Data, 'base64');
@@ -172,6 +198,13 @@ app.post('/api/verificaciones-identidad', auth, async (req, res) => {
     const { archivos } = req.body; // [{ data: base64SinPrefijo, mime: 'image/jpeg' }, ...] hasta 3
     if (!Array.isArray(archivos) || !archivos.length) return res.status(400).json({ error: 'Subí al menos un comprobante.' });
     if (archivos.length > 3) return res.status(400).json({ error: 'Máximo 3 archivos.' });
+
+    // Validar TODOS antes de subir ninguno (tipo real de archivo + tamaño)
+    for (const a of archivos) {
+      const v = validarArchivo(a.data, a.mime);
+      if (!v.ok) return res.status(400).json({ error: v.error });
+    }
+
     const paths = [];
     for (let i = 0; i < archivos.length; i++) {
       const ext = (archivos[i].mime.split('/')[1] || 'bin').replace('jpeg', 'jpg');
@@ -222,8 +255,18 @@ app.get('/', (req, res) => res.json({ status: 'Chamba API ✅' }));
 // ── IA ──
 app.post('/api/analizar', async (req, res) => {
   const { servicio, descripcion, fotos } = req.body;
+  if (fotos?.length > 4) return res.status(400).json({ error: 'Máximo 4 fotos.' });
   const content = [];
-  if (fotos?.length) fotos.forEach(b64 => content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } }));
+  if (fotos?.length) {
+    for (const b64 of fotos) {
+      let buffer;
+      try { buffer = Buffer.from(b64, 'base64'); } catch (e) { return res.status(400).json({ error: 'Una de las fotos está dañada.' }); }
+      if (buffer.length > TAMANO_MAX_ARCHIVO) return res.status(400).json({ error: 'Una de las fotos pesa demasiado (máximo 8MB).' });
+      const tipoReal = detectarTipoReal(buffer);
+      if (!tipoReal || !tipoReal.startsWith('image/')) return res.status(400).json({ error: 'Una de las fotos no es una imagen válida (solo JPG, PNG o WEBP).' });
+      content.push({ type: 'image', source: { type: 'base64', media_type: tipoReal, data: b64 } });
+    }
+  }
   content.push({ type: 'text', text: `Sos el asistente de ChamBA, empresa argentina de servicios del hogar. Servicio: "${servicio}". Problema: ${descripcion||'(ver fotos)'}. Evaluá la urgencia real del problema (¿puede esperar días, o hay riesgo de daño mayor/inseguridad si no se atiende ya?). El precio sugerido debe reflejar esa urgencia: a mayor urgencia, mayor precio esperable, ya que implica prioridad y rapidez para el profesional. Respondé SOLO en JSON sin backticks: {"profesional":"...","urgencia":"Alta/Media/Baja","diagnostico":"...","precio_min":0,"precio_max":0,"precio_sugerido":0,"recomendacion":"...","puede_solo":false}. El precio_sugerido es el promedio de min y max redondeado.` });
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
