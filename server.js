@@ -319,7 +319,7 @@ app.patch('/api/ubicaciones/:id/predeterminada', auth, async (req, res) => {
   try {
     const ub = await sb(`ubicaciones?id=eq.${req.params.id}&select=usuario_id,tipo`);
     if (!ub.length || req.usuario.id !== ub[0].usuario_id) return res.status(403).json({ error: 'No podés modificar esta ubicación.' });
-    await sb(`ubicaciones?usuario_id=eq.${req.usuario.id}&tipo=eq.${ub[0].tipo}`, 'PATCH', { predeterminada: false });
+    await sb(`ubicaciones?usuario_id=eq.${req.usuario.id}`, 'PATCH', { predeterminada: false });
     await sb(`ubicaciones?id=eq.${req.params.id}`, 'PATCH', { predeterminada: true });
     res.json({ ok: true });
   } catch (e) {
@@ -351,10 +351,9 @@ app.get('/api/pedidos', auth, async (req, res) => {
     // Admin ve todo tal cual, sin filtrar ni redactar
     if (req.usuario.tipo === 'admin') return res.json(pedidos);
 
-    // Mis propias ubicaciones (para calcular qué tan cerca me queda cada pedido ajeno)
-    const misUbs = await sb(`ubicaciones?usuario_id=eq.${req.usuario.id}&select=lat,lng,tipo`);
-    const misTrabajo = misUbs.filter(u => u.tipo === 'trabajo' && u.lat != null && u.lng != null);
-    const origenes = misTrabajo.length ? misTrabajo : misUbs.filter(u => u.lat != null && u.lng != null);
+    // Solo la ubicación PREDETERMINADA cuenta para mostrarte trabajos cercanos
+    const misUbs = await sb(`ubicaciones?usuario_id=eq.${req.usuario.id}&predeterminada=eq.true&select=lat,lng`);
+    const origenes = misUbs.filter(u => u.lat != null && u.lng != null);
 
     const resultado = [];
     for (const p of pedidos) {
