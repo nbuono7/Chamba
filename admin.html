@@ -202,6 +202,7 @@
         </div>
 
         <div class="subpage" data-group="users" id="sub-users-socios">
+          <div id="socios-resumen"></div>
           <div class="card">
             <div class="card-header">
               <div class="filter-tabs">
@@ -248,7 +249,7 @@
           <div class="card">
             <div class="card-header"><div class="card-title">Especialidades disponibles</div></div>
             <div style="padding:16px;font-size:13px;color:var(--text-mid)">Desactivá una especialidad si no hay suficientes socios matriculados en esa categoría — deja de aparecer para publicar trabajos y para registrarse como socio en esa área, hasta que la vuelvas a activar.</div>
-            <table><thead><tr><th>Especialidad</th><th>Estado</th><th></th></tr></thead><tbody id="especialidades-tbody"></tbody></table>
+            <table><thead><tr><th>Especialidad</th><th>Socios matriculados</th><th>Estado</th><th></th></tr></thead><tbody id="especialidades-tbody"></tbody></table>
           </div>
         </div>
       </div>
@@ -421,7 +422,41 @@ function renderClientesReg(lista) {
   document.getElementById('clientes-reg-tbody').innerHTML = data.length ? data.map(u => `<tr><td class="td-primary">${u.nombre}</td><td>${u.email}</td><td>${u.telefono||'—'}</td><td>${badge(u.estado)}</td><td>${fmtDate(u.created_at)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${u.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay clientes registrados aún</td></tr>';
 }
 
+function contarSociosPorRubro() {
+  const aprobados = usuarios.filter(u => u.tipo === 'socio' && u.estado === 'aprobado');
+  const conteo = {};
+  aprobados.forEach(s => {
+    (s.especialidad || '').split(',').map(r => r.trim()).filter(Boolean).forEach(rubro => {
+      conteo[rubro] = (conteo[rubro] || 0) + 1;
+    });
+  });
+  return { totalSocios: usuarios.filter(u => u.tipo === 'socio').length, totalAprobados: aprobados.length, conteo };
+}
+
+function renderResumenSocios() {
+  const { totalSocios, totalAprobados, conteo } = contarSociosPorRubro();
+  const rubros = Object.entries(conteo).sort((a,b) => b[1]-a[1]);
+  const box = document.getElementById('socios-resumen');
+  if (!box) return;
+  box.innerHTML = `
+    <div class="metrics">
+      <div class="metric teal"><div class="metric-label">Socios totales</div><div class="metric-val">${totalSocios}</div></div>
+      <div class="metric teal"><div class="metric-label">Aprobados (activos)</div><div class="metric-val">${totalAprobados}</div></div>
+    </div>
+    <div class="card" style="margin-bottom:20px"><div class="card-body">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">Desglose por rubro (solo aprobados — un socio con más de una especialidad cuenta en cada una)</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+        ${rubros.length ? rubros.map(([rubro, n]) => `
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px">
+            <div style="font-size:12px;color:var(--text-soft)">${rubro}</div>
+            <div style="font-size:20px;font-weight:700;color:var(--teal-dark)">${n}</div>
+          </div>`).join('') : '<div style="font-size:13px;color:var(--text-soft)">Todavía no hay socios aprobados.</div>'}
+      </div>
+    </div></div>`;
+}
+
 function renderSociosReg(lista) {
+  renderResumenSocios();
   const socios = usuarios.filter(u => u.tipo === 'socio');
   const data = (lista || socios).filter(s => filtroSocios === 'todos' || s.estado === filtroSocios);
   document.getElementById('socios-reg-tbody').innerHTML = data.length ? data.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${s.dni||'—'}</td><td>${s.promedio_estrellas ? s.promedio_estrellas+' ⭐' : '—'}</td><td>${badge(s.estado)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${s.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay socios</td></tr>';
@@ -473,14 +508,18 @@ async function resolverIdentificacion(id, estado) {
 }
 
 function renderEspecialidades() {
-  document.getElementById('especialidades-tbody').innerHTML = especialidades.length ? especialidades.map(e => `
-    <tr>
+  const { conteo } = contarSociosPorRubro();
+  document.getElementById('especialidades-tbody').innerHTML = especialidades.length ? especialidades.map(e => {
+    const n = conteo[e.nombre] || 0;
+    return `<tr>
       <td class="td-primary">${e.nombre}</td>
+      <td>${n === 0 ? `<span style="color:var(--red)">${n} socios</span>` : `${n} socio${n!==1?'s':''}`}</td>
       <td>${e.activa ? '<span class="badge badge-green">✅ Activa</span>' : '<span class="badge badge-gray">🚫 Bloqueada</span>'}</td>
       <td>${e.activa
         ? `<button class="btn btn-red btn-sm" onclick="toggleEspecialidad('${e.id}', false)">Bloquear</button>`
         : `<button class="btn btn-teal btn-sm" onclick="toggleEspecialidad('${e.id}', true)">Desbloquear</button>`}</td>
-    </tr>`).join('') : '<tr><td colspan="3" class="empty">No hay especialidades cargadas</td></tr>';
+    </tr>`;
+  }).join('') : '<tr><td colspan="4" class="empty">No hay especialidades cargadas</td></tr>';
 }
 async function toggleEspecialidad(id, activa) {
   const r = await api(`/api/especialidades/${id}`, 'PATCH', { activa });
