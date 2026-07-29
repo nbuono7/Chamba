@@ -135,4 +135,16 @@ async function emailCodigoPorVencer(nombre, email, tipo) {
     </div>`);
 }
 
-module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer };
+// Email: nueva disputa (aviso al admin)
+async function emailNuevaDisputa(nombreAdmin, emailAdmin, servicio, motivo) {
+  await sendEmail(emailAdmin, `⚠️ Nueva disputa: ${servicio}`, `
+    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+      <h2 style="color:#B84F1F">⚠️ Se reportó un problema</h2>
+      <p>Hola ${nombreAdmin}, alguien reportó un problema en un trabajo de <strong>${servicio}</strong>.</p>
+      <p><strong>Motivo:</strong> ${motivo}</p>
+      <a href="https://chamba-vert.vercel.app/login" style="display:inline-block;background:#E2662D;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">Ver en el panel →</a>
+      <p style="color:#888;font-size:12px;margin-top:24px">ChamBA — Profesionales del hogar</p>
+    </div>`);
+}
+
+module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer, emailNuevaDisputa };
