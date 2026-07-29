@@ -356,8 +356,8 @@
         <div style="font-size:13px;color:var(--text-soft);margin-bottom:6px">¿No tenés matrícula? Subí un comprobante que demuestre que trabajás de esto — por ejemplo, el <strong>comprobante de pago del monotributo</strong> (el que vos pagás, no la factura que le das al cliente), que indica tu categoría.</div>
         <div style="font-size:12px;color:var(--amber);margin-bottom:12px">⚠️ Subí hasta 3 comprobantes, de los últimos 3 meses más recientes. Que la imagen se vea clara y completa.</div>
         <div class="form-group">
-          <label>Comprobantes (imagen o PDF, hasta 3 archivos)</label>
-          <input type="file" id="verif-archivos" accept="image/*,.pdf" multiple/>
+          <label>Comprobantes (JPG, PNG, WEBP o PDF — hasta 3 archivos, máximo 8MB cada uno)</label>
+          <input type="file" id="verif-archivos" accept="image/jpeg,image/png,image/webp,.pdf,application/pdf" multiple/>
         </div>
         <button class="btn btn-teal btn-sm" onclick="enviarVerificacionIdentidad()" id="verif-btn-enviar">Enviar comprobantes</button>
         <div id="lista-verificaciones-identidad" style="margin-top:16px"></div>
@@ -1465,6 +1465,12 @@ async function enviarVerificacionIdentidad() {
   const files = Array.from(input.files || []);
   if (!files.length) return showInfo('⚠️', 'Faltan archivos', 'Elegí al menos un comprobante.');
   if (files.length > 3) return showInfo('⚠️', 'Demasiados archivos', 'Subí como máximo 3 comprobantes.');
+  const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+  const TAMANO_MAX = 8 * 1024 * 1024; // 8MB
+  for (const f of files) {
+    if (!TIPOS_PERMITIDOS.includes(f.type)) return showInfo('⚠️', 'Formato no permitido', `"${f.name}" no es una imagen (JPG/PNG/WEBP) ni un PDF.`);
+    if (f.size > TAMANO_MAX) return showInfo('⚠️', 'Archivo muy pesado', `"${f.name}" pesa más de 8MB. Subí una versión más liviana.`);
+  }
   const btn = document.getElementById('verif-btn-enviar');
   btn.disabled = true; btn.textContent = 'Subiendo...';
   try {
