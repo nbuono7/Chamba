@@ -99,4 +99,41 @@ async function emailCodigoVerificacion(nombre, email, codigo, tipo) {
     </div>`);
 }
 
-module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion };
+// Email: nueva oferta (o contraoferta) recibida
+async function emailNuevaOferta(nombre, email, servicio, precio, esContraoferta = false) {
+  const asunto = esContraoferta ? `Nueva contraoferta para tu trabajo de ${servicio}` : `Nueva oferta para tu trabajo de ${servicio}`;
+  await sendEmail(email, asunto, `
+    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+      <h2 style="color:#E2662D">${esContraoferta ? '💬 Nueva contraoferta' : '📬 Nueva oferta recibida'}</h2>
+      <p>Hola <strong>${nombre}</strong>, tenés una ${esContraoferta ? 'contraoferta' : 'nueva oferta'} de <strong>$${Number(precio).toLocaleString('es-AR')}</strong> para tu trabajo de <strong>${servicio}</strong>.</p>
+      <a href="https://chamba-vert.vercel.app/login" style="display:inline-block;background:#E2662D;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:16px">Ver oferta →</a>
+      <p style="color:#888;font-size:12px;margin-top:24px">ChamBA — Profesionales del hogar</p>
+    </div>`);
+}
+
+// Email: nuevo mensaje en el chat de un trabajo
+async function emailNuevoMensaje(nombre, email, servicio, autorMensaje, contenido) {
+  const preview = (contenido || '').slice(0, 120);
+  await sendEmail(email, `${autorMensaje} te escribió sobre ${servicio}`, `
+    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+      <h2 style="color:#E2662D">💬 Nuevo mensaje</h2>
+      <p>Hola <strong>${nombre}</strong>, tenés un mensaje nuevo de <strong>${autorMensaje}</strong> sobre el trabajo de <strong>${servicio}</strong>:</p>
+      <div style="background:#f4f5f4;border-radius:8px;padding:14px 16px;margin:16px 0;font-style:italic">"${preview}${contenido && contenido.length > 120 ? '…' : ''}"</div>
+      <a href="https://chamba-vert.vercel.app/login" style="display:inline-block;background:#E2662D;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:8px">Responder →</a>
+      <p style="color:#888;font-size:12px;margin-top:24px">ChamBA — Profesionales del hogar</p>
+    </div>`);
+}
+
+// Email: recordatorio de que el código está por vencer
+async function emailCodigoPorVencer(nombre, email, tipo) {
+  const contexto = tipo === 'registro' ? 'para confirmar tu email' : 'para iniciar sesión';
+  await sendEmail(email, 'Tu código de ChamBA está por vencer', `
+    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+      <h2 style="color:#B84F1F">⏳ Tu código está por vencer</h2>
+      <p>Hola ${nombre ? nombre : ''}, el código que te mandamos ${contexto} vence en menos de 2 minutos.</p>
+      <p>Si todavía no lo usaste, pedí uno nuevo desde la pantalla donde lo estabas ingresando.</p>
+      <p style="color:#888;font-size:12px;margin-top:24px">ChamBA — Profesionales del hogar</p>
+    </div>`);
+}
+
+module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer };
