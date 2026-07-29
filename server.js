@@ -683,7 +683,7 @@ app.post('/api/pedidos/:id/eliminar-admin', auth, soloAdmin, async (req, res) =>
 });
 
 // ── OFERTAS ──
-app.get('/api/ofertas', async (req, res) => {
+app.get('/api/ofertas', auth, async (req, res) => {
   try {
     const pedido_id = req.query.pedido_id ? `&pedido_id=eq.${req.query.pedido_id}` : '';
     const socio_id = req.query.socio_id ? `&socio_id=eq.${req.query.socio_id}` : '';
