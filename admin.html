@@ -190,6 +190,8 @@
           <button class="subtab active" data-group="users" data-tab="clientes" onclick="goSubTab('users','clientes')">Clientes <span class="nav-badge" id="badge-clientes" style="display:none">0</span></button>
           <button class="subtab" data-group="users" data-tab="socios" onclick="goSubTab('users','socios')">Socios <span class="nav-badge" id="badge-socios" style="display:none">0</span></button>
           <button class="subtab" data-group="users" data-tab="solicitudes" onclick="goSubTab('users','solicitudes')">Solicitudes <span class="nav-badge" id="badge-solicitudes" style="display:none">0</span></button>
+          <button class="subtab" data-group="users" data-tab="identificacion" onclick="goSubTab('users','identificacion')">Identificación <span class="nav-badge" id="badge-identificacion" style="display:none">0</span></button>
+          <button class="subtab" data-group="users" data-tab="especialidades" onclick="goSubTab('users','especialidades')">Especialidades</button>
         </div>
 
         <div class="subpage active" data-group="users" id="sub-users-clientes">
@@ -225,6 +227,28 @@
               </div>
             </div>
             <table><thead><tr><th>Socio</th><th>Matrícula solicitada</th><th>Especialidad</th><th>Fecha</th><th>Estado</th><th></th></tr></thead><tbody id="solicitudes-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <div class="subpage" data-group="users" id="sub-users-identificacion">
+          <div class="card">
+            <div class="card-header">
+              <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filtrarIdentificacion('todos',this)">Todas</button>
+                <button class="filter-tab" onclick="filtrarIdentificacion('pendiente',this)">Pendientes</button>
+                <button class="filter-tab" onclick="filtrarIdentificacion('aprobada',this)">Aprobadas</button>
+                <button class="filter-tab" onclick="filtrarIdentificacion('rechazada',this)">Rechazadas</button>
+              </div>
+            </div>
+            <table><thead><tr><th>Socio</th><th>Fecha</th><th>Archivos</th><th>Estado</th><th></th></tr></thead><tbody id="identificacion-tbody"></tbody></table>
+          </div>
+        </div>
+
+        <div class="subpage" data-group="users" id="sub-users-especialidades">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Especialidades disponibles</div></div>
+            <div style="padding:16px;font-size:13px;color:var(--text-mid)">Desactivá una especialidad si no hay suficientes socios matriculados en esa categoría — deja de aparecer para publicar trabajos y para registrarse como socio en esa área, hasta que la vuelvas a activar.</div>
+            <table><thead><tr><th>Especialidad</th><th>Estado</th><th></th></tr></thead><tbody id="especialidades-tbody"></tbody></table>
           </div>
         </div>
       </div>
@@ -282,8 +306,8 @@
 <script>
 const BACKEND = 'https://chamba-backend-vurx.onrender.com';
 let usuario = null;
-let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [];
-let filtroPedidos = 'todos', filtroSocios = 'todos', filtroSolicitudes = 'todos';
+let pedidos = [], usuarios = [], foroPosts = [], solicitudesMatricula = [], especialidades = [], verificacionesIdentidad = [];
+let filtroPedidos = 'todos', filtroSocios = 'todos', filtroSolicitudes = 'todos', filtroIdentificacion = 'todos';
 
 window.onload = async () => {
   const u = localStorage.getItem('chamba_user');
@@ -317,11 +341,15 @@ async function api(path, method='GET', body=null) {
 }
 
 async function cargarTodo() {
-  [pedidos, usuarios, solicitudesMatricula] = await Promise.all([api('/api/pedidos'), api('/api/usuarios'), api('/api/solicitudes-matricula')]);
+  [pedidos, usuarios, solicitudesMatricula, especialidades, verificacionesIdentidad] = await Promise.all([
+    api('/api/pedidos'), api('/api/usuarios'), api('/api/solicitudes-matricula'), api('/api/especialidades'), api('/api/verificaciones-identidad')
+  ]);
   if (!Array.isArray(pedidos)) pedidos = [];
   if (!Array.isArray(usuarios)) usuarios = [];
   if (!Array.isArray(solicitudesMatricula)) solicitudesMatricula = [];
-  renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); renderSolicitudes(); updateBadges();
+  if (!Array.isArray(especialidades)) especialidades = [];
+  if (!Array.isArray(verificacionesIdentidad)) verificacionesIdentidad = [];
+  renderDashboard(); renderPedidos(); renderClientesReg(); renderSociosReg(); renderPagos(); renderSolicitudes(); renderEspecialidades(); renderIdentificacion(); updateBadges();
 }
 
 function goTo(page, btn) {
@@ -355,8 +383,9 @@ function updateBadges() {
   const nc = usuarios.filter(u => u.tipo === 'cliente').length;
   const ns = usuarios.filter(u => u.tipo === 'socio' && u.estado === 'pendiente').length;
   const nm = solicitudesMatricula.filter(s => s.estado === 'pendiente').length;
-  set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns); set('badge-solicitudes', nm);
-  set('badge-usuarios-total', ns + nm);
+  const ni = verificacionesIdentidad.filter(v => v.estado === 'pendiente').length;
+  set('badge-pedidos', np); set('badge-clientes', nc); set('badge-socios', ns); set('badge-solicitudes', nm); set('badge-identificacion', ni);
+  set('badge-usuarios-total', ns + nm + ni);
 }
 function set(id, val) { const el=document.getElementById(id); el.textContent=val; el.style.display=val?'inline':'none'; }
 
@@ -419,6 +448,45 @@ async function resolverSolicitud(id, estado) {
   if (r && r.error) return toast(r.error);
   await cargarTodo();
   toast(estado === 'aprobada' ? 'Matrícula aprobada ✅' : 'Solicitud rechazada');
+}
+
+function renderIdentificacion(lista) {
+  const data = (lista || verificacionesIdentidad).filter(v => filtroIdentificacion === 'todos' || v.estado === filtroIdentificacion);
+  document.getElementById('identificacion-tbody').innerHTML = data.length ? data.map(v => {
+    const socio = usuarios.find(u => u.id === v.socio_id);
+    const links = (v.urls || []).map((url, i) => `<a href="${url}" target="_blank" rel="noopener">Ver ${i+1}</a>`).join(' · ');
+    return `<tr>
+      <td class="td-primary">${socio ? socio.nombre : '—'}</td>
+      <td>${fmtDate(v.created_at)}</td>
+      <td>${links || '—'}</td>
+      <td>${badge(v.estado)}</td>
+      <td>${v.estado === 'pendiente' ? `<button class="btn btn-teal btn-sm" onclick="resolverIdentificacion('${v.id}','aprobada')">✅ Aprobar</button> <button class="btn btn-red btn-sm" onclick="resolverIdentificacion('${v.id}','rechazada')">❌ Rechazar</button>` : ''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="5" class="empty">No hay envíos</td></tr>';
+}
+function filtrarIdentificacion(f, btn) { filtroIdentificacion=f; document.querySelectorAll('#sub-users-identificacion .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderIdentificacion(); }
+async function resolverIdentificacion(id, estado) {
+  const r = await api(`/api/verificaciones-identidad/${id}`, 'PATCH', { estado });
+  if (r && r.error) return toast(r.error);
+  await cargarTodo();
+  toast(estado === 'aprobada' ? 'Identificación aprobada ✅' : 'Identificación rechazada');
+}
+
+function renderEspecialidades() {
+  document.getElementById('especialidades-tbody').innerHTML = especialidades.length ? especialidades.map(e => `
+    <tr>
+      <td class="td-primary">${e.nombre}</td>
+      <td>${e.activa ? '<span class="badge badge-green">✅ Activa</span>' : '<span class="badge badge-gray">🚫 Bloqueada</span>'}</td>
+      <td>${e.activa
+        ? `<button class="btn btn-red btn-sm" onclick="toggleEspecialidad('${e.id}', false)">Bloquear</button>`
+        : `<button class="btn btn-teal btn-sm" onclick="toggleEspecialidad('${e.id}', true)">Desbloquear</button>`}</td>
+    </tr>`).join('') : '<tr><td colspan="3" class="empty">No hay especialidades cargadas</td></tr>';
+}
+async function toggleEspecialidad(id, activa) {
+  const r = await api(`/api/especialidades/${id}`, 'PATCH', { activa });
+  if (r && r.error) return toast(r.error);
+  await cargarTodo();
+  toast(activa ? 'Especialidad desbloqueada ✅' : 'Especialidad bloqueada 🚫');
 }
 function buscarUsuarios(tipo, q) {
   const data = usuarios.filter(u => u.tipo === tipo && (u.nombre.toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase())));
