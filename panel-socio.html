@@ -647,7 +647,8 @@ function renderDisponibles() {
   document.getElementById('lista-disponibles').innerHTML = trabajosDisponibles.length
     ? trabajosDisponibles.map(t => `
         <div class="trabajo-card nuevo">
-          <div class="trabajo-header"><div class="trabajo-servicio">${t.servicio} ${t.urgencia === 'Alta' ? '<span class="badge" style="background:var(--red-light);color:var(--red);margin-left:6px">🔥 BONUS POR URGENCIA</span>' : ''}</div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(t.created_at)}</div></div>
+          <div class="trabajo-header"><div class="trabajo-servicio">${t.servicio} ${t.es_favorito ? '<span class="badge" style="background:var(--teal-light);color:var(--teal-dark);margin-left:6px">⭐ Te eligieron como favorito</span>' : ''} ${t.urgencia === 'Alta' ? '<span class="badge" style="background:var(--red-light);color:var(--red);margin-left:6px">🔥 BONUS POR URGENCIA</span>' : ''}</div><div style="font-size:12px;color:var(--text-soft)">${fmtDate(t.created_at)}</div></div>
+          ${t.es_favorito ? `<div style="font-size:12px;color:var(--teal-dark);margin-bottom:4px">Este cliente te pidió el trabajo directamente a vos — solo vos lo ves.</div>` : ''}
           ${t.zona || t.distancia_km != null ? `<div style="font-size:12px;color:var(--teal-dark);font-weight:500;margin-bottom:4px">📍 ${t.zona||'Zona sin especificar'}${t.distancia_km != null ? ` · a ${t.distancia_km} km de tu zona de trabajo` : ''}</div>` : ''}
           <div class="trabajo-desc">${t.descripcion||''}</div>
           ${t.urgencia === 'Alta' ? `<div style="font-size:12px;color:var(--red);margin-bottom:6px">⚠️ El cliente necesita que esto se resuelva rápido — podés cobrar un poco más por la prioridad.</div>` : ''}
