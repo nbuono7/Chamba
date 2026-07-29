@@ -225,7 +225,7 @@
         <div class="alert alert-success" id="pedido-ok">✅ ¡Trabajo publicado! Los socios ya pueden ver tu solicitud.</div>
         <div class="alert alert-error" id="pedido-err"></div>
         <div class="form-group"><label>Tipo de servicio</label>
-          <select id="p-servicio"><option value="">Elegí el servicio</option><option>Plomería</option><option>Electricidad</option><option>Gas</option><option>Limpieza</option><option>Pintura</option><option>Albañilería</option><option>Otro</option></select>
+          <select id="p-servicio"><option value="">Elegí el servicio</option></select>
         </div>
         <div class="form-group"><label>Descripción del problema</label><textarea id="p-desc" rows="4" placeholder="Describí con detalle qué necesitás..."></textarea></div>
         <div class="form-group"><label>¿Dónde es el trabajo?</label>
@@ -407,12 +407,26 @@ window.onload = async () => {
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
   renderPerfil();
   cargarUbicaciones();
+  cargarEspecialidades();
   await cargarTodo();
   setInterval(cargarTodo, 30000);
 };
 
 function iniciales(nombre) {
   return (nombre || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase();
+}
+
+async function cargarEspecialidades() {
+  try {
+    const especialidades = await api('/api/especialidades');
+    const select = document.getElementById('p-servicio');
+    if (select && Array.isArray(especialidades)) {
+      const actual = select.value;
+      select.innerHTML = '<option value="">Elegí el servicio</option>' +
+        especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
+      if (actual) select.value = actual;
+    }
+  } catch(e) {}
 }
 
 window.addEventListener('storage', (e) => {
