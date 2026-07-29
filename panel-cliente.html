@@ -296,6 +296,12 @@
       </div></div>
 
       <div class="card"><div class="card-body">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">⭐ Mis favoritos y bloqueados</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Socios que marcaste después de calificarlos. Los bloqueados no ven tus trabajos — de forma confidencial, nunca se enteran.</div>
+        <div id="lista-relaciones-socio"></div>
+      </div></div>
+
+      <div class="card"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">📍 Mis ubicaciones</div>
         <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Direcciones donde solés necesitar un servicio (tu casa, la de un familiar, tu trabajo...).</div>
         <div id="lista-ubicaciones"></div>
@@ -892,6 +898,23 @@ function toggleNeg(id) { const el=document.getElementById(id); el.style.display=
 // ── FAVORITOS / BLOQUEO DE SOCIOS ──
 async function cargarRelacionesSocio() {
   try { misRelacionesSocio = await api('/api/relaciones-socio'); if (!Array.isArray(misRelacionesSocio)) misRelacionesSocio = []; } catch(e) { misRelacionesSocio = []; }
+  renderListaRelacionesSocio();
+}
+
+function renderListaRelacionesSocio() {
+  const box = document.getElementById('lista-relaciones-socio');
+  if (!box) return;
+  if (!misRelacionesSocio.length) { box.innerHTML = '<div style="font-size:13px;color:var(--text-soft)">Todavía no marcaste ningún socio como favorito o bloqueado.</div>'; return; }
+  box.innerHTML = misRelacionesSocio.map(r => `
+    <div class="ubicacion-item">
+      <div class="ubicacion-info">
+        <div class="etiqueta">${r.tipo === 'favorito' ? '⭐' : '🚫'} ${r.socio ? r.socio.nombre : 'Socio'} ${r.tipo === 'favorito' ? '<span class="badge badge-green" style="margin-left:6px">Favorito</span>' : '<span class="badge badge-red" style="margin-left:6px">Bloqueado</span>'}</div>
+        <div class="direccion">${r.socio?.especialidad || ''}</div>
+      </div>
+      <div class="ubicacion-acciones">
+        <button class="btn btn-red btn-sm" onclick="quitarRelacionSocio('${r.socio_id}')">Quitar</button>
+      </div>
+    </div>`).join('');
 }
 
 function renderRelacionSocio(socioId) {
