@@ -152,17 +152,24 @@ app.post('/api/analizar', async (req, res) => {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 1000, messages: [{ role: 'user', content }] })
+      body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 4000, messages: [{ role: 'user', content }] })
     });
     const data = await r.json();
-    if (data.error) return res.status(500).json({ error: data.error.message });
-    const result = JSON.parse(data.content.map(i => i.text||'').join('').replace(/```json|```/g,'').trim());
+    if (data.error) { console.error('❌ Error de la API de Claude:', data.error.message); return res.status(500).json({ error: data.error.message }); }
+    const textoCompleto = data.content.map(i => i.text||'').join('');
+    let result;
+    try {
+      result = JSON.parse(textoCompleto.replace(/```json|```/g,'').trim());
+    } catch (e) {
+      console.error('❌ La IA no devolvió JSON válido:', textoCompleto);
+      return res.status(500).json({ error: 'La IA no pudo procesar este pedido, probá reformular la descripción.' });
+    }
     result.comision_pct = COMISION * 100;
     result.precio_cliente = Math.round(result.precio_sugerido);
     result.precio_socio = Math.round(result.precio_sugerido * (1 - COMISION));
     result.comision_chamba = Math.round(result.precio_sugerido * COMISION);
     res.json(result);
-  } catch(e) { res.status(500).json({ error: 'Error al analizar.' }); }
+  } catch(e) { console.error('❌ Error en /api/analizar:', e.message); res.status(500).json({ error: 'Error al analizar.' }); }
 });
 
 // ── USUARIOS ──
