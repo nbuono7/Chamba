@@ -165,16 +165,7 @@
           </div>
           <div class="form-group">
             <label>Especialidad <span class="required">*</span></label>
-            <select id="f-especialidad">
-              <option value="">Elegí una especialidad</option>
-              <option>Plomería</option>
-              <option>Electricidad</option>
-              <option>Gas</option>
-              <option>Limpieza</option>
-              <option>Pintura</option>
-              <option>Albañilería</option>
-              <option>Otra</option>
-            </select>
+            <select id="f-especialidad"><option value="">Elegí una especialidad</option></select>
           </div>
         </div>
         <div class="form-row">
@@ -291,6 +282,18 @@ function showError(msg) {
   box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   document.getElementById('btn-submit').disabled = false;
 }
+
+(async () => {
+  try {
+    const r = await fetch(BACKEND + '/api/especialidades');
+    const especialidades = await r.json();
+    const select = document.getElementById('f-especialidad');
+    if (Array.isArray(especialidades)) {
+      select.innerHTML = '<option value="">Elegí una especialidad</option>' +
+        especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
+    }
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
