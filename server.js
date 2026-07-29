@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 require('dotenv').config();
-const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer } = require('./emailService');
+const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer, emailNuevaDisputa } = require('./emailService');
 
 const app = express();
 app.use(cors());
@@ -893,6 +893,61 @@ app.post('/api/calificaciones', auth, async (req, res) => {
 app.get('/api/calificaciones/:socio_id', async (req, res) => res.json(await sb(`calificaciones?socio_id=eq.${req.params.socio_id}&select=*&order=created_at.desc`)));
 
 // ── FORO (con soporte para respuestas vía parent_id) ──
+// ── DISPUTAS ──
+app.post('/api/disputas', auth, async (req, res) => {
+  try {
+    const { pedido_id, motivo, descripcion } = req.body;
+    if (!pedido_id || !motivo || !descripcion) return res.status(400).json({ error: 'Faltan datos.' });
+    const pedidos = await sb(`pedidos?id=eq.${pedido_id}&select=usuario_id,profesional_id,servicio,estado`);
+    if (!pedidos.length) return res.status(404).json({ error: 'Pedido no encontrado.' });
+    const p = pedidos[0];
+    if (req.usuario.id !== p.usuario_id && req.usuario.id !== p.profesional_id) {
+      return res.status(403).json({ error: 'No sos parte de este trabajo.' });
+    }
+    if (!['en_proceso', 'completado'].includes(p.estado)) {
+      return res.status(400).json({ error: 'Solo se puede reportar un problema en trabajos en proceso o completados.' });
+    }
+    const data = await sb('disputas', 'POST', { pedido_id, creado_por: req.usuario.id, motivo, descripcion, estado: 'abierta' });
+    try {
+      const admins = await sb(`usuarios?tipo=eq.admin&select=nombre,email`);
+      for (const a of admins) await emailNuevaDisputa(a.nombre, a.email, p.servicio, motivo);
+    } catch (e) { console.error('❌ Error avisando nueva disputa:', e.message); }
+    res.json(data);
+  } catch (e) {
+    console.error('❌ Error en POST /disputas:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar el reporte.', detalle: e.message });
+  }
+});
+
+app.get('/api/disputas', auth, async (req, res) => {
+  try {
+    if (req.usuario.tipo === 'admin') {
+      const estado = req.query.estado ? `&estado=eq.${req.query.estado}` : '';
+      return res.json(await sb(`disputas?select=*&order=created_at.desc${estado}`));
+    }
+    const misPedidos = await sb(`pedidos?or=(usuario_id.eq.${req.usuario.id},profesional_id.eq.${req.usuario.id})&select=id`);
+    if (!misPedidos.length) return res.json([]);
+    const ids = misPedidos.map(p => p.id).join(',');
+    res.json(await sb(`disputas?pedido_id=in.(${ids})&select=*&order=created_at.desc`));
+  } catch (e) {
+    console.error('❌ Error en GET /disputas:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudieron cargar las disputas.' });
+  }
+});
+
+app.patch('/api/disputas/:id', auth, soloAdmin, async (req, res) => {
+  try {
+    const { estado, resolucion } = req.body;
+    const patch = { estado };
+    if (resolucion !== undefined) patch.resolucion = resolucion;
+    if (estado === 'resuelta') patch.resuelta_at = new Date().toISOString();
+    res.json(await sb(`disputas?id=eq.${req.params.id}`, 'PATCH', patch));
+  } catch (e) {
+    console.error('❌ Error en PATCH /disputas:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo actualizar la disputa.' });
+  }
+});
+
 app.get('/api/foro', async (req, res) => {
   try { res.json(await sb('foro?select=*&order=created_at.asc')); }
   catch (e) { console.error('❌ Error en GET /foro:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudo cargar el foro.' }); }
