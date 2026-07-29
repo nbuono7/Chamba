@@ -7,7 +7,7 @@ const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPe
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
 
 // Red de seguridad: si algo falla en una ruta y no fue capturado, no tumbar el servidor.
 process.on('unhandledRejection', (err) => {
@@ -140,6 +140,83 @@ app.get('/api/geocodificar-inverso', async (req, res) => {
   res.json(r);
 });
 
+// Sube un archivo (base64) a Supabase Storage. Devuelve la ruta guardada (no la URL, el bucket es privado).
+async function subirArchivo(bucket, path, base64Data, mimeType) {
+  const buffer = Buffer.from(base64Data, 'base64');
+  const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': mimeType, 'x-upsert': 'true' },
+    body: buffer
+  });
+  const data = await r.json();
+  if (!r.ok) { console.error('❌ Error subiendo archivo:', JSON.stringify(data)); throw new Error('No se pudo subir el archivo.'); }
+  return path;
+}
+// Genera un link temporal (1 hora) para ver un archivo privado — solo para quien lo pida desde el backend (ej. el admin).
+async function firmarUrl(bucket, path, expiresIn = 3600) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/${bucket}/${path}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ expiresIn })
+    });
+    const data = await r.json();
+    if (!r.ok || !data.signedURL) return null;
+    return `${SUPABASE_URL}/storage/v1${data.signedURL}`;
+  } catch (e) { console.error('❌ Error firmando URL:', e.message); return null; }
+}
+
+// ── VERIFICACIÓN DE IDENTIDAD (comprobantes de monotributo u otra prueba, además de la matrícula) ──
+app.post('/api/verificaciones-identidad', auth, async (req, res) => {
+  try {
+    const { archivos } = req.body; // [{ data: base64SinPrefijo, mime: 'image/jpeg' }, ...] hasta 3
+    if (!Array.isArray(archivos) || !archivos.length) return res.status(400).json({ error: 'Subí al menos un comprobante.' });
+    if (archivos.length > 3) return res.status(400).json({ error: 'Máximo 3 archivos.' });
+    const paths = [];
+    for (let i = 0; i < archivos.length; i++) {
+      const ext = (archivos[i].mime.split('/')[1] || 'bin').replace('jpeg', 'jpg');
+      const path = `${req.usuario.id}/${Date.now()}_${i}.${ext}`;
+      await subirArchivo('identificaciones', path, archivos[i].data, archivos[i].mime);
+      paths.push(path);
+    }
+    const body = { socio_id: req.usuario.id, estado: 'pendiente' };
+    ['archivo_1', 'archivo_2', 'archivo_3'].forEach((campo, i) => { if (paths[i]) body[campo] = paths[i]; });
+    res.json(await sb('verificaciones_identidad', 'POST', body));
+  } catch (e) {
+    console.error('❌ Error en POST /verificaciones-identidad:', e.message, e.supabase || '');
+    res.status(500).json({ error: e.message || 'No se pudo enviar la verificación.' });
+  }
+});
+
+app.get('/api/verificaciones-identidad', auth, async (req, res) => {
+  try {
+    let socio_id = req.query.socio_id;
+    if (req.usuario.tipo !== 'admin') socio_id = req.usuario.id;
+    const filtro = socio_id ? `&socio_id=eq.${socio_id}` : '';
+    const rows = await sb(`verificaciones_identidad?select=*&order=created_at.desc${filtro}`);
+    for (const row of rows) {
+      row.urls = [];
+      for (const campo of ['archivo_1', 'archivo_2', 'archivo_3']) {
+        if (row[campo]) { const url = await firmarUrl('identificaciones', row[campo]); if (url) row.urls.push(url); }
+      }
+    }
+    res.json(rows);
+  } catch (e) {
+    console.error('❌ Error en GET /verificaciones-identidad:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudieron cargar las verificaciones.' });
+  }
+});
+
+app.patch('/api/verificaciones-identidad/:id', auth, soloAdmin, async (req, res) => {
+  try {
+    const { estado } = req.body;
+    res.json(await sb(`verificaciones_identidad?id=eq.${req.params.id}`, 'PATCH', { estado }));
+  } catch (e) {
+    console.error('❌ Error en PATCH /verificaciones-identidad:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo actualizar.' });
+  }
+});
+
 app.get('/', (req, res) => res.json({ status: 'Chamba API ✅' }));
 
 // ── IA ──
@@ -173,6 +250,21 @@ app.post('/api/analizar', async (req, res) => {
 });
 
 // ── USUARIOS ──
+// ── ESPECIALIDADES (catálogo, el admin puede bloquear/desbloquear) ──
+app.get('/api/especialidades', async (req, res) => {
+  try { res.json(await sb('especialidades?select=*&order=orden.asc')); }
+  catch (e) { console.error('❌ Error en GET /especialidades:', e.message); res.status(500).json({ error: 'No se pudieron cargar las especialidades.' }); }
+});
+app.patch('/api/especialidades/:id', auth, soloAdmin, async (req, res) => {
+  try {
+    const { activa } = req.body;
+    res.json(await sb(`especialidades?id=eq.${req.params.id}`, 'PATCH', { activa }));
+  } catch (e) {
+    console.error('❌ Error en PATCH /especialidades:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo actualizar.' });
+  }
+});
+
 app.get('/api/usuarios', async (req, res) => {
   const tipo = req.query.tipo ? `&tipo=eq.${req.query.tipo}` : '';
   res.json(await sb(`usuarios?select=id,nombre,email,telefono,tipo,estado,especialidad,dni,experiencia,matricula,trabajos_completados,promedio_estrellas,total_calificaciones,saldo_disponible,saldo_bloqueado,created_at&order=created_at.desc${tipo}`));
