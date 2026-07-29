@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 require('dotenv').config();
-const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido, emailCodigoVerificacion } = require('./emailService');
+const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer } = require('./emailService');
 
 const app = express();
 app.use(cors());
@@ -331,6 +331,22 @@ app.post('/api/usuarios/login', async (req, res) => {
 });
 
 // ── CÓDIGOS DE EMAIL (confirmar registro / iniciar sesión sin contraseña) ──
+// Cada 30 segundos revisa si hay códigos a punto de vencer (entre 1 y 2 minutos restantes) y avisa por email, una sola vez por código.
+setInterval(async () => {
+  try {
+    const ahora = Date.now();
+    const desde = new Date(ahora + 60 * 1000).toISOString();
+    const hasta = new Date(ahora + 120 * 1000).toISOString();
+    const rows = await sb(`codigos_login?usado=eq.false&recordado=eq.false&expira_at=gte.${desde}&expira_at=lte.${hasta}&select=*`);
+    for (const c of rows) {
+      const users = await sb(`usuarios?email=eq.${encodeURIComponent(c.email)}&select=nombre`);
+      const nombre = users.length ? users[0].nombre : '';
+      await emailCodigoPorVencer(nombre, c.email, c.tipo);
+      await sb(`codigos_login?id=eq.${c.id}`, 'PATCH', { recordado: true });
+    }
+  } catch (e) { console.error('❌ Error chequeando códigos por vencer:', e.message); }
+}, 30000);
+
 async function generarYEnviarCodigo(email, tipo) {
   // Invalida cualquier código anterior sin usar de ese email+tipo (si llega tarde, ya no sirve)
   await sb(`codigos_login?email=eq.${encodeURIComponent(email)}&tipo=eq.${tipo}&usado=eq.false`, 'PATCH', { usado: true });
@@ -612,15 +628,31 @@ app.get('/api/ofertas', async (req, res) => {
 });
 
 app.post('/api/ofertas', auth, async (req, res) => {
-  const { pedido_id, socio_nombre, especialidad, precio_ofertado } = req.body;
-  const socio_id = req.usuario.id; // nunca confiar en el socio_id que manda el cliente
-  const precio_neto = Math.round(precio_ofertado * (1 - COMISION));
-  const comision = Math.round(precio_ofertado * COMISION);
-  const prev = await sb(`ofertas?pedido_id=eq.${pedido_id}&socio_id=eq.${socio_id}&select=id`);
-  if (prev.length > 0) {
-    return res.json(await sb(`ofertas?id=eq.${prev[0].id}`, 'PATCH', { precio_ofertado, precio_neto, comision, estado: 'pendiente', ultima_oferta_de: 'socio' }));
+  try {
+    const { pedido_id, socio_nombre, especialidad, precio_ofertado } = req.body;
+    const socio_id = req.usuario.id; // nunca confiar en el socio_id que manda el cliente
+    const precio_neto = Math.round(precio_ofertado * (1 - COMISION));
+    const comision = Math.round(precio_ofertado * COMISION);
+    const prev = await sb(`ofertas?pedido_id=eq.${pedido_id}&socio_id=eq.${socio_id}&select=id`);
+    let data;
+    if (prev.length > 0) {
+      data = await sb(`ofertas?id=eq.${prev[0].id}`, 'PATCH', { precio_ofertado, precio_neto, comision, estado: 'pendiente', ultima_oferta_de: 'socio' });
+    } else {
+      data = await sb('ofertas', 'POST', { pedido_id, socio_id, socio_nombre, especialidad, precio_ofertado, precio_neto, comision, ultima_oferta_de: 'socio' });
+    }
+    // Avisar por email al dueño del pedido
+    try {
+      const pedidos = await sb(`pedidos?id=eq.${pedido_id}&select=usuario_id,servicio`);
+      if (pedidos.length) {
+        const clientes = await sb(`usuarios?id=eq.${pedidos[0].usuario_id}&select=nombre,email`);
+        if (clientes.length) emailNuevaOferta(clientes[0].nombre, clientes[0].email, pedidos[0].servicio, precio_ofertado);
+      }
+    } catch (e) { console.error('❌ Error avisando nueva oferta:', e.message); }
+    res.json(data);
+  } catch (e) {
+    console.error('❌ Error en POST /ofertas:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar la oferta.' });
   }
-  res.json(await sb('ofertas', 'POST', { pedido_id, socio_id, socio_nombre, especialidad, precio_ofertado, precio_neto, comision, ultima_oferta_de: 'socio' }));
 });
 
 app.post('/api/ofertas/:id/contraoferta', auth, async (req, res) => {
@@ -639,7 +671,17 @@ app.post('/api/ofertas/:id/contraoferta', auth, async (req, res) => {
     }
     const precio_neto = Math.round(nuevo_precio * 0.8);
     const comision = Math.round(nuevo_precio * 0.2);
-    res.json(await sb(`ofertas?id=eq.${req.params.id}`, 'PATCH', { precio_ofertado: nuevo_precio, precio_neto, comision, estado: 'negociando', ultima_oferta_de: rol }));
+    const data = await sb(`ofertas?id=eq.${req.params.id}`, 'PATCH', { precio_ofertado: nuevo_precio, precio_neto, comision, estado: 'negociando', ultima_oferta_de: rol });
+    // Avisar a la OTRA parte (si contraofertó el socio, avisar al cliente y viceversa)
+    try {
+      const pedidos = await sb(`pedidos?id=eq.${o.pedido_id}&select=usuario_id,servicio`);
+      if (pedidos.length) {
+        const destinatarioId = rol === 'socio' ? pedidos[0].usuario_id : o.socio_id;
+        const destinatarios = await sb(`usuarios?id=eq.${destinatarioId}&select=nombre,email`);
+        if (destinatarios.length) emailNuevaOferta(destinatarios[0].nombre, destinatarios[0].email, pedidos[0].servicio, nuevo_precio, true);
+      }
+    } catch (e) { console.error('❌ Error avisando contraoferta:', e.message); }
+    res.json(data);
   } catch (e) {
     console.error('❌ Error en /contraoferta:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo enviar la contraoferta.' });
@@ -737,13 +779,22 @@ app.get('/api/mensajes/:pedido_id', async (req, res) => {
 });
 app.post('/api/mensajes', auth, async (req, res) => {
   try {
-    const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado,usuario_id,profesional_id`);
+    const pedido = await sb(`pedidos?id=eq.${req.body.pedido_id}&select=chat_habilitado,usuario_id,profesional_id,servicio`);
     if (!pedido.length || !pedido[0].chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
     if (req.usuario.id !== pedido[0].usuario_id && req.usuario.id !== pedido[0].profesional_id) {
       return res.status(403).json({ error: 'No sos parte de esta conversación.' });
     }
     const rol = req.usuario.id === pedido[0].profesional_id ? 'socio' : 'cliente';
-    res.json(await sb('mensajes', 'POST', { ...req.body, autor: req.usuario.nombre || req.body.autor, rol }));
+    const data = await sb('mensajes', 'POST', { ...req.body, autor: req.usuario.nombre || req.body.autor, rol });
+    // Avisar a la otra persona de la conversación
+    try {
+      const destinatarioId = rol === 'socio' ? pedido[0].usuario_id : pedido[0].profesional_id;
+      if (destinatarioId) {
+        const destinatarios = await sb(`usuarios?id=eq.${destinatarioId}&select=nombre,email`);
+        if (destinatarios.length) emailNuevoMensaje(destinatarios[0].nombre, destinatarios[0].email, pedido[0].servicio, req.usuario.nombre, req.body.contenido);
+      }
+    } catch (e) { console.error('❌ Error avisando nuevo mensaje:', e.message); }
+    res.json(data);
   } catch (e) {
     console.error('❌ Error en POST /mensajes:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo enviar el mensaje.', detalle: e.message });
