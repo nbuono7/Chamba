@@ -1081,11 +1081,6 @@ app.delete('/api/foro/:id', auth, soloAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
-// Ruta de prueba: entrá a /debug-sentry una vez, para confirmar que los errores llegan a Sentry
-app.get('/debug-sentry', () => {
-  throw new Error('¡Prueba de Sentry! Si ves esto en tu dashboard, está todo funcionando.');
-});
-
 // Sentry: se coloca después de TODAS las rutas, antes de arrancar el servidor
 Sentry.setupExpressErrorHandler(app);
 
