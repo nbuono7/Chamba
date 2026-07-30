@@ -66,7 +66,7 @@
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-gray { background: #f1f1f1; color: #666; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    @media(max-width:700px) { .form-row { grid-template-columns: 1fr; } }
+    @media(max-width:700px) { .form-row { grid-template-columns: 1fr; } .ubicacion-item { flex-direction: column; align-items: flex-start; } .ubicacion-acciones { flex-wrap: wrap; width: 100%; } }
     .ubicacion-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); gap: 10px; }
     .ubicacion-item:first-child { border-top: none; padding-top: 0; }
     .ubicacion-info { font-size: 14px; }
@@ -101,7 +101,7 @@
     .refresh-btn { font-size: 12px; color: var(--teal); cursor: pointer; background: none; border: none; font-family: inherit; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; background: #fff; color: var(--text); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 16px; font-family: inherit; background: #fff; color: var(--text); }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
 
     .trabajo-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 12px; background: #fff; position: relative; }
@@ -158,7 +158,7 @@
     .chat-msg.otro { background: #fff; border: 1px solid var(--border); align-self: flex-start; }
     .chat-msg-meta { font-size: 11px; opacity: 0.6; margin-bottom: 2px; }
     .chat-input-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border); }
-    .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
+    .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 16px; font-family: inherit; }
     .chat-input:focus { outline: none; border-color: var(--teal); }
 
     .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -1211,6 +1211,13 @@ let ubBusquedaTimer = null;
 let ubSeleccionActual = null; // { direccion, lat, lng }
 let ubEditandoId = null; // si no es null, "Guardar" hace PATCH en vez de POST
 
+function direccionCorta(direccionCompleta) {
+  const partes = (direccionCompleta || '').split(',').map(p => p.trim()).filter(Boolean);
+  if (!partes.length) return direccionCompleta || '';
+  if (partes.length >= 2 && /^\d+[a-zA-Z]?$/.test(partes[0])) return `${partes[1]} ${partes[0]}`;
+  return partes.slice(0, 2).join(', ');
+}
+
 async function cargarUbicaciones() {
   try {
     const ubs = await api('/api/ubicaciones');
@@ -1222,7 +1229,7 @@ async function cargarUbicaciones() {
       <div class="ubicacion-item">
         <div class="ubicacion-info">
           <div class="etiqueta">${u.etiqueta} <span class="badge badge-gray" style="margin-left:6px">${tipoLabel[u.tipo]||u.tipo}</span> ${u.predeterminada ? '<span class="badge badge-green" style="margin-left:4px">Predeterminada</span>' : ''}</div>
-          <div class="direccion">${u.direccion}${u.piso_depto ? ' — ' + u.piso_depto : ''}</div>
+          <div class="direccion">${direccionCorta(u.direccion)}${u.piso_depto ? ' — ' + u.piso_depto : ''}</div>
         </div>
         <div class="ubicacion-acciones">
           ${!u.predeterminada ? `<button class="btn btn-ghost btn-sm" onclick="marcarPredeterminada('${u.id}')">Usar como predeterminada</button>` : ''}
