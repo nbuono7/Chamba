@@ -345,7 +345,8 @@
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       nav { padding: 0 20px; }
-      .nav-links { display: none; }
+      .nav-links { gap: 8px; }
+      .nav-link-desktop { display: none; }
       section { padding: 70px 20px; }
       #ia { grid-template-columns: 1fr; gap: 40px; }
       .app-wrapper { grid-template-columns: 1fr; }
@@ -368,9 +369,9 @@
 <nav>
   <a class="nav-logo" href="#">Cham<span>BA</span></a>
   <div class="nav-links">
-    <a href="#servicios">Servicios</a>
-    <a href="#como-funciona">Cómo funciona</a>
-    <a href="#ia">IA</a>
+    <a href="#servicios" class="nav-link-desktop">Servicios</a>
+    <a href="#como-funciona" class="nav-link-desktop">Cómo funciona</a>
+    <a href="#ia" class="nav-link-desktop">IA</a>
     <a href="/login" style="font-size:14px;color:var(--text-mid);text-decoration:none;padding:8px 16px;border:1px solid var(--border-hover);border-radius:8px;transition:all 0.15s" onmouseover="this.style.borderColor='#E2662D'" onmouseout="this.style.borderColor='rgba(0,0,0,0.2)'">Ingresar</a><a href="/registro" class="nav-cta" style="margin-left:8px">Registrarse</a>
   </div>
 </nav>
@@ -602,9 +603,9 @@
       const navLinks = document.querySelector('.nav-links');
       if (navLinks) {
         navLinks.innerHTML = `
-          <a href="#servicios">Servicios</a>
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#ia">IA</a>
+          <a href="#servicios" class="nav-link-desktop">Servicios</a>
+          <a href="#como-funciona" class="nav-link-desktop">Cómo funciona</a>
+          <a href="#ia" class="nav-link-desktop">IA</a>
           <a href="${usuarioLogueado.tipo === 'socio' ? '/panel-socio' : '/panel-cliente'}" class="nav-cta">Mi panel</a>
         `;
       }
