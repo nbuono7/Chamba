@@ -21,8 +21,9 @@
     .topbar-inner { max-width: 1180px; margin: 0 auto; padding: 0 28px; height: 68px; display: flex; align-items: center; gap: 4px; }
     .logo { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-right: 24px; letter-spacing: -0.01em; white-space: nowrap; }
     .logo span { color: var(--teal); }
-    .topnav { display: flex; align-items: center; gap: 2px; height: 100%; }
-    .nav-item { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 14px; height: 100%; border: none; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.55); cursor: pointer; white-space: nowrap; }
+    .topnav { display: flex; align-items: center; gap: 2px; height: 100%; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .topnav::-webkit-scrollbar { display: none; }
+    .nav-item { position: relative; display: flex; align-items: center; gap: 6px; padding: 0 14px; height: 100%; border: none; background: none; font-family: inherit; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.55); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
     .nav-item:hover { color: #fff; }
     .nav-item.active { color: #fff; }
     .nav-item.active::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 0; height: 3px; background: var(--teal); border-radius: 3px 3px 0 0; }
