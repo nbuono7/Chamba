@@ -1,3 +1,5 @@
+require('./instrument'); // Sentry SIEMPRE primero, antes de cualquier otro require
+const Sentry = require('@sentry/node');
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -1078,6 +1080,14 @@ app.delete('/api/foro/:id', auth, soloAdmin, async (req, res) => {
   await fetch(`${SUPABASE_URL}/rest/v1/foro?id=eq.${req.params.id}`, { method: 'DELETE', headers: sbH });
   res.json({ ok: true });
 });
+
+// Ruta de prueba: entrá a /debug-sentry una vez, para confirmar que los errores llegan a Sentry
+app.get('/debug-sentry', () => {
+  throw new Error('¡Prueba de Sentry! Si ves esto en tu dashboard, está todo funcionando.');
+});
+
+// Sentry: se coloca después de TODAS las rutas, antes de arrancar el servidor
+Sentry.setupExpressErrorHandler(app);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Chamba backend en puerto ${PORT}`));
