@@ -66,7 +66,7 @@
     .badge-amber { background: var(--amber-light); color: var(--amber); }
     .badge-gray { background: #f1f1f1; color: #666; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media(max-width:600px) { .form-row { grid-template-columns: 1fr; } }
+    @media(max-width:600px) { .form-row { grid-template-columns: 1fr; } .ubicacion-item { flex-direction: column; align-items: flex-start; } .ubicacion-acciones { flex-wrap: wrap; width: 100%; } }
     .ubicacion-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); gap: 10px; }
     .ubicacion-item:first-child { border-top: none; padding-top: 0; }
     .ubicacion-info { font-size: 14px; }
@@ -101,7 +101,7 @@
     .btn-sm { padding: 5px 12px; font-size: 12px; }
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
-    .form-group select, .form-group textarea, .form-group input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px; font-family: inherit; color: var(--text); background: #fff; }
+    .form-group select, .form-group textarea, .form-group input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 16px; font-family: inherit; color: var(--text); background: #fff; }
     .form-group select:focus, .form-group textarea:focus, .form-group input:focus { outline: none; border-color: var(--teal); }
     .form-group textarea { resize: none; line-height: 1.5; }
     .alert { border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; display: none; }
@@ -145,7 +145,7 @@
     .chat-msg.otro { background: #fff; border: 1px solid var(--border); align-self: flex-start; }
     .chat-msg-meta { font-size: 11px; opacity: 0.6; margin-bottom: 2px; }
     .chat-input-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border); }
-    .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-family: inherit; }
+    .chat-input { flex: 1; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 16px; font-family: inherit; }
     .chat-input:focus { outline: none; border-color: var(--teal); }
 
     .stars-input { display: flex; gap: 6px; margin: 8px 0; }
@@ -465,6 +465,14 @@ function renderPerfil() {
     <div class="form-group"><label>Teléfono</label><input type="text" id="perfil-telefono" value="${usuario.telefono||''}"/></div>`;
 }
 
+function direccionCorta(direccionCompleta) {
+  const partes = (direccionCompleta || '').split(',').map(p => p.trim()).filter(Boolean);
+  if (!partes.length) return direccionCompleta || '';
+  // Nominatim suele devolver "1793, Arévalo, ..." (número primero) — lo mostramos como "Arévalo 1793"
+  if (partes.length >= 2 && /^\d+[a-zA-Z]?$/.test(partes[0])) return `${partes[1]} ${partes[0]}`;
+  return partes.slice(0, 2).join(', ');
+}
+
 async function cargarUbicaciones() {
   try {
     const ubs = await api('/api/ubicaciones');
@@ -475,7 +483,7 @@ async function cargarUbicaciones() {
         <div class="ubicacion-item">
           <div class="ubicacion-info">
             <div class="etiqueta">📍 ${u.etiqueta} ${u.predeterminada ? '<span class="badge badge-green" style="margin-left:6px">Predeterminada</span>' : ''}</div>
-            <div class="direccion">${u.direccion}${u.piso_depto ? ' — ' + u.piso_depto : ''}</div>
+            <div class="direccion">${direccionCorta(u.direccion)}${u.piso_depto ? ' — ' + u.piso_depto : ''}</div>
           </div>
           <div class="ubicacion-acciones">
             ${!u.predeterminada ? `<button class="btn btn-ghost btn-sm" onclick="marcarPredeterminada('${u.id}')">Usar como predeterminada</button>` : ''}
