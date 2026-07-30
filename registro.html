@@ -49,12 +49,17 @@
     .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
     .form-group input, .form-group select, .form-group textarea {
       width: 100%; border: 1px solid var(--border); border-radius: 8px;
-      padding: 10px 12px; font-size: 14px; font-family: inherit;
+      padding: 10px 12px; font-size: 16px; font-family: inherit;
       color: var(--text); background: #fff; transition: border-color 0.15s;
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
     .form-group textarea { resize: none; line-height: 1.5; }
     .form-group .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    .sugerencias-box { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(22,35,63,0.12); z-index: 40; max-height: 240px; overflow-y: auto; margin-top: 4px; display: none; }
+    .sugerencias-box.open { display: block; }
+    .sugerencia-item { display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px; cursor: pointer; font-size: 13px; border-top: 1px solid var(--border); }
+    .sugerencia-item:first-child { border-top: none; }
+    .sugerencia-item:hover { background: var(--bg); }
     .required { color: var(--teal); }
 
     /* EXTRA FIELDS */
@@ -162,9 +167,10 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" style="position:relative">
         <label>Dirección donde vivís <span class="required">*</span></label>
-        <input type="text" id="f-direccion" placeholder="Ej: Alsina 450, Bahía Blanca" />
+        <input type="text" id="f-direccion" placeholder="Ej: Alsina 450, Bahía Blanca" autocomplete="off" oninput="onBuscarDireccion(this, 'f-direccion-sugerencias')"/>
+        <div id="f-direccion-sugerencias" class="sugerencias-box"></div>
         <div class="hint">La usamos para mostrarte trabajos y socios cercanos a vos.</div>
       </div>
 
@@ -192,14 +198,11 @@
             <div class="hint">Si no tenés, dejalo vacío</div>
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="position:relative">
           <label>Zona donde trabajás</label>
-          <input type="text" id="f-direccion-trabajo" placeholder="Ej: Barrio Palihue, Bahía Blanca" />
+          <input type="text" id="f-direccion-trabajo" placeholder="Ej: Barrio Palihue, Bahía Blanca" autocomplete="off" oninput="onBuscarDireccion(this, 'f-direccion-trabajo-sugerencias')"/>
+          <div id="f-direccion-trabajo-sugerencias" class="sugerencias-box"></div>
           <div class="hint">Completalo solo si es distinta a donde vivís. Si la dejás vacía, usamos la misma dirección.</div>
-        </div>
-        <div class="form-group">
-          <label>¿Por qué querés unirte a ChamBA? <span class="required">*</span></label>
-          <textarea id="f-mensaje" rows="3" placeholder="Contanos un poco sobre vos, tu experiencia y por qué querés ser parte de ChamBA..."></textarea>
         </div>
         <div class="form-group" style="background:#fef3e2;border:1px solid #fbbf24;border-radius:8px;padding:12px;font-size:13px;color:#854f0b">
           ⏳ <strong>Revisamos tu solicitud</strong> — Una vez que te registres, nuestro equipo va a revisar tu perfil y te avisamos por email si fue aprobado. Esto puede tardar hasta 48hs.
@@ -254,10 +257,9 @@ async function registrar() {
     const especialidad = document.getElementById('f-especialidad').value;
     const experiencia = document.getElementById('f-experiencia').value.trim();
     const matricula = document.getElementById('f-matricula').value.trim();
-    const mensaje = document.getElementById('f-mensaje').value.trim();
     const direccion_trabajo = document.getElementById('f-direccion-trabajo').value.trim();
-    if (!dni || !especialidad || !experiencia || !mensaje) return showError('Completá todos los campos obligatorios para socios.');
-    Object.assign(body, { dni, especialidad, experiencia, matricula, mensaje_solicitud: mensaje, direccion_trabajo });
+    if (!dni || !especialidad || !experiencia) return showError('Completá todos los campos obligatorios para socios.');
+    Object.assign(body, { dni, especialidad, experiencia, matricula, direccion_trabajo });
   }
 
   btn.disabled = true;
@@ -349,6 +351,42 @@ async function reenviarCodigoRegistro() {
     btn.disabled = false;
   }
 }
+
+// ── Sugerencias de dirección (autocompletar, como Google Maps/PedidosYa) ──
+const _timersBusqueda = {};
+let _sugerenciasCache = [];
+
+function onBuscarDireccion(input, boxId) {
+  clearTimeout(_timersBusqueda[boxId]);
+  const box = document.getElementById(boxId);
+  const texto = input.value;
+  if (!texto || texto.trim().length < 3) { box.classList.remove('open'); return; }
+  _timersBusqueda[boxId] = setTimeout(async () => {
+    try {
+      const r = await fetch(`${BACKEND}/api/geocodificar-buscar?q=${encodeURIComponent(texto)}`);
+      const data = await r.json();
+      _sugerenciasCache = Array.isArray(data) ? data : [];
+      if (!_sugerenciasCache.length) {
+        box.innerHTML = '<div class="sugerencia-item" style="color:var(--text-soft)">No encontramos direcciones. Probá con calle, número y ciudad.</div>';
+        box.classList.add('open');
+        return;
+      }
+      box.innerHTML = _sugerenciasCache.map((s, i) => `<div class="sugerencia-item" onclick="elegirSugerencia('${input.id}','${boxId}',${i})"><span>📍</span><span>${s.display_name}</span></div>`).join('');
+      box.classList.add('open');
+    } catch(e) {}
+  }, 400);
+}
+
+function elegirSugerencia(inputId, boxId, i) {
+  const s = _sugerenciasCache[i];
+  if (!s) return;
+  document.getElementById(inputId).value = s.display_name;
+  document.getElementById(boxId).classList.remove('open');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.form-group[style*="position:relative"]')) document.querySelectorAll('.sugerencias-box').forEach(b => b.classList.remove('open'));
+});
 
 function showError(msg) {
   const box = document.getElementById('error-box');
