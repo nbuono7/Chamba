@@ -354,19 +354,30 @@
 
       <div class="card" style="margin-top:16px"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">🪪 Otra forma de identificación</div>
-        <div style="font-size:13px;color:var(--text-soft);margin-bottom:6px">¿No tenés matrícula? Subí <strong>estos dos comprobantes obligatorios</strong> para demostrar que trabajás de esto:</div>
-        <div style="font-size:13px;color:var(--text-soft);margin-bottom:6px;padding-left:8px">
-          1️⃣ Tus <strong>últimas 3 facturas a clientes</strong> (los últimos 3 trabajos que facturaste)<br/>
-          2️⃣ La <strong>última factura pagada de tu monotributo</strong> (la tuya, no la que le das al cliente)
-        </div>
-        <div style="font-size:12px;color:var(--amber);margin-bottom:12px">⚠️ Podés subir cada comprobante por separado o todos juntos en un único archivo comprimido (.zip). Que se vean claros y completos.</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">¿No tenés matrícula? Subí <strong>estos dos comprobantes, ambos obligatorios</strong>, para demostrar que trabajás de esto:</div>
+
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px">1️⃣ Últimas 3 facturas a clientes</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:6px">Los últimos 3 trabajos que le facturaste a un cliente.</div>
+        <div style="font-size:12px;color:var(--amber);margin-bottom:8px">⚠️ Podés subir 1 solo PDF con las 3 facturas juntas, o hasta 4 archivos separados (por si necesitás una imagen extra de algún comprobante). Que se vean claros y completos.</div>
         <div class="form-group">
-          <label>Comprobantes (JPG, PNG, WEBP, PDF o ZIP — hasta 6 archivos, máximo 8MB cada uno)</label>
-          <input type="file" id="verif-archivos" accept="image/jpeg,image/png,image/webp,.pdf,application/pdf,.zip,application/zip,application/x-zip-compressed" multiple/>
+          <label>Facturas a clientes (hasta 4 archivos, máximo 8MB cada uno)</label>
+          <input type="file" id="verif-facturas" accept="image/jpeg,image/png,image/webp,.pdf,application/pdf" multiple/>
+          <div style="margin-top:6px"><span class="badge badge-gray">📎 JPG</span> <span class="badge badge-gray">PNG</span> <span class="badge badge-gray">WEBP</span> <span class="badge badge-gray">PDF</span></div>
         </div>
+
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;margin-top:16px">2️⃣ Última factura pagada del monotributo</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:6px">La tuya, no la que le das al cliente — la que indica tu categoría de monotributo.</div>
+        <div style="font-size:12px;color:var(--amber);margin-bottom:8px">⚠️ Un solo archivo, el más reciente que hayas pagado.</div>
+        <div class="form-group">
+          <label>Comprobante de monotributo (1 archivo, máximo 8MB)</label>
+          <input type="file" id="verif-monotributo" accept="image/jpeg,image/png,image/webp,.pdf,application/pdf"/>
+          <div style="margin-top:6px"><span class="badge badge-gray">📎 JPG</span> <span class="badge badge-gray">PNG</span> <span class="badge badge-gray">WEBP</span> <span class="badge badge-gray">PDF</span></div>
+        </div>
+
         <button class="btn btn-teal btn-sm" onclick="enviarVerificacionIdentidad()" id="verif-btn-enviar">Enviar comprobantes</button>
         <div id="lista-verificaciones-identidad" style="margin-top:16px"></div>
       </div></div>
+
 
       <div class="card" style="margin-top:16px"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">📍 Mis ubicaciones</div>
@@ -1474,28 +1485,37 @@ function leerArchivoComoBase64(file) {
 }
 
 async function enviarVerificacionIdentidad() {
-  const input = document.getElementById('verif-archivos');
-  const files = Array.from(input.files || []);
-  if (!files.length) return showInfo('⚠️', 'Faltan archivos', 'Elegí al menos un comprobante (o un .zip con todos adentro).');
-  if (files.length > 6) return showInfo('⚠️', 'Demasiados archivos', 'Subí como máximo 6 archivos.');
-  const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf', 'application/zip', 'application/x-zip-compressed', 'application/x-zip', 'multipart/x-zip'];
+  const inputFacturas = document.getElementById('verif-facturas');
+  const inputMono = document.getElementById('verif-monotributo');
+  const archivosFacturas = Array.from(inputFacturas.files || []);
+  const archivosMono = Array.from(inputMono.files || []);
+
+  if (!archivosFacturas.length) return showInfo('⚠️', 'Faltan las facturas', 'Subí al menos 1 archivo con tus últimas 3 facturas a clientes (puede ser un solo PDF con las 3, o hasta 4 archivos sueltos).');
+  if (archivosFacturas.length > 4) return showInfo('⚠️', 'Demasiados archivos', 'Subí como máximo 4 archivos en la sección de facturas.');
+  if (!archivosMono.length) return showInfo('⚠️', 'Falta el comprobante de monotributo', 'Subí la última factura pagada de tu monotributo.');
+  if (archivosMono.length > 1) return showInfo('⚠️', 'Un solo archivo', 'El comprobante de monotributo es un único archivo.');
+
+  const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
   const TAMANO_MAX = 8 * 1024 * 1024; // 8MB
-  for (const f of files) {
-    const esZipPorExtension = /\.zip$/i.test(f.name);
-    if (!TIPOS_PERMITIDOS.includes(f.type) && !esZipPorExtension) return showInfo('⚠️', 'Formato no permitido', `"${f.name}" no es una imagen (JPG/PNG/WEBP), un PDF ni un ZIP.`);
-    if (f.size > TAMANO_MAX) return showInfo('⚠️', 'Archivo muy pesado', `"${f.name}" pesa más de 8MB. Subí una versión más liviana o comprimida.`);
+  for (const f of [...archivosFacturas, ...archivosMono]) {
+    if (!TIPOS_PERMITIDOS.includes(f.type)) return showInfo('⚠️', 'Formato no permitido', `"${f.name}" no es una imagen (JPG/PNG/WEBP) ni un PDF.`);
+    if (f.size > TAMANO_MAX) return showInfo('⚠️', 'Archivo muy pesado', `"${f.name}" pesa más de 8MB. Subí una versión más liviana.`);
   }
+
   const btn = document.getElementById('verif-btn-enviar');
   btn.disabled = true; btn.textContent = 'Subiendo...';
   try {
-    const archivos = [];
-    for (const f of files) {
+    const facturas = [];
+    for (const f of archivosFacturas) {
       const data = await leerArchivoComoBase64(f);
-      archivos.push({ data, mime: f.type || 'application/octet-stream' });
+      facturas.push({ data, mime: f.type || 'application/octet-stream' });
     }
-    const r = await api('/api/verificaciones-identidad', 'POST', { archivos });
+    const monoFile = archivosMono[0];
+    const monotributo = { data: await leerArchivoComoBase64(monoFile), mime: monoFile.type || 'application/octet-stream' };
+
+    const r = await api('/api/verificaciones-identidad', 'POST', { monotributo, facturas });
     if (r.error) { showInfo('❌', 'Error', r.error); return; }
-    input.value = '';
+    inputFacturas.value = ''; inputMono.value = '';
     showInfo('✅', 'Comprobantes enviados', 'El equipo de ChamBA los va a revisar.');
     cargarVerificacionesIdentidad();
   } catch(e) {
