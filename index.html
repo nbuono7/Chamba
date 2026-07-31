@@ -12,7 +12,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://chamba-vert.vercel.app/" />
   <meta property="og:title" content="ChamBA — El profesional que necesitás, cuando lo necesitás" />
-  <meta property="og:description" content="Plomeros, electricistas, gasistas y más. Coordinamos todo por vos, con precios claros desde el inicio." />
+  <meta property="og:description" content="Plomeros, electricistas, gasistas y más. Recibí ofertas de varios profesionales, comparalas y pagá seguro." />
   <meta property="og:image" content="https://chamba-vert.vercel.app/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -22,7 +22,7 @@
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="ChamBA — El profesional que necesitás, cuando lo necesitás" />
-  <meta name="twitter:description" content="Plomeros, electricistas, gasistas y más. Coordinamos todo por vos, con precios claros desde el inicio." />
+  <meta name="twitter:description" content="Plomeros, electricistas, gasistas y más. Recibí ofertas de varios profesionales, comparalas y pagá seguro." />
   <meta name="twitter:image" content="https://chamba-vert.vercel.app/og-image.png" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -269,15 +269,26 @@
     .service-mini-btn .s-icon { font-size: 18px; }
     .service-mini-btn .s-name { font-size: 13px; font-weight: 500; color: var(--text); margin-top: 4px; }
 
-    .photo-area {
+    .photo-options { display: flex; gap: 8px; }
+    .photo-opt-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
       border: 1.5px dashed #d1d5db; border-radius: 10px;
-      padding: 20px; text-align: center; cursor: pointer; transition: all 0.15s;
+      background: var(--bg); padding: 14px 8px; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
     }
-    .photo-area:hover { border-color: var(--teal); background: var(--teal-light); }
-    .photo-area p { font-size: 13px; color: var(--text-soft); margin-top: 4px; }
-    .photo-area input { display: none; }
+    .photo-opt-btn:hover { border-color: var(--teal); background: var(--teal-light); }
+    .photo-opt-icon { font-size: 20px; }
+    .photo-opt-label { font-size: 12px; color: var(--text-mid); font-weight: 500; }
     .photo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .photo-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .photo-thumb-wrap { position: relative; width: 64px; height: 64px; }
+    .photo-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; display: block; }
+    .photo-remove {
+      position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+      border-radius: 50%; background: var(--navy); color: #fff; border: 2px solid var(--bg-off);
+      font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-family: inherit; padding: 0;
+    }
+    .photo-remove:hover { background: var(--teal); }
 
     .btn-primary {
       width: 100%; background: var(--teal); color: #fff; border: none;
@@ -381,7 +392,7 @@
   <div class="hero-inner">
     <div class="hero-badge">Profesionales verificados en Buenos Aires</div>
     <h1>El profesional que necesitás,<br><span>cuando lo necesitás</span></h1>
-    <p>Plomeros, electricistas, gasistas, mucamas y más. Coordinamos todo por vos, con precios claros desde el inicio.</p>
+    <p>Plomeros, electricistas, gasistas, cerrajeros y mucho más. Recibí ofertas de varios profesionales, comparalas y elegí con quién trabajar.</p>
     <div class="hero-btns">
       <a href="#app-section" class="btn-hero-primary">Pedir un servicio</a>
       <a href="#como-funciona" class="btn-hero-secondary">Cómo funciona</a>
@@ -389,8 +400,8 @@
     <div class="stats">
       <div class="stat"><div class="stat-num">+20</div><div class="stat-label">Profesionales</div></div>
       <div class="stat"><div class="stat-num">48h</div><div class="stat-label">Tiempo de respuesta</div></div>
-      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Tipos de servicio</div></div>
-      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Coordinado por nosotros</div></div>
+      <div class="stat"><div class="stat-num">9</div><div class="stat-label">Rubros disponibles</div></div>
+      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Pago protegido</div></div>
     </div>
   </div>
 </section>
@@ -431,6 +442,21 @@
       <div class="servicio-name">Albañilería</div>
       <div class="servicio-desc">Reparaciones, reformas, revestimientos y trabajos de construcción en general.</div>
     </div>
+    <div class="servicio-card" onclick="irAServicio('Cerrajería')">
+      <div class="servicio-icon">🔑</div>
+      <div class="servicio-name">Cerrajería</div>
+      <div class="servicio-desc">Aperturas de puertas, cambio de cerraduras, copias de llaves y sistemas de seguridad.</div>
+    </div>
+    <div class="servicio-card" onclick="irAServicio('Mecánica')">
+      <div class="servicio-icon">🔩</div>
+      <div class="servicio-name">Mecánica</div>
+      <div class="servicio-desc">Diagnóstico de fallas, service, frenos y mantenimiento para tu auto.</div>
+    </div>
+    <div class="servicio-card" onclick="irAServicio('Jardinero')">
+      <div class="servicio-icon">🌱</div>
+      <div class="servicio-name">Jardinería</div>
+      <div class="servicio-desc">Poda, corte de césped, diseño y mantenimiento de espacios verdes.</div>
+    </div>
   </div>
 </section>
 
@@ -447,18 +473,18 @@
     </div>
     <div class="paso">
       <div class="paso-num">2</div>
-      <div class="paso-title">Te recomendamos</div>
-      <div class="paso-desc">Analizamos tu caso y te decimos qué profesional necesitás y cuánto puede costar.</div>
+      <div class="paso-title">Recibí ofertas</div>
+      <div class="paso-desc">Varios socios ven tu pedido y te mandan su precio para hacer el trabajo.</div>
     </div>
     <div class="paso">
       <div class="paso-num">3</div>
-      <div class="paso-title">Coordinamos todo</div>
-      <div class="paso-desc">Nosotros hablamos con el profesional, confirmamos el turno y te avisamos.</div>
+      <div class="paso-title">Elegí y negociá</div>
+      <div class="paso-desc">Comparás las ofertas, contraofertás si querés, y elegís con quién trabajar.</div>
     </div>
     <div class="paso">
       <div class="paso-num">4</div>
-      <div class="paso-title">Trabajo listo</div>
-      <div class="paso-desc">El profesional va a tu casa, hace el trabajo y pagás de forma segura a través de ChamBA.</div>
+      <div class="paso-title">Pagá seguro</div>
+      <div class="paso-desc">El dinero queda retenido en ChamBA y se libera cuando el socio confirma el trabajo terminado.</div>
     </div>
   </div>
 </section>
@@ -515,6 +541,9 @@
               <button class="service-mini-btn" onclick="selectService('Limpieza', this)"><div class="s-icon">✨</div><div class="s-name">Limpieza</div></button>
               <button class="service-mini-btn" onclick="selectService('Pintura', this)"><div class="s-icon">🎨</div><div class="s-name">Pintura</div></button>
               <button class="service-mini-btn" onclick="selectService('Albañilería', this)"><div class="s-icon">🏗️</div><div class="s-name">Albañilería</div></button>
+              <button class="service-mini-btn" onclick="selectService('Cerrajería', this)"><div class="s-icon">🔑</div><div class="s-name">Cerrajería</div></button>
+              <button class="service-mini-btn" onclick="selectService('Mecánica', this)"><div class="s-icon">🔩</div><div class="s-name">Mecánica</div></button>
+              <button class="service-mini-btn" onclick="selectService('Jardinero', this)"><div class="s-icon">🌱</div><div class="s-name">Jardinería</div></button>
             </div>
           </div>
           <div class="form-group">
@@ -522,12 +551,21 @@
             <textarea id="problem-desc" rows="3" placeholder="Ej: Tengo una pérdida de agua debajo del fregadero..."></textarea>
           </div>
           <div class="form-group">
-            <label>Fotos del problema <span style="font-weight:400;color:var(--text-soft)">(opcional)</span></label>
-            <div class="photo-area" onclick="document.getElementById('photo-input').click()">
-              <div style="font-size:24px">📷</div>
-              <p>Tocá para agregar fotos</p>
-              <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotos(event)">
+            <label>Fotos del problema <span style="font-weight:400;color:var(--text-soft)">(opcional, hasta 4)</span></label>
+            <div class="photo-options">
+              <button type="button" class="photo-opt-btn" onclick="document.getElementById('photo-input-camera').click()">
+                <div class="photo-opt-icon">📷</div><div class="photo-opt-label">Cámara</div>
+              </button>
+              <button type="button" class="photo-opt-btn" onclick="document.getElementById('photo-input-gallery').click()">
+                <div class="photo-opt-icon">🖼️</div><div class="photo-opt-label">Fototeca</div>
+              </button>
+              <button type="button" class="photo-opt-btn" onclick="document.getElementById('photo-input-file').click()">
+                <div class="photo-opt-icon">📎</div><div class="photo-opt-label">Archivo</div>
+              </button>
             </div>
+            <input type="file" id="photo-input-camera" accept="image/*" capture="environment" onchange="handlePhotos(event)" style="display:none">
+            <input type="file" id="photo-input-gallery" accept="image/*" multiple onchange="handlePhotos(event)" style="display:none">
+            <input type="file" id="photo-input-file" accept="image/*" multiple onchange="handlePhotos(event)" style="display:none">
             <div class="photo-preview" id="photo-preview"></div>
           </div>
           <button class="btn-primary" onclick="analyzeWithAI()">🤖 Analizar con IA</button>
@@ -570,10 +608,10 @@
         </div>
       </div>
       <div class="info-card">
-        <div class="info-icon">💬</div>
+        <div class="info-icon">💰</div>
         <div>
-          <div class="info-title">Coordinamos todo</div>
-          <div class="info-desc">Vos describís el problema, nosotros nos encargamos del resto. Sin que hagas nada más.</div>
+          <div class="info-title">Vos elegís</div>
+          <div class="info-desc">Comparás las ofertas de los socios interesados y elegís con quién trabajar. El precio final lo definís vos.</div>
         </div>
       </div>
     </div>
@@ -588,7 +626,7 @@
 </footer>
 
 <script>
-  const BACKEND_URL = 'https://chamba-production-0c2d.up.railway.app';
+  const BACKEND_URL = 'https://chamba-backend-vurx.onrender.com';
 
   let selectedService = '';
   let photoBase64List = [];
@@ -650,6 +688,10 @@
   function goHome() {
     setScreen('screen-home');
     document.getElementById('result-content').innerHTML = '';
+    selectedPhotoFiles = [];
+    photoBase64List = [];
+    const preview = document.getElementById('photo-preview');
+    if (preview) preview.innerHTML = '';
   }
 
   function setScreen(id) {
@@ -657,22 +699,50 @@
     document.getElementById(id).classList.add('active');
   }
 
+  let selectedPhotoFiles = [];
+
+  function leerArchivoComoDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   function handlePhotos(event) {
-    const files = Array.from(event.target.files);
+    const files = Array.from(event.target.files || []);
+    const MAX_FOTOS = 4;
+    const TAMANO_MAX = 8 * 1024 * 1024; // 8MB
+    for (const file of files) {
+      if (selectedPhotoFiles.length >= MAX_FOTOS) { alert(`Máximo ${MAX_FOTOS} fotos.`); break; }
+      if (file.size > TAMANO_MAX) { alert(`"${file.name}" pesa más de 8MB. Probá con otra foto.`); continue; }
+      selectedPhotoFiles.push(file);
+    }
+    event.target.value = ''; // permite volver a elegir el mismo archivo si lo saca y lo quiere subir de nuevo
+    renderPhotoPreview();
+  }
+
+  async function renderPhotoPreview() {
     const preview = document.getElementById('photo-preview');
     preview.innerHTML = '';
     photoBase64List = [];
-    files.slice(0, 3).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.createElement('img');
-        img.src = e.target.result;
-        img.className = 'photo-thumb';
-        preview.appendChild(img);
-        photoBase64List.push(e.target.result.split(',')[1]);
-      };
-      reader.readAsDataURL(file);
-    });
+    for (let i = 0; i < selectedPhotoFiles.length; i++) {
+      const idx = i;
+      const dataUrl = await leerArchivoComoDataURL(selectedPhotoFiles[idx]);
+      photoBase64List.push(dataUrl.split(',')[1]);
+      const wrap = document.createElement('div');
+      wrap.className = 'photo-thumb-wrap';
+      wrap.innerHTML = `<img src="${dataUrl}" class="photo-thumb" alt="Foto ${idx + 1}">`;
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'photo-remove';
+      removeBtn.textContent = '×';
+      removeBtn.setAttribute('aria-label', 'Sacar esta foto');
+      removeBtn.onclick = () => { selectedPhotoFiles.splice(idx, 1); renderPhotoPreview(); };
+      wrap.appendChild(removeBtn);
+      preview.appendChild(wrap);
+    }
   }
 
   async function analyzeWithAI() {
