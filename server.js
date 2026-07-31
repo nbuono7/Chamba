@@ -199,8 +199,8 @@ app.post('/api/verificaciones-identidad', auth, async (req, res) => {
   try {
     const { monotributo, facturas } = req.body; // monotributo: {data,mime}; facturas: [{data,mime}, ...] hasta 3
     if (!monotributo || !monotributo.data || !monotributo.mime) return res.status(400).json({ error: 'Subí el comprobante de pago del monotributo (el más reciente).' });
-    if (!Array.isArray(facturas) || !facturas.length) return res.status(400).json({ error: 'Subí al menos una factura reciente hecha a un cliente.' });
-    if (facturas.length > 3) return res.status(400).json({ error: 'Máximo 3 facturas.' });
+    if (!Array.isArray(facturas) || !facturas.length) return res.status(400).json({ error: 'Subí al menos un archivo con tus últimas 3 facturas a clientes.' });
+    if (facturas.length > 4) return res.status(400).json({ error: 'Máximo 4 archivos en la sección de facturas.' });
 
     // Validar TODO antes de subir nada (tipo real de archivo + tamaño)
     const vMono = validarArchivo(monotributo.data, monotributo.mime);
@@ -223,7 +223,7 @@ app.post('/api/verificaciones-identidad', auth, async (req, res) => {
     }
 
     const body = { socio_id: req.usuario.id, estado: 'pendiente', comprobante_monotributo: pathMono };
-    ['factura_cliente_1', 'factura_cliente_2', 'factura_cliente_3'].forEach((campo, i) => { if (pathsFacturas[i]) body[campo] = pathsFacturas[i]; });
+    ['factura_cliente_1', 'factura_cliente_2', 'factura_cliente_3', 'factura_cliente_4'].forEach((campo, i) => { if (pathsFacturas[i]) body[campo] = pathsFacturas[i]; });
     res.json(await sb('verificaciones_identidad', 'POST', body));
   } catch (e) {
     console.error('❌ Error en POST /verificaciones-identidad:', e.message, e.supabase || '');
@@ -244,7 +244,7 @@ app.get('/api/verificaciones-identidad', auth, async (req, res) => {
         if (url) row.archivos.push({ label: 'Monotributo', url });
       }
       let n = 1;
-      for (const campo of ['factura_cliente_1', 'factura_cliente_2', 'factura_cliente_3']) {
+      for (const campo of ['factura_cliente_1', 'factura_cliente_2', 'factura_cliente_3', 'factura_cliente_4']) {
         if (row[campo]) { const url = await firmarUrl('identificaciones', row[campo]); if (url) row.archivos.push({ label: 'Factura ' + n, url }); }
         n++;
       }
