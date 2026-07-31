@@ -12,7 +12,10 @@
       --bg: #F7F2E7; --card: #fff; --text: #1E2430; --text-mid: #555; --text-soft: #999;
       --border: #e5e7eb; --radius: 12px;
     }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; background-image: url('/login-bg.png'); background-size: cover; background-position: center top; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .bg-emojis { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .bg-emojis span { position: absolute; filter: grayscale(0.15); }
+    nav, .page { position: relative; z-index: 1; }
 
     /* NAV */
     nav { display: flex; align-items: center; justify-content: space-between; padding: 0 5%; height: 64px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
@@ -91,6 +94,34 @@
   </style>
 </head>
 <body>
+<div class="bg-emojis">
+  <span style="position:absolute;left:64.5%;top:9.8%;font-size:26px;opacity:0.23;transform:rotate(-21deg);">🔨</span>
+  <span style="position:absolute;left:7.6%;top:50.7%;font-size:45px;opacity:0.15;transform:rotate(-1deg);">🔧</span>
+  <span style="position:absolute;left:8.7%;top:11.5%;font-size:34px;opacity:0.2;transform:rotate(-3deg);">🪛</span>
+  <span style="position:absolute;left:13.9%;top:24.0%;font-size:41px;opacity:0.15;transform:rotate(-18deg);">💡</span>
+  <span style="position:absolute;left:62.2%;top:92.1%;font-size:41px;opacity:0.19;transform:rotate(4deg);">⚡</span>
+  <span style="position:absolute;left:95.7%;top:7.4%;font-size:35px;opacity:0.15;transform:rotate(-20deg);">🚗</span>
+  <span style="position:absolute;left:84.4%;top:30.2%;font-size:36px;opacity:0.17;transform:rotate(22deg);">🪜</span>
+  <span style="position:absolute;left:19.3%;top:57.7%;font-size:31px;opacity:0.14;transform:rotate(8deg);">🎨</span>
+  <span style="position:absolute;left:54.6%;top:8.9%;font-size:42px;opacity:0.15;transform:rotate(-2deg);">🧰</span>
+  <span style="position:absolute;left:78.3%;top:68.7%;font-size:43px;opacity:0.22;transform:rotate(-24deg);">🔩</span>
+  <span style="position:absolute;left:72.0%;top:30.1%;font-size:35px;opacity:0.23;transform:rotate(16deg);">🚪</span>
+  <span style="position:absolute;left:16.6%;top:49.0%;font-size:34px;opacity:0.18;transform:rotate(8deg);">🪠</span>
+  <span style="position:absolute;left:5.8%;top:65.8%;font-size:31px;opacity:0.22;transform:rotate(-3deg);">🧹</span>
+  <span style="position:absolute;left:75.4%;top:56.9%;font-size:43px;opacity:0.22;transform:rotate(9deg);">🔥</span>
+  <span style="position:absolute;left:82.6%;top:91.8%;font-size:36px;opacity:0.16;transform:rotate(15deg);">🛠️</span>
+  <span style="position:absolute;left:18.1%;top:14.0%;font-size:32px;opacity:0.22;transform:rotate(-10deg);">🚿</span>
+  <span style="position:absolute;left:7.7%;top:75.2%;font-size:33px;opacity:0.19;transform:rotate(-13deg);">🧯</span>
+  <span style="position:absolute;left:80.7%;top:84.2%;font-size:37px;opacity:0.14;transform:rotate(21deg);">🖌️</span>
+  <span style="position:absolute;left:93.9%;top:17.2%;font-size:26px;opacity:0.17;transform:rotate(25deg);">🔨</span>
+  <span style="position:absolute;left:24.4%;top:48.6%;font-size:34px;opacity:0.21;transform:rotate(-13deg);">🔧</span>
+  <span style="position:absolute;left:2.4%;top:42.4%;font-size:37px;opacity:0.22;transform:rotate(3deg);">🪛</span>
+  <span style="position:absolute;left:93.5%;top:67.9%;font-size:37px;opacity:0.15;transform:rotate(-2deg);">💡</span>
+  <span style="position:absolute;left:88.4%;top:76.3%;font-size:29px;opacity:0.19;transform:rotate(-11deg);">⚡</span>
+  <span style="position:absolute;left:34.6%;top:7.9%;font-size:36px;opacity:0.19;transform:rotate(-12deg);">🚗</span>
+  <span style="position:absolute;left:2.0%;top:17.2%;font-size:45px;opacity:0.19;transform:rotate(-25deg);">🪜</span>
+  <span style="position:absolute;left:11.7%;top:37.2%;font-size:46px;opacity:0.22;transform:rotate(-3deg);">🎨</span>
+</div>
 
 <nav>
   <a class="nav-logo" href="/">Cham<span>BA</span></a>
