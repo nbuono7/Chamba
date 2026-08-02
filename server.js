@@ -18,10 +18,19 @@ process.on('unhandledRejection', (err) => {
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
-const COMISION = 0.20;
+const COMISION = 0.13;
+const PISO_COMISION = 1000; // piso fijo en pesos, para que trabajos muy chicos (< ~$7.700) no dejen una comisión insignificante
+
+/** Calcula la comisión de ChamBA sobre un precio acordado: el mayor entre el % y el piso fijo. */
+function calcularComision(precioAcordado) {
+  const comisionPorcentual = Math.round(precioAcordado * COMISION);
+  const comision = Math.max(comisionPorcentual, PISO_COMISION);
+  const precio_neto = Math.round(precioAcordado) - comision;
+  return { comision, precio_neto };
+}
 
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) console.error('⚠️  Falta la variable de entorno JWT_SECRET — configurala en Railway.');
+if (!JWT_SECRET) console.error('⚠️  Falta la variable de entorno JWT_SECRET — configurala en Render.');
 
 // Exige que la persona esté logueada. Guarda sus datos (id, tipo, email) en req.usuario.
 function auth(req, res, next) {
@@ -302,8 +311,9 @@ app.post('/api/analizar', async (req, res) => {
     }
     result.comision_pct = COMISION * 100;
     result.precio_cliente = Math.round(result.precio_sugerido);
-    result.precio_socio = Math.round(result.precio_sugerido * (1 - COMISION));
-    result.comision_chamba = Math.round(result.precio_sugerido * COMISION);
+    { const { comision, precio_neto } = calcularComision(result.precio_cliente);
+      result.precio_socio = precio_neto;
+      result.comision_chamba = comision; }
     res.json(result);
   } catch(e) { console.error('❌ Error en /api/analizar:', e.message); res.status(500).json({ error: 'Error al analizar.' }); }
 });
@@ -712,8 +722,7 @@ app.post('/api/ofertas', auth, async (req, res) => {
   try {
     const { pedido_id, socio_nombre, especialidad, precio_ofertado } = req.body;
     const socio_id = req.usuario.id; // nunca confiar en el socio_id que manda el cliente
-    const precio_neto = Math.round(precio_ofertado * (1 - COMISION));
-    const comision = Math.round(precio_ofertado * COMISION);
+    const { comision, precio_neto } = calcularComision(precio_ofertado);
     const prev = await sb(`ofertas?pedido_id=eq.${pedido_id}&socio_id=eq.${socio_id}&select=id`);
     let data;
     if (prev.length > 0) {
@@ -750,8 +759,7 @@ app.post('/api/ofertas/:id/contraoferta', auth, async (req, res) => {
       if (pedidos.length && req.usuario.id === pedidos[0].usuario_id) rol = 'cliente';
       else return res.status(403).json({ error: 'No podés modificar esta oferta.' });
     }
-    const precio_neto = Math.round(nuevo_precio * 0.8);
-    const comision = Math.round(nuevo_precio * 0.2);
+    const { comision, precio_neto } = calcularComision(nuevo_precio);
     const data = await sb(`ofertas?id=eq.${req.params.id}`, 'PATCH', { precio_ofertado: nuevo_precio, precio_neto, comision, estado: 'negociando', ultima_oferta_de: rol });
     // Avisar a la OTRA parte (si contraofertó el socio, avisar al cliente y viceversa)
     try {
