@@ -334,9 +334,24 @@ app.patch('/api/especialidades/:id', auth, soloAdmin, async (req, res) => {
   }
 });
 
-app.get('/api/usuarios', async (req, res) => {
+app.get('/api/usuarios', auth, async (req, res) => {
   const tipo = req.query.tipo ? `&tipo=eq.${req.query.tipo}` : '';
   res.json(await sb(`usuarios?select=id,nombre,email,telefono,tipo,estado,especialidad,dni,experiencia,matricula,trabajos_completados,promedio_estrellas,total_calificaciones,saldo_disponible,saldo_bloqueado,created_at&order=created_at.desc${tipo}`));
+});
+
+// Fotos de DNI y perfil de un Socio, solo para el admin (URLs firmadas, el bucket es privado)
+app.get('/api/usuarios/:id/fotos-verificacion', auth, soloAdmin, async (req, res) => {
+  try {
+    const rows = await sb(`usuarios?id=eq.${req.params.id}&select=dni_foto_path,foto_perfil_path`);
+    if (!rows.length) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    const { dni_foto_path, foto_perfil_path } = rows[0];
+    const dni_foto_url = dni_foto_path ? await firmarUrl('identificaciones', dni_foto_path) : null;
+    const foto_perfil_url = foto_perfil_path ? await firmarUrl('identificaciones', foto_perfil_path) : null;
+    res.json({ dni_foto_url, foto_perfil_url });
+  } catch (e) {
+    console.error('❌ Error en GET fotos-verificacion:', e.message);
+    res.status(500).json({ error: 'No se pudieron cargar las fotos.' });
+  }
 });
 
 app.post('/api/usuarios/registro', async (req, res) => {
@@ -652,6 +667,23 @@ app.get('/api/pedidos', auth, async (req, res) => {
       if (distancia_km === null || distancia_km > 15) continue; // fuera de rango o sin ubicación: no se muestra
       const { lat, lng, direccion, ...sinCoordenadas } = p;
       resultado.push({ ...sinCoordenadas, distancia_km: Math.round(distancia_km * 10) / 10 });
+    }
+
+    // Si sos el Cliente y ya pagaste, te mostramos la foto de perfil del Socio asignado (antes de pagar, nunca se manda)
+    const idsParaFoto = [...new Set(resultado
+      .filter(p => p.usuario_id === req.usuario.id && p.profesional_id && ['pagado', 'liberado'].includes(p.estado_pago))
+      .map(p => p.profesional_id))];
+    if (idsParaFoto.length) {
+      const socios = await sb(`usuarios?id=in.(${idsParaFoto.join(',')})&select=id,foto_perfil_path`);
+      const mapaFotos = {};
+      for (const s of (Array.isArray(socios) ? socios : [])) {
+        mapaFotos[s.id] = s.foto_perfil_path ? await firmarUrl('identificaciones', s.foto_perfil_path) : null;
+      }
+      resultado.forEach(p => {
+        if (p.usuario_id === req.usuario.id && p.profesional_id && ['pagado', 'liberado'].includes(p.estado_pago)) {
+          p.socio_foto_url = mapaFotos[p.profesional_id] || null;
+        }
+      });
     }
     res.json(resultado);
   } catch (e) {
