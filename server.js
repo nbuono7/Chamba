@@ -340,9 +340,23 @@ app.get('/api/usuarios', async (req, res) => {
 });
 
 app.post('/api/usuarios/registro', async (req, res) => {
-  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password, direccion_residencia, direccion_trabajo } = req.body;
+  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password, direccion_residencia, direccion_trabajo, dni_foto, foto_perfil } = req.body;
   const exists = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
   if (exists.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email.' });
+
+  // Los Socios tienen que subir foto de DNI y foto de perfil (con el rostro visible) para poder registrarse.
+  // La foto de perfil no se muestra a ningún Cliente hasta que paga por el trabajo (evita discriminación por aspecto antes de esa instancia).
+  if (tipo === 'socio') {
+    if (!dni_foto || !dni_foto.data || !dni_foto.mime) return res.status(400).json({ error: 'Subí una foto de tu DNI (frente).' });
+    if (!foto_perfil || !foto_perfil.data || !foto_perfil.mime) return res.status(400).json({ error: 'Subí una foto de perfil donde se te vea la cara.' });
+    const vDni = validarArchivo(dni_foto.data, dni_foto.mime);
+    if (!vDni.ok) return res.status(400).json({ error: 'Foto de DNI: ' + vDni.error });
+    const vPerfil = validarArchivo(foto_perfil.data, foto_perfil.mime);
+    if (!vPerfil.ok) return res.status(400).json({ error: 'Foto de perfil: ' + vPerfil.error });
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(dni_foto.mime) || !['image/jpeg', 'image/png', 'image/webp'].includes(foto_perfil.mime)) {
+      return res.status(400).json({ error: 'La foto de DNI y la foto de perfil tienen que ser imágenes (JPG, PNG o WEBP), no PDF.' });
+    }
+  }
 
   // La dirección tiene que ser una dirección real (no se acepta cualquier texto)
   if (!direccion_residencia) return res.status(400).json({ error: 'Ingresá tu dirección.' });
@@ -361,6 +375,18 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password_hash, estado, email_verificado: false });
   if (data.error || (Array.isArray(data) && data[0]?.code)) return res.status(400).json({ error: 'Error al registrar.' });
   const nuevoUsuario = data[0];
+
+  if (tipo === 'socio') {
+    try {
+      const extDni = (dni_foto.mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+      const extPerfil = (foto_perfil.mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+      const pathDni = `${nuevoUsuario.id}/dni_${Date.now()}.${extDni}`;
+      const pathPerfil = `${nuevoUsuario.id}/perfil_${Date.now()}.${extPerfil}`;
+      await subirArchivo('identificaciones', pathDni, dni_foto.data, dni_foto.mime);
+      await subirArchivo('identificaciones', pathPerfil, foto_perfil.data, foto_perfil.mime);
+      await sb(`usuarios?id=eq.${nuevoUsuario.id}`, 'PATCH', { dni_foto_path: pathDni, foto_perfil_path: pathPerfil });
+    } catch (e) { console.error('❌ Error subiendo foto de DNI/perfil:', e.message); }
+  }
 
   try {
     await sb('ubicaciones', 'POST', {
@@ -702,14 +728,23 @@ app.get('/api/ofertas', auth, async (req, res) => {
     const ofertas = await sb(`ofertas?select=*&order=created_at.desc${pedido_id}${socio_id}`);
     if (Array.isArray(ofertas) && ofertas.length) {
       const ids = [...new Set(ofertas.map(o => o.socio_id).filter(Boolean))];
-      const socios = ids.length ? await sb(`usuarios?id=in.(${ids.join(',')})&select=id,promedio_estrellas,trabajos_completados`) : [];
+      const socios = ids.length ? await sb(`usuarios?id=in.(${ids.join(',')})&select=id,promedio_estrellas,trabajos_completados,foto_perfil_path`) : [];
       const mapa = {};
       (Array.isArray(socios) ? socios : []).forEach(s => mapa[s.id] = s);
-      ofertas.forEach(o => {
+
+      // La foto de perfil del Socio solo se revela una vez que el Cliente pagó ese trabajo puntual — antes, ni ChamBA la muestra.
+      const pedidoIds = [...new Set(ofertas.map(o => o.pedido_id).filter(Boolean))];
+      const pedidosInfo = pedidoIds.length ? await sb(`pedidos?id=in.(${pedidoIds.join(',')})&select=id,estado_pago`) : [];
+      const mapaPedidos = {};
+      (Array.isArray(pedidosInfo) ? pedidosInfo : []).forEach(p => mapaPedidos[p.id] = p.estado_pago);
+
+      for (const o of ofertas) {
         const s = mapa[o.socio_id];
         o.rep_promedio = s?.promedio_estrellas || 0;
         o.trabajos_completados = s?.trabajos_completados || 0;
-      });
+        const yaPagado = ['pagado', 'liberado'].includes(mapaPedidos[o.pedido_id]);
+        o.foto_perfil_url = (yaPagado && s?.foto_perfil_path) ? await firmarUrl('identificaciones', s.foto_perfil_path) : null;
+      }
     }
     res.json(ofertas);
   } catch (e) {
