@@ -650,10 +650,15 @@ async function eliminarPedidoAdmin(id) {
   toast('Trabajo eliminado ✅ (sin afectar reputación)');
 }
 
-function verUsuario(id) {
+async function verUsuario(id) {
   const u = usuarios.find(x => x.id === id);
   if (!u) return;
   document.getElementById('modal-usuario-title').textContent = u.tipo === 'cliente' ? 'Cliente' : 'Socio';
+
+  let fotosHtml = '';
+  if (u.tipo === 'socio') {
+    fotosHtml = '<div class="modal-field"><label>Verificación de identidad</label><div class="val">Cargando fotos...</div></div>';
+  }
   document.getElementById('modal-usuario-content').innerHTML = `
     <div class="modal-field"><label>Nombre</label><div class="val">${u.nombre}</div></div>
     <div class="modal-field"><label>Email</label><div class="val">${u.email}</div></div>
@@ -667,6 +672,7 @@ function verUsuario(id) {
     <div class="modal-field"><label>Reputación</label><div class="val">${u.promedio_estrellas ? u.promedio_estrellas+' ⭐ ('+(u.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
     <div class="modal-field"><label>Trabajos completados</label><div class="val">${u.trabajos_completados||0}</div></div>
     ` : ''}
+    ${fotosHtml}
     <div class="modal-field"><label>Estado</label><div class="val">${badge(u.estado)}</div></div>
     <div class="modal-field"><label>Registrado</label><div class="val">${fmtDate(u.created_at)}</div></div>
     <hr class="modal-divider">
@@ -678,6 +684,23 @@ function verUsuario(id) {
       <button class="btn btn-ghost" onclick="closeModal('modal-usuario')">Cerrar</button>
     </div>`;
   openModal('modal-usuario');
+
+  if (u.tipo === 'socio') {
+    try {
+      const fotos = await api(`/api/usuarios/${u.id}/fotos-verificacion`);
+      const bloque = [...document.querySelectorAll('#modal-usuario-content .modal-field')].find(el => el.querySelector('label')?.textContent === 'Verificación de identidad');
+      if (bloque) {
+        bloque.innerHTML = `
+          <label>Verificación de identidad</label>
+          <div class="val" style="display:flex;gap:12px;flex-wrap:wrap">
+            ${fotos.dni_foto_url ? `<a href="${fotos.dni_foto_url}" target="_blank"><img src="${fotos.dni_foto_url}" alt="DNI" style="width:120px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--border)"/><div style="font-size:11px;text-align:center;color:var(--text-soft)">DNI</div></a>` : '<span style="font-size:12px;color:var(--text-soft)">Sin foto de DNI</span>'}
+            ${fotos.foto_perfil_url ? `<a href="${fotos.foto_perfil_url}" target="_blank"><img src="${fotos.foto_perfil_url}" alt="Perfil" style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:1px solid var(--border)"/><div style="font-size:11px;text-align:center;color:var(--text-soft)">Perfil</div></a>` : '<span style="font-size:12px;color:var(--text-soft)">Sin foto de perfil</span>'}
+          </div>`;
+      }
+    } catch (e) {
+      console.error('Error cargando fotos de verificación:', e.message);
+    }
+  }
 }
 async function cambiarEstadoUsuario(id, estado) { await api(`/api/usuarios/${id}`,'PATCH',{estado}); await cargarTodo(); closeModal('modal-usuario'); toast(estado==='aprobado'?'Usuario aprobado ✅':'Usuario rechazado'); }
 async function eliminarUsuario(id) { if(!confirm('¿Eliminar este usuario?'))return; await api(`/api/usuarios/${id}`,'DELETE'); await cargarTodo(); closeModal('modal-usuario'); toast('Usuario eliminado'); }
