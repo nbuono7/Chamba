@@ -238,6 +238,18 @@
         <div class="form-group" style="background:#fef3e2;border:1px solid #fbbf24;border-radius:8px;padding:12px;font-size:13px;color:#854f0b">
           ⏳ <strong>Revisamos tu solicitud</strong> — Una vez que te registres, nuestro equipo va a revisar tu perfil y te avisamos por email si fue aprobado. Esto puede tardar hasta 48hs.
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Foto de tu DNI (frente) <span class="required">*</span></label>
+            <input type="file" id="f-dni-foto" accept="image/jpeg,image/png,image/webp"/>
+            <div class="hint">Solo la ve nuestro equipo, para verificar tu identidad. Nunca se muestra públicamente.</div>
+          </div>
+          <div class="form-group">
+            <label>Foto de perfil (con tu cara) <span class="required">*</span></label>
+            <input type="file" id="f-foto-perfil" accept="image/jpeg,image/png,image/webp"/>
+            <div class="hint">Solo se la mostramos al Cliente después de que paga por el trabajo — así elige en base a tu experiencia y calificaciones, no a tu aspecto.</div>
+          </div>
+        </div>
       </div>
 
       <!-- CONTRASEÑA -->
@@ -265,6 +277,15 @@ function selectTipo(tipo) {
   document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function leerArchivoComoDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 async function registrar() {
   const btn = document.getElementById('btn-submit');
   const errorBox = document.getElementById('error-box');
@@ -290,7 +311,29 @@ async function registrar() {
     const matricula = document.getElementById('f-matricula').value.trim();
     const direccion_trabajo = document.getElementById('f-direccion-trabajo').value.trim();
     if (!dni || !especialidad || !experiencia) return showError('Completá todos los campos obligatorios para socios.');
-    Object.assign(body, { dni, especialidad, experiencia, matricula, direccion_trabajo });
+
+    const archivoDni = document.getElementById('f-dni-foto').files[0];
+    const archivoPerfil = document.getElementById('f-foto-perfil').files[0];
+    if (!archivoDni) return showError('Subí una foto de tu DNI (frente).');
+    if (!archivoPerfil) return showError('Subí una foto de perfil donde se te vea la cara.');
+
+    const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
+    const TAMANO_MAX = 8 * 1024 * 1024; // 8MB
+    for (const [archivo, etiqueta] of [[archivoDni, 'La foto de DNI'], [archivoPerfil, 'La foto de perfil']]) {
+      if (!TIPOS_PERMITIDOS.includes(archivo.type)) return showError(`${etiqueta} tiene que ser una imagen (JPG, PNG o WEBP).`);
+      if (archivo.size > TAMANO_MAX) return showError(`${etiqueta} pesa más de 8MB. Subí una versión más liviana.`);
+    }
+
+    let dni_foto, foto_perfil;
+    try {
+      const [dataUrlDni, dataUrlPerfil] = await Promise.all([leerArchivoComoDataURL(archivoDni), leerArchivoComoDataURL(archivoPerfil)]);
+      dni_foto = { data: dataUrlDni.split(',')[1], mime: archivoDni.type };
+      foto_perfil = { data: dataUrlPerfil.split(',')[1], mime: archivoPerfil.type };
+    } catch (e) {
+      return showError('No pudimos leer las fotos. Probá subirlas de nuevo.');
+    }
+
+    Object.assign(body, { dni, especialidad, experiencia, matricula, direccion_trabajo, dni_foto, foto_perfil });
   }
 
   btn.disabled = true;
