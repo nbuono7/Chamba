@@ -504,6 +504,9 @@ window.onload = async () => {
     const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
     if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); }
   } catch(e) {}
+  if (usuario.tipo !== 'socio') {
+    return window.location.href = usuario.tipo === 'admin' ? '/admin' : usuario.tipo === 'cliente' ? '/panel-cliente' : '/login';
+  }
   document.getElementById('sidebar-user').textContent = usuario.nombre;
   document.getElementById('user-avatar').textContent = iniciales(usuario.nombre);
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
