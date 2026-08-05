@@ -128,8 +128,6 @@
     .oferta-socio { font-size: 14px; font-weight: 600; }
     .oferta-precio { font-size: 22px; font-weight: 700; color: var(--teal-dark); }
     .oferta-rep { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
-    .oferta-avatar-placeholder { width: 40px; height: 40px; border-radius: 50%; background: #f1f1f1; border: 1px dashed #d1d5db; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .oferta-avatar-foto { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
     .oferta-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 
     .neg-box { background: #fff8e1; border: 1px solid #fbbf24; border-radius: 10px; padding: 14px; margin-top: 10px; }
@@ -299,6 +297,55 @@
       </div></div>
 
       <div class="card"><div class="card-body">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">🛠️ ¿Querés ofrecer tus servicios como Socio?</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Completá tus datos profesionales. ChamBA va a revisar tu solicitud y te va a avisar por email — recién ahí vas a poder reclamar y ofertar trabajos.</div>
+        <div id="bloque-ya-es-socio" style="display:none;background:#eef4ff;border:1px solid #93c5fd;border-radius:8px;padding:14px;font-size:13.5px;color:#1e40af">
+          ⏳ Ya enviaste tu solicitud para ser Socio — está pendiente de revisión. Te avisamos por email en cuanto la aprobemos.
+        </div>
+        <div id="form-solicitar-socio">
+          <div class="form-row">
+            <div class="form-group"><label>DNI</label><input type="text" id="soc-dni" placeholder="28.445.123"/></div>
+            <div class="form-group">
+              <label>Especialidad</label>
+              <select id="soc-especialidad" onchange="onCambioEspecialidadSocio()"><option value="">Elegí una especialidad</option></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Años de experiencia</label><input type="text" id="soc-experiencia" placeholder="Ej: 8 años"/></div>
+            <div class="form-group">
+              <label>Número de matrícula</label>
+              <input type="text" id="soc-matricula" placeholder="Ej: MAT-PLO-1234"/>
+              <div class="hint" id="soc-matricula-hint">Si no tenés, dejalo vacío</div>
+            </div>
+          </div>
+          <div class="form-group" id="bloque-matricula-obligatoria-socio" style="display:none;background:#eef4ff;border:1px solid #93c5fd;border-radius:8px;padding:14px">
+            <div style="font-size:13.5px;font-weight:600;color:#1e40af;margin-bottom:6px">🎓 Este rubro exige matrícula habilitante</div>
+            <div id="matricula-obligatoria-texto-socio" style="font-size:13px;color:#1e40af;margin-bottom:10px"></div>
+            <label>¿Qué organismo te la otorgó? <span style="color:#dc2626">*</span></label>
+            <input type="text" id="soc-matricula-organismo" placeholder="Ej: MetroGAS, AGC, Colegio de..."/>
+          </div>
+          <div class="form-group">
+            <label>Zona donde trabajás</label>
+            <input type="text" id="soc-direccion-trabajo" placeholder="Ej: Barrio Palihue, Bahía Blanca"/>
+            <div class="hint">Si la dejás vacía, usamos tu dirección de residencia.</div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Foto de tu DNI (frente)</label>
+              <input type="file" id="soc-dni-foto" accept="image/jpeg,image/png,image/webp"/>
+              <div class="hint">Solo la ve nuestro equipo, para verificar tu identidad.</div>
+            </div>
+            <div class="form-group">
+              <label>Foto de perfil (con tu cara)</label>
+              <input type="file" id="soc-foto-perfil" accept="image/jpeg,image/png,image/webp"/>
+              <div class="hint">Se la mostramos al Cliente recién después de que paga por el trabajo.</div>
+            </div>
+          </div>
+          <button class="btn btn-teal btn-sm" onclick="solicitarSerSocio()">Enviar solicitud</button>
+        </div>
+      </div></div>
+
+      <div class="card"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">⭐ Mis favoritos y bloqueados</div>
         <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Socios que marcaste después de calificarlos. Los bloqueados no ven tus trabajos — de forma confidencial, nunca se enteran.</div>
         <div id="lista-relaciones-socio"></div>
@@ -424,6 +471,9 @@ window.onload = async () => {
     const fresco = Array.isArray(todos) ? todos.find(x => x.email === usuario.email) : null;
     if (fresco) { delete fresco.password_hash; usuario = fresco; localStorage.setItem('chamba_user', JSON.stringify(fresco)); }
   } catch(e) {}
+  if (usuario.tipo !== 'cliente') {
+    return window.location.href = usuario.tipo === 'admin' ? '/admin' : usuario.tipo === 'socio' ? '/panel-socio' : '/login';
+  }
   document.getElementById('sidebar-user').textContent = usuario.nombre;
   document.getElementById('user-avatar').textContent = iniciales(usuario.nombre);
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
@@ -438,6 +488,84 @@ function iniciales(nombre) {
   return (nombre || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase();
 }
 
+// Rubros con matrícula habilitante exigida por ley/normativa (misma lista que en
+// registro.html, panel-socio.html y el backend — mantenerlas sincronizadas).
+const RUBROS_MATRICULA_OBLIGATORIA = {
+  'Gas': 'La matrícula de gasista es obligatoria por ley (Decreto 1738/92) y la otorga la distribuidora de gas de tu zona (MetroGAS, Naturgy o Camuzzi), no ENARGAS directamente.',
+  'Electricidad': 'Se exige para conexiones nuevas, ampliaciones de potencia y habilitaciones comerciales. La otorga un colegio profesional o ente regulador según tu jurisdicción.',
+  'Plomería': 'Si trabajás en CABA, la otorga la Agencia Gubernamental de Control (AGC). Si además hacés trabajos de gas, necesitás la matrícula de gasista por separado.'
+};
+
+function onCambioEspecialidadSocio() {
+  const especialidad = document.getElementById('soc-especialidad').value;
+  const bloque = document.getElementById('bloque-matricula-obligatoria-socio');
+  const texto = document.getElementById('matricula-obligatoria-texto-socio');
+  const hint = document.getElementById('soc-matricula-hint');
+  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad]) {
+    bloque.style.display = 'block';
+    texto.textContent = RUBROS_MATRICULA_OBLIGATORIA[especialidad];
+    hint.textContent = 'Este rubro exige matrícula — completá también el organismo que te la otorgó abajo.';
+  } else {
+    bloque.style.display = 'none';
+    hint.textContent = 'Si no tenés, dejalo vacío';
+  }
+}
+
+function leerArchivoComoDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function solicitarSerSocio() {
+  const dni = document.getElementById('soc-dni').value.trim();
+  const especialidad = document.getElementById('soc-especialidad').value;
+  const experiencia = document.getElementById('soc-experiencia').value.trim();
+  const matricula = document.getElementById('soc-matricula').value.trim();
+  const matricula_organismo = document.getElementById('soc-matricula-organismo').value.trim();
+  const direccion_trabajo = document.getElementById('soc-direccion-trabajo').value.trim();
+
+  if (!dni || !especialidad || !experiencia) return showInfo('⚠️', 'Faltan datos', 'Completá DNI, especialidad y años de experiencia.');
+  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad] && (!matricula || !matricula_organismo)) {
+    return showInfo('⚠️', 'Falta la matrícula', `${especialidad} exige matrícula habilitante: completá el número y el organismo que te la otorgó.`);
+  }
+  const archivoDni = document.getElementById('soc-dni-foto').files[0];
+  const archivoPerfil = document.getElementById('soc-foto-perfil').files[0];
+  if (!archivoDni) return showInfo('⚠️', 'Falta una foto', 'Subí una foto de tu DNI (frente).');
+  if (!archivoPerfil) return showInfo('⚠️', 'Falta una foto', 'Subí una foto de perfil donde se te vea la cara.');
+
+  const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
+  const TAMANO_MAX = 8 * 1024 * 1024;
+  for (const [archivo, etiqueta] of [[archivoDni, 'La foto de DNI'], [archivoPerfil, 'La foto de perfil']]) {
+    if (!TIPOS_PERMITIDOS.includes(archivo.type)) return showInfo('⚠️', 'Formato no permitido', `${etiqueta} tiene que ser una imagen (JPG, PNG o WEBP).`);
+    if (archivo.size > TAMANO_MAX) return showInfo('⚠️', 'Archivo muy pesado', `${etiqueta} pesa más de 8MB. Subí una versión más liviana.`);
+  }
+
+  let dni_foto, foto_perfil;
+  try {
+    const [dataUrlDni, dataUrlPerfil] = await Promise.all([leerArchivoComoDataURL(archivoDni), leerArchivoComoDataURL(archivoPerfil)]);
+    dni_foto = { data: dataUrlDni.split(',')[1], mime: archivoDni.type };
+    foto_perfil = { data: dataUrlPerfil.split(',')[1], mime: archivoPerfil.type };
+  } catch (e) {
+    return showInfo('❌', 'Error', 'No pudimos leer las fotos. Probá subirlas de nuevo.');
+  }
+
+  const r = await api('/api/usuarios/solicitar-socio', 'POST', { dni, especialidad, experiencia, matricula, matricula_organismo, direccion_trabajo, dni_foto, foto_perfil });
+  if (r.error) return showInfo('❌', 'Error', r.error);
+
+  usuario = { ...usuario, tipo: 'socio', estado: 'pendiente' };
+  localStorage.setItem('chamba_user', JSON.stringify(usuario));
+  document.getElementById('form-solicitar-socio').style.display = 'none';
+  document.getElementById('bloque-ya-es-socio').style.display = 'block';
+  showModal('✅', 'Solicitud enviada', 'ChamBA va a revisar tu perfil y te va a avisar por email. En cuanto te aprobemos, vas a poder entrar a tu panel de Socio.', [
+    { label: 'Ir a mi panel de Socio', action: () => window.location.href = '/panel-socio' },
+    { label: 'Seguir en mi panel de Cliente' }
+  ]);
+}
+
 async function cargarEspecialidades() {
   try {
     const especialidades = await api('/api/especialidades');
@@ -447,6 +575,11 @@ async function cargarEspecialidades() {
       select.innerHTML = '<option value="">Elegí el servicio</option>' +
         especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
       if (actual) select.value = actual;
+    }
+    const selectSocio = document.getElementById('soc-especialidad');
+    if (selectSocio && Array.isArray(especialidades)) {
+      selectSocio.innerHTML = '<option value="">Elegí una especialidad</option>' +
+        especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
     }
   } catch(e) {}
 }
@@ -835,10 +968,7 @@ function renderCardNegociacion(p) {
         <div class="oferta-card ${i===0?'mejor':''}">
           ${i===0 ? '<div style="font-size:11px;font-weight:600;color:var(--teal);margin-bottom:6px">⭐ MEJOR OFERTA</div>' : ''}
           <div class="oferta-header">
-            <div style="display:flex;gap:10px;align-items:center">
-              <div class="oferta-avatar-placeholder" title="La foto se revela cuando aceptás y pagás">🔒</div>
-              <div><div class="oferta-socio">${o.socio_nombre}</div><div class="oferta-rep">${starsHtml(o.rep_promedio)} · ${o.trabajos_completados||0} trabajos</div></div>
-            </div>
+            <div><div class="oferta-socio">${o.socio_nombre}</div><div class="oferta-rep">${starsHtml(o.rep_promedio)} · ${o.trabajos_completados||0} trabajos</div></div>
             <div class="oferta-precio">${fmt(o.precio_ofertado)}</div>
           </div>
           ${o.ultima_oferta_de==='cliente' ? `<div style="font-size:12px;color:var(--amber);font-weight:500;margin-top:4px">⏳ Esperando respuesta del socio a tu contraoferta</div>` : ''}
@@ -866,7 +996,6 @@ function renderCardNegociacion(p) {
 function renderCardProceso(p) {
   return `<div class="trabajo-card en-proceso">
     <div class="trabajo-header"><div class="trabajo-servicio">${p.servicio}</div><span class="badge badge-amber">⚙️ En proceso</span></div>
-    ${p.socio_foto_url ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><img src="${p.socio_foto_url}" class="oferta-avatar-foto" alt="Foto del socio"/><span style="font-size:12px;color:var(--text-soft)">Este es el socio que va a hacer el trabajo</span></div>` : ''}
     <div class="trabajo-desc">${p.descripcion||''}</div>
     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
       <div><div style="font-size:12px;color:var(--teal-dark)">Precio acordado</div><div style="font-size:20px;font-weight:700;color:var(--teal-dark)">${fmt(p.precio_cliente)}</div></div>
