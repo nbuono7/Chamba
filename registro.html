@@ -215,7 +215,7 @@
           </div>
           <div class="form-group">
             <label>Especialidad <span class="required">*</span></label>
-            <select id="f-especialidad"><option value="">Elegí una especialidad</option></select>
+            <select id="f-especialidad" onchange="onCambioEspecialidad()"><option value="">Elegí una especialidad</option></select>
           </div>
         </div>
         <div class="form-row">
@@ -226,8 +226,14 @@
           <div class="form-group">
             <label>Número de matrícula</label>
             <input type="text" id="f-matricula" placeholder="Ej: MAT-PLO-1234" />
-            <div class="hint">Si no tenés, dejalo vacío</div>
+            <div class="hint" id="f-matricula-hint">Si no tenés, dejalo vacío</div>
           </div>
+        </div>
+        <div class="form-group" id="bloque-matricula-obligatoria" style="display:none;background:#eef4ff;border:1px solid #93c5fd;border-radius:8px;padding:14px">
+          <div style="font-size:13.5px;font-weight:600;color:#1e40af;margin-bottom:6px">🎓 Este rubro exige matrícula habilitante</div>
+          <div id="matricula-obligatoria-texto" style="font-size:13px;color:#1e40af;margin-bottom:10px"></div>
+          <label>¿Qué organismo te la otorgó? <span class="required">*</span></label>
+          <input type="text" id="f-matricula-organismo" placeholder="Ej: MetroGAS, AGC, Colegio de..."/>
         </div>
         <div class="form-group" style="position:relative">
           <label>Zona donde trabajás</label>
@@ -266,6 +272,29 @@ const BACKEND = 'https://chamba-backend-vurx.onrender.com';
 let tipoSeleccionado = null;
 let emailRegistrado = '';
 let timerReenvio = null;
+
+// Rubros con matrícula habilitante exigida por ley/normativa (no es una lista completa de "requisitos",
+// es la que determina si desbloqueamos el bloque de matrícula obligatoria en el registro).
+const RUBROS_MATRICULA_OBLIGATORIA = {
+  'Gas': 'La matrícula de gasista es obligatoria por ley (Decreto 1738/92) y la otorga la distribuidora de gas de tu zona (MetroGAS, Naturgy o Camuzzi), no ENARGAS directamente.',
+  'Electricidad': 'Se exige para conexiones nuevas, ampliaciones de potencia y habilitaciones comerciales. La otorga un colegio profesional o ente regulador según tu jurisdicción.',
+  'Plomería': 'Si trabajás en CABA, la otorga la Agencia Gubernamental de Control (AGC). Si además hacés trabajos de gas, necesitás la matrícula de gasista por separado.'
+};
+
+function onCambioEspecialidad() {
+  const especialidad = document.getElementById('f-especialidad').value;
+  const bloque = document.getElementById('bloque-matricula-obligatoria');
+  const texto = document.getElementById('matricula-obligatoria-texto');
+  const hint = document.getElementById('f-matricula-hint');
+  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad]) {
+    bloque.style.display = 'block';
+    texto.textContent = RUBROS_MATRICULA_OBLIGATORIA[especialidad];
+    hint.textContent = 'Este rubro exige matrícula — completá también el organismo que te la otorgó abajo.';
+  } else {
+    bloque.style.display = 'none';
+    hint.textContent = 'Si no tenés, dejalo vacío';
+  }
+}
 
 function selectTipo(tipo) {
   tipoSeleccionado = tipo;
@@ -309,8 +338,12 @@ async function registrar() {
     const especialidad = document.getElementById('f-especialidad').value;
     const experiencia = document.getElementById('f-experiencia').value.trim();
     const matricula = document.getElementById('f-matricula').value.trim();
+    const matricula_organismo = document.getElementById('f-matricula-organismo').value.trim();
     const direccion_trabajo = document.getElementById('f-direccion-trabajo').value.trim();
     if (!dni || !especialidad || !experiencia) return showError('Completá todos los campos obligatorios para socios.');
+    if (RUBROS_MATRICULA_OBLIGATORIA[especialidad] && (!matricula || !matricula_organismo)) {
+      return showError(`${especialidad} exige matrícula habilitante: completá el número y el organismo que te la otorgó.`);
+    }
 
     const archivoDni = document.getElementById('f-dni-foto').files[0];
     const archivoPerfil = document.getElementById('f-foto-perfil').files[0];
@@ -333,7 +366,7 @@ async function registrar() {
       return showError('No pudimos leer las fotos. Probá subirlas de nuevo.');
     }
 
-    Object.assign(body, { dni, especialidad, experiencia, matricula, direccion_trabajo, dni_foto, foto_perfil });
+    Object.assign(body, { dni, especialidad, experiencia, matricula, matricula_organismo, direccion_trabajo, dni_foto, foto_perfil });
   }
 
   btn.disabled = true;
