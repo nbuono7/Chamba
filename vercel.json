@@ -5,6 +5,8 @@
     { "source": "/login", "destination": "/login.html" },
     { "source": "/panel-cliente", "destination": "/panel-cliente.html" },
     { "source": "/panel-socio", "destination": "/panel-socio.html" },
+    { "source": "/solicitar-socio", "destination": "/solicitar-socio.html" },
+    { "source": "/solicitar-matricula", "destination": "/solicitar-matricula.html" },
     { "source": "/", "destination": "/index.html" }
   ]
 }
