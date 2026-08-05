@@ -55,6 +55,19 @@
     .bloque-matricula-titulo { font-size: 13.5px; font-weight: 600; color: #1e40af; margin-bottom: 6px; }
     .bloque-matricula-texto { font-size: 13px; color: #1e40af; margin-bottom: 10px; }
 
+    .badge-formato { display: inline-block; font-size: 11px; background: var(--bg); border: 1px solid var(--border); color: var(--text-mid); padding: 2px 8px; border-radius: 20px; margin-right: 4px; }
+    .photo-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .photo-thumb-wrap { position: relative; width: 60px; height: 60px; }
+    .photo-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); display: block; }
+    .photo-thumb-file { width: 60px; height: 60px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .photo-remove {
+      position: absolute; top: -6px; right: -6px; width: 18px; height: 18px;
+      border-radius: 50%; background: var(--text); color: #fff; border: 2px solid #fff;
+      font-size: 12px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+    }
+    .form-section-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .form-section-desc { font-size: 13px; color: var(--text-soft); margin-bottom: 14px; }
+
     @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -118,6 +131,28 @@
     </div>
     <button class="btn-submit" id="btn-submit" onclick="enviar()">Enviar solicitud</button>
   </div>
+
+  <div class="card" style="margin-top:16px" id="verif-card">
+    <div class="form-section-title">🪪 Verificación de identidad</div>
+    <div class="form-section-desc" id="verif-desc">Además (u opcional) de tu matrícula, podés verificarte con tu monotributo y facturas — el equipo de ChamBA lo revisa igual.</div>
+
+    <div style="font-size:13.5px;font-weight:600;margin-bottom:6px">1️⃣ Últimas 3 facturas a clientes</div>
+    <div class="form-group">
+      <label>Facturas a clientes (hasta 4 archivos, máximo 8MB cada uno)</label>
+      <input type="file" id="verif-facturas" accept="image/jpeg,image/png,image/webp,.pdf,application/pdf" multiple/>
+      <div style="margin-top:6px"><span class="badge-formato">📎 JPG</span><span class="badge-formato">PNG</span><span class="badge-formato">WEBP</span><span class="badge-formato">PDF</span></div>
+      <div class="photo-preview" id="preview-facturas"></div>
+    </div>
+
+    <div style="font-size:13.5px;font-weight:600;margin:16px 0 4px">2️⃣ Última factura pagada del monotributo</div>
+    <div class="hint" style="margin-bottom:8px">La tuya, no la que le das al cliente — la que indica tu categoría.</div>
+    <div class="form-group">
+      <label>Comprobante de monotributo (1 archivo, máximo 8MB)</label>
+      <input type="file" id="verif-monotributo" accept="image/jpeg,image/png,image/webp,.pdf,application/pdf"/>
+      <div style="margin-top:6px"><span class="badge-formato">📎 JPG</span><span class="badge-formato">PNG</span><span class="badge-formato">WEBP</span><span class="badge-formato">PDF</span></div>
+      <div class="photo-preview" id="preview-monotributo"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -156,15 +191,59 @@ function onCambioEspecialidad() {
   const bloque = document.getElementById('bloque-matricula-obligatoria');
   const texto = document.getElementById('matricula-obligatoria-texto');
   const hint = document.getElementById('f-matricula-hint');
-  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad]) {
+  const verifDesc = document.getElementById('verif-desc');
+  const requiereMatricula = !!RUBROS_MATRICULA_OBLIGATORIA[especialidad];
+  if (requiereMatricula) {
     bloque.style.display = 'block';
     texto.textContent = RUBROS_MATRICULA_OBLIGATORIA[especialidad];
     hint.textContent = 'Este rubro exige matrícula — completá también el organismo que te la otorgó abajo.';
+    verifDesc.innerHTML = 'Ya completaste tu matrícula arriba, así que esta parte es <strong>opcional</strong> — un respaldo extra si querés sumarlo.';
   } else {
     bloque.style.display = 'none';
     hint.textContent = 'Si no tenés, dejalo vacío';
+    verifDesc.innerHTML = especialidad
+      ? `${especialidad} no exige una matrícula formal, así que esta es tu forma de verificarte: <strong>es obligatorio</strong> completar las dos partes de abajo.`
+      : 'Si tu rubro no exige matrícula, esta es la forma de verificarte — completá las dos partes de abajo.';
   }
 }
+
+let selectedFacturas = [];
+let selectedMonotributo = null;
+
+function leerDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function renderPreview(files, contenedorId) {
+  const box = document.getElementById(contenedorId);
+  box.innerHTML = '';
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const wrap = document.createElement('div');
+    wrap.className = 'photo-thumb-wrap';
+    if (file.type.startsWith('image/')) {
+      const dataUrl = await leerDataURL(file);
+      wrap.innerHTML = `<img src="${dataUrl}" class="photo-thumb" alt="${file.name}">`;
+    } else {
+      wrap.innerHTML = `<div class="photo-thumb-file">📄</div>`;
+    }
+    box.appendChild(wrap);
+  }
+}
+
+document.getElementById('verif-facturas').addEventListener('change', (e) => {
+  selectedFacturas = Array.from(e.target.files || []).slice(0, 4);
+  renderPreview(selectedFacturas, 'preview-facturas');
+});
+document.getElementById('verif-monotributo').addEventListener('change', (e) => {
+  selectedMonotributo = e.target.files[0] || null;
+  renderPreview(selectedMonotributo ? [selectedMonotributo] : [], 'preview-monotributo');
+});
 
 function leerArchivoComoDataURL(file) {
   return new Promise((resolve, reject) => {
@@ -219,6 +298,17 @@ async function enviar() {
   }
 
   const btn = document.getElementById('btn-submit');
+
+  const requiereMatricula = !!RUBROS_MATRICULA_OBLIGATORIA[especialidad];
+  const tieneFacturas = selectedFacturas.length > 0;
+  const tieneMonotributo = !!selectedMonotributo;
+  if (!requiereMatricula && (!tieneFacturas || !tieneMonotributo)) {
+    return showError(`${especialidad} no exige matrícula, así que necesitamos verificarte de otra forma: subí tus últimas 3 facturas y tu comprobante de monotributo, en "Verificación de identidad".`);
+  }
+  if ((tieneFacturas && !tieneMonotributo) || (!tieneFacturas && tieneMonotributo)) {
+    return showError('Si vas a verificarte con monotributo, completá las dos partes: las facturas y el comprobante de monotributo.');
+  }
+
   btn.disabled = true;
   btn.textContent = 'Enviando...';
 
@@ -238,9 +328,24 @@ async function enviar() {
     return showError(r.error);
   }
 
+  // La solicitud de Socio ya se envió — si además cargaron monotributo+facturas, lo mandamos
+  // como segundo paso. Si este paso falla, no revertimos lo anterior: solo avisamos aparte.
+  if (tieneMonotributo && tieneFacturas) {
+    try {
+      const dataUrlMono = await leerDataURL(selectedMonotributo);
+      const facturasData = await Promise.all(selectedFacturas.map(async f => ({ data: (await leerDataURL(f)).split(',')[1], mime: f.type })));
+      const rVerif = await api('/api/verificaciones-identidad', 'POST', {
+        monotributo: { data: dataUrlMono.split(',')[1], mime: selectedMonotributo.type },
+        facturas: facturasData
+      });
+      if (rVerif.error) console.error('No se pudo enviar la verificación de identidad:', rVerif.error);
+    } catch (e) { console.error('Error enviando verificación de identidad:', e); }
+  }
+
   usuario = { ...usuario, tipo: 'socio', estado: 'pendiente' };
   localStorage.setItem('chamba_user', JSON.stringify(usuario));
   document.getElementById('form-card').style.display = 'none';
+  document.getElementById('verif-card').style.display = 'none';
   document.getElementById('link-volver').style.display = 'none';
   document.getElementById('success-box').style.display = 'block';
   setTimeout(() => { window.location.href = '/panel-socio#mi-perfil'; }, 1400);
