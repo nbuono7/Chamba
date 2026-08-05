@@ -516,6 +516,9 @@ window.onload = async () => {
   cargarUbicaciones();
   cargarEspecialidades();
   cargarForo();
+  if (window.location.hash === '#mi-perfil') {
+    goTo('mi-perfil', document.querySelector('.nav-item[onclick*="mi-perfil"]'));
+  }
 };
 
 function doLogout() { localStorage.removeItem('chamba_user'); localStorage.removeItem('chamba_token'); window.location.href = '/'; }
