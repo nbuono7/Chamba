@@ -532,9 +532,18 @@ app.patch('/api/usuarios/:id', auth, async (req, res) => {
       return res.status(403).json({ error: 'No podés editar el perfil de otra persona.' });
     }
     const prev = await sb(`usuarios?id=eq.${req.params.id}&select=*`);
-    const data = await sb(`usuarios?id=eq.${req.params.id}`, 'PATCH', req.body);
-    if (req.body.estado && prev.length) {
-      const u = prev[0];
+    const u = prev[0];
+
+    let body = req.body;
+    // Si se rechaza a un Socio que en realidad venía de una conversión desde Cliente,
+    // no lo dejamos "rechazado" (eso lo bloquearía para siempre) — vuelve a ser Cliente
+    // con su cuenta activa, y puede volver a solicitar ser Socio cuando quiera.
+    if (req.body.estado === 'rechazado' && u && u.tipo === 'socio' && u.conversion_desde_cliente) {
+      body = { ...req.body, tipo: 'cliente', estado: 'aprobado' };
+    }
+
+    const data = await sb(`usuarios?id=eq.${req.params.id}`, 'PATCH', body);
+    if (req.body.estado && u) {
       if (req.body.estado === 'aprobado' && u.tipo === 'socio') emailSocioAprobado(u.nombre, u.email);
       if (req.body.estado === 'rechazado' && u.tipo === 'socio') emailSocioRechazado(u.nombre, u.email);
     }
@@ -981,6 +990,62 @@ app.get('/api/solicitudes-matricula', async (req, res) => {
     res.status(500).json({ error: 'No se pudieron cargar las solicitudes.' });
   }
 });
+// Un Cliente pide convertirse en Socio: llena los mismos datos que en el registro de socio,
+// y queda "pendiente" con el mismo flujo de aprobación que ya usa el admin para socios nuevos.
+app.post('/api/usuarios/solicitar-socio', auth, async (req, res) => {
+  try {
+    const { dni, especialidad, experiencia, matricula, matricula_organismo, direccion_trabajo, dni_foto, foto_perfil } = req.body;
+    if (!dni || !especialidad || !experiencia) return res.status(400).json({ error: 'Completá DNI, especialidad y años de experiencia.' });
+    if (RUBROS_MATRICULA_OBLIGATORIA.includes(especialidad) && (!matricula || !matricula_organismo)) {
+      return res.status(400).json({ error: `${especialidad} exige matrícula habilitante: completá el número y el organismo que te la otorgó.` });
+    }
+    if (!dni_foto || !dni_foto.data || !dni_foto.mime) return res.status(400).json({ error: 'Subí una foto de tu DNI (frente).' });
+    if (!foto_perfil || !foto_perfil.data || !foto_perfil.mime) return res.status(400).json({ error: 'Subí una foto de perfil donde se te vea la cara.' });
+    const vDni = validarArchivo(dni_foto.data, dni_foto.mime);
+    if (!vDni.ok) return res.status(400).json({ error: 'Foto de DNI: ' + vDni.error });
+    const vPerfil = validarArchivo(foto_perfil.data, foto_perfil.mime);
+    if (!vPerfil.ok) return res.status(400).json({ error: 'Foto de perfil: ' + vPerfil.error });
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(dni_foto.mime) || !['image/jpeg', 'image/png', 'image/webp'].includes(foto_perfil.mime)) {
+      return res.status(400).json({ error: 'La foto de DNI y la foto de perfil tienen que ser imágenes (JPG, PNG o WEBP), no PDF.' });
+    }
+
+    const [actual] = await sb(`usuarios?id=eq.${req.usuario.id}&select=*`);
+    if (!actual) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    if (actual.tipo !== 'cliente') return res.status(400).json({ error: 'Esta solicitud es solo para cuentas de Cliente.' });
+
+    let coordsTrabajo = null;
+    if (direccion_trabajo) {
+      coordsTrabajo = await geocodificar(direccion_trabajo);
+      if (!coordsTrabajo) return res.status(400).json({ error: 'No pudimos encontrar la zona de trabajo. Revisá que esté bien escrita.' });
+    }
+
+    const extDni = (dni_foto.mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+    const extPerfil = (foto_perfil.mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+    const pathDni = `${req.usuario.id}/dni_${Date.now()}.${extDni}`;
+    const pathPerfil = `${req.usuario.id}/perfil_${Date.now()}.${extPerfil}`;
+    await subirArchivo('identificaciones', pathDni, dni_foto.data, dni_foto.mime);
+    await subirArchivo('identificaciones', pathPerfil, foto_perfil.data, foto_perfil.mime);
+
+    await sb(`usuarios?id=eq.${req.usuario.id}`, 'PATCH', {
+      tipo: 'socio', estado: 'pendiente', dni, especialidad, experiencia, matricula, matricula_organismo,
+      dni_foto_path: pathDni, foto_perfil_path: pathPerfil, conversion_desde_cliente: true
+    });
+
+    if (coordsTrabajo) {
+      await sb('ubicaciones', 'POST', {
+        usuario_id: req.usuario.id, etiqueta: 'Zona de trabajo', direccion: direccion_trabajo,
+        lat: coordsTrabajo.lat, lng: coordsTrabajo.lng, zona: coordsTrabajo.zona, tipo: 'trabajo', predeterminada: false
+      });
+    }
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en POST /usuarios/solicitar-socio:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo enviar la solicitud.' });
+  }
+});
+
+
 app.post('/api/solicitudes-matricula', auth, async (req, res) => {
   try {
     const { matricula_nueva, especialidad, matricula_organismo } = req.body;
