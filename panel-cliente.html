@@ -440,6 +440,9 @@ window.onload = async () => {
   cargarEspecialidades();
   await cargarTodo();
   setInterval(cargarTodo, 30000);
+  if (window.location.hash === '#mi-perfil') {
+    goTo('mi-perfil', document.querySelector('.nav-item[onclick*="mi-perfil"]'));
+  }
 };
 
 function iniciales(nombre) {
