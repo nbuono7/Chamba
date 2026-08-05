@@ -21,6 +21,11 @@ const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
 const COMISION = 0.13;
 const PISO_COMISION = 1000; // piso fijo en pesos, para que trabajos muy chicos (< ~$7.700) no dejen una comisión insignificante
 
+// Rubros con matrícula habilitante exigida por ley/normativa (debe reflejar lo mismo que
+// RUBROS_MATRICULA_OBLIGATORIA en registro.html y panel-socio.html — si se agrega un rubro
+// ahí, agregarlo también acá para que la validación del servidor no quede desactualizada).
+const RUBROS_MATRICULA_OBLIGATORIA = ['Gas', 'Electricidad', 'Plomería'];
+
 /** Calcula la comisión de ChamBA sobre un precio acordado: el mayor entre el % y el piso fijo. */
 function calcularComision(precioAcordado) {
   const comisionPorcentual = Math.round(precioAcordado * COMISION);
@@ -355,9 +360,13 @@ app.get('/api/usuarios/:id/fotos-verificacion', auth, soloAdmin, async (req, res
 });
 
 app.post('/api/usuarios/registro', async (req, res) => {
-  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password, direccion_residencia, direccion_trabajo, dni_foto, foto_perfil } = req.body;
+  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, matricula_organismo, mensaje_solicitud, password, direccion_residencia, direccion_trabajo, dni_foto, foto_perfil } = req.body;
   const exists = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
   if (exists.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email.' });
+
+  if (tipo === 'socio' && RUBROS_MATRICULA_OBLIGATORIA.includes(especialidad) && (!matricula || !matricula_organismo)) {
+    return res.status(400).json({ error: `${especialidad} exige matrícula habilitante: completá el número y el organismo que te la otorgó.` });
+  }
 
   // Los Socios tienen que subir foto de DNI y foto de perfil (con el rostro visible) para poder registrarse.
   // La foto de perfil no se muestra a ningún Cliente hasta que paga por el trabajo (evita discriminación por aspecto antes de esa instancia).
@@ -387,7 +396,7 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const bcrypt = require('bcryptjs');
   const password_hash = await bcrypt.hash(password, 10);
   const estado = tipo === 'cliente' ? 'aprobado' : 'pendiente';
-  const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, mensaje_solicitud, password_hash, estado, email_verificado: false });
+  const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, matricula_organismo, mensaje_solicitud, password_hash, estado, email_verificado: false });
   if (data.error || (Array.isArray(data) && data[0]?.code)) return res.status(400).json({ error: 'Error al registrar.' });
   const nuevoUsuario = data[0];
 
@@ -974,9 +983,12 @@ app.get('/api/solicitudes-matricula', async (req, res) => {
 });
 app.post('/api/solicitudes-matricula', auth, async (req, res) => {
   try {
-    const { matricula_nueva, especialidad } = req.body;
-    if (!matricula_nueva) return res.status(400).json({ error: 'Faltan datos.' });
-    res.json(await sb('solicitudes_matricula', 'POST', { socio_id: req.usuario.id, matricula_nueva, especialidad, estado: 'pendiente' }));
+    const { matricula_nueva, especialidad, matricula_organismo } = req.body;
+    if (!matricula_nueva || !especialidad) return res.status(400).json({ error: 'Faltan datos.' });
+    if (RUBROS_MATRICULA_OBLIGATORIA.includes(especialidad) && !matricula_organismo) {
+      return res.status(400).json({ error: `${especialidad} exige matrícula habilitante: indicá qué organismo te la otorgó.` });
+    }
+    res.json(await sb('solicitudes_matricula', 'POST', { socio_id: req.usuario.id, matricula_nueva, especialidad, matricula_organismo, estado: 'pendiente' }));
   } catch (e) {
     console.error('❌ Error en POST /solicitudes-matricula:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo enviar la solicitud.', detalle: e.message });
