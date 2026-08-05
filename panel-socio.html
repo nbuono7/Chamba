@@ -55,6 +55,7 @@
     .actividad-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--teal-light); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .actividad-texto { font-size: 14px; color: var(--text); line-height: 1.4; }
     .actividad-fecha { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; line-height: 1.4; }
     .page-title { font-family: 'Sora', sans-serif; font-size: 25px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(22,35,63,0.05); }
@@ -346,18 +347,7 @@
       <div class="card" style="margin-top:16px"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">🎓 Matrícula</div>
         <div style="font-size:13px;color:var(--text-soft);margin-bottom:12px">¿Estudiaste una tecnicatura nueva? Solicitá agregar una matrícula — el equipo de ChamBA la va a revisar y aprobar.</div>
-        <div class="form-group"><label>Nueva matrícula</label><input type="text" id="nueva-matricula" placeholder="Número o código de matrícula"/></div>
-        <div class="form-group">
-          <label>Especialidad relacionada</label>
-          <select id="nueva-matricula-esp" onchange="onCambioEspecialidadMatricula()"><option value="">Elegí una especialidad</option></select>
-        </div>
-        <div class="form-group" id="bloque-matricula-obligatoria-perfil" style="display:none;background:#eef4ff;border:1px solid #93c5fd;border-radius:8px;padding:14px">
-          <div style="font-size:13.5px;font-weight:600;color:#1e40af;margin-bottom:6px">🎓 Este rubro exige matrícula habilitante</div>
-          <div id="matricula-obligatoria-texto-perfil" style="font-size:13px;color:#1e40af;margin-bottom:10px"></div>
-          <label>¿Qué organismo te la otorgó? <span style="color:#dc2626">*</span></label>
-          <input type="text" id="nueva-matricula-organismo" placeholder="Ej: MetroGAS, AGC, Colegio de..."/>
-        </div>
-        <button class="btn btn-teal btn-sm" onclick="solicitarMatricula()">Enviar solicitud</button>
+        <a href="/solicitar-matricula" class="btn btn-teal btn-sm" style="display:inline-block;text-decoration:none">Solicitar matrícula →</a>
         <div id="lista-solicitudes-matricula" style="margin-top:16px"></div>
       </div></div>
 
@@ -391,7 +381,7 @@
       <div class="card" style="margin-top:16px"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">📍 Mis ubicaciones</div>
         <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Solo tu ubicación <strong>predeterminada</strong> se usa para mostrarte trabajos cercanos. Si querés recibir trabajos de otra zona, marcá esa ubicación como predeterminada.</div>
-        <div id="lista-ubicaciones" style="margin-bottom:16px"></div>
+        <div id="lista-ubicaciones" style="margin-bottom:16px;border-top:1px solid var(--border);padding-top:10px"></div>
       </div></div>
 
       <div class="card" style="margin-top:16px;overflow:visible"><div class="card-body">
@@ -531,26 +521,6 @@ window.onload = async () => {
 function doLogout() { localStorage.removeItem('chamba_user'); localStorage.removeItem('chamba_token'); window.location.href = '/'; }
 function iniciales(nombre) { return (nombre || '').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('').toUpperCase(); }
 
-// Rubros con matrícula habilitante exigida por ley/normativa (determina si se desbloquea
-// el bloque de matrícula obligatoria al solicitar una nueva especialidad desde Mi Perfil).
-const RUBROS_MATRICULA_OBLIGATORIA = {
-  'Gas': 'La matrícula de gasista es obligatoria por ley (Decreto 1738/92) y la otorga la distribuidora de gas de tu zona (MetroGAS, Naturgy o Camuzzi), no ENARGAS directamente.',
-  'Electricidad': 'Se exige para conexiones nuevas, ampliaciones de potencia y habilitaciones comerciales. La otorga un colegio profesional o ente regulador según tu jurisdicción.',
-  'Plomería': 'Si trabajás en CABA, la otorga la Agencia Gubernamental de Control (AGC). Si además hacés trabajos de gas, necesitás la matrícula de gasista por separado.'
-};
-
-function onCambioEspecialidadMatricula() {
-  const especialidad = document.getElementById('nueva-matricula-esp').value;
-  const bloque = document.getElementById('bloque-matricula-obligatoria-perfil');
-  const texto = document.getElementById('matricula-obligatoria-texto-perfil');
-  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad]) {
-    bloque.style.display = 'block';
-    texto.textContent = RUBROS_MATRICULA_OBLIGATORIA[especialidad];
-  } else {
-    bloque.style.display = 'none';
-  }
-}
-
 async function cargarEspecialidades() {
   try {
     const especialidades = await api('/api/especialidades');
@@ -560,11 +530,6 @@ async function cargarEspecialidades() {
       select.innerHTML = '<option value="">Elegí el servicio</option>' +
         especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
       if (actual) select.value = actual;
-    }
-    const selectMatricula = document.getElementById('nueva-matricula-esp');
-    if (selectMatricula && Array.isArray(especialidades)) {
-      selectMatricula.innerHTML = '<option value="">Elegí una especialidad</option>' +
-        especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
     }
   } catch(e) {}
 }
@@ -1455,25 +1420,6 @@ async function guardarPerfil() {
   document.getElementById('user-avatar').textContent = iniciales(usuario.nombre);
   document.getElementById('bienvenida').textContent = 'Hola, ' + usuario.nombre.split(' ')[0] + ' 👋';
   showInfo('✅', 'Guardado', 'Tu perfil fue actualizado.');
-}
-
-async function solicitarMatricula() {
-  const matricula_nueva = document.getElementById('nueva-matricula').value.trim();
-  const especialidad = document.getElementById('nueva-matricula-esp').value;
-  const matricula_organismo = document.getElementById('nueva-matricula-organismo').value.trim();
-  if (!matricula_nueva) return showInfo('⚠️', 'Falta la matrícula', 'Ingresá el número o código de matrícula.');
-  if (!especialidad) return showInfo('⚠️', 'Falta la especialidad', 'Elegí a qué especialidad corresponde esta matrícula.');
-  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad] && !matricula_organismo) {
-    return showInfo('⚠️', 'Falta el organismo', `${especialidad} exige matrícula habilitante: contanos qué organismo te la otorgó.`);
-  }
-  const r = await api('/api/solicitudes-matricula', 'POST', { socio_id: usuario.id, matricula_nueva, especialidad, matricula_organismo });
-  if (r.error) return showInfo('❌', 'Error', r.error);
-  document.getElementById('nueva-matricula').value = '';
-  document.getElementById('nueva-matricula-esp').value = '';
-  document.getElementById('nueva-matricula-organismo').value = '';
-  document.getElementById('bloque-matricula-obligatoria-perfil').style.display = 'none';
-  showInfo('✅', 'Solicitud enviada', 'ChamBA va a revisar tu matrícula y te va a avisar cuando esté aprobada.');
-  cargarSolicitudesMatricula();
 }
 
 async function cargarSolicitudesMatricula() {
