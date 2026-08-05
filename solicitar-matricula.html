@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChamBA — Solicitar matrícula</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #E2662D; --teal-dark: #B84F1F; --teal-light: #FBE9DC; --teal-mid: #F0955F;
+      --bg: #F7F2E7; --card: #fff; --text: #1E2430; --text-mid: #555; --text-soft: #999;
+      --border: #e5e7eb; --radius: 12px;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 5%; height: 64px; background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+    .nav-logo { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 800; text-decoration: none; color: var(--text); }
+    .nav-logo span { color: var(--teal); }
+    .nav-link { font-size: 14px; color: var(--text-mid); text-decoration: none; }
+    .nav-link:hover { color: var(--teal); }
+
+    .page { max-width: 520px; margin: 48px auto; padding: 0 20px 60px; }
+    .page-title { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .page-sub { font-size: 15px; color: var(--text-mid); margin-bottom: 32px; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-mid); margin-bottom: 5px; }
+    .form-group input, .form-group select {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; font-size: 16px; font-family: inherit;
+      color: var(--text); background: #fff; transition: border-color 0.15s;
+    }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--teal); }
+    .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; line-height: 1.4; }
+    .required { color: var(--teal); }
+
+    .btn-submit {
+      width: 100%; background: var(--teal); color: #fff; border: none;
+      border-radius: 10px; padding: 14px; font-size: 16px; font-weight: 500;
+      cursor: pointer; font-family: inherit; margin-top: 8px; transition: background 0.15s;
+    }
+    .btn-submit:hover { background: var(--teal-dark); }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+    .error-box { background: #fdeaea; border: 1px solid #f09595; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #a32d2d; margin-bottom: 16px; display: none; }
+    .success-box { background: var(--teal-light); border: 1px solid var(--teal-mid); border-radius: 8px; padding: 24px; font-size: 15px; color: var(--teal-dark); text-align: center; display: none; }
+    .success-icon { font-size: 40px; margin-bottom: 12px; }
+    .success-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .btn-link { display: inline-block; margin-top: 14px; background: var(--teal); color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 8px; font-size: 14px; font-weight: 500; }
+
+    .bloque-matricula { display: none; background: #eef4ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+    .bloque-matricula-titulo { font-size: 13.5px; font-weight: 600; color: #1e40af; margin-bottom: 6px; }
+    .bloque-matricula-texto { font-size: 13px; color: #1e40af; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/panel-socio">Cham<span>BA</span></a>
+  <a class="nav-link" href="/panel-socio" id="link-volver">✕ Cancelar y volver al panel</a>
+</nav>
+
+<div class="page">
+  <div class="page-title">Solicitar matrícula</div>
+  <div class="page-sub">¿Estudiaste una tecnicatura nueva o sumaste un rubro? Contanos y ChamBA lo revisa antes de habilitarte a ofertar en esa especialidad.</div>
+
+  <div class="error-box" id="error-box"></div>
+
+  <div class="success-box" id="success-box">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Solicitud enviada</div>
+    <div>ChamBA va a revisar tu matrícula y te va a avisar cuando esté aprobada. Te llevamos de vuelta a tu panel...</div>
+  </div>
+
+  <div class="card" id="form-card">
+    <div class="form-group">
+      <label>Especialidad <span class="required">*</span></label>
+      <select id="f-especialidad" onchange="onCambioEspecialidad()"><option value="">Elegí una especialidad</option></select>
+    </div>
+    <div class="form-group">
+      <label>Número de matrícula <span class="required">*</span></label>
+      <input type="text" id="f-matricula" placeholder="Número o código de matrícula"/>
+    </div>
+    <div class="bloque-matricula" id="bloque-matricula-obligatoria">
+      <div class="bloque-matricula-titulo">🎓 Este rubro exige matrícula habilitante</div>
+      <div class="bloque-matricula-texto" id="matricula-obligatoria-texto"></div>
+      <label>¿Qué organismo te la otorgó? <span class="required">*</span></label>
+      <input type="text" id="f-matricula-organismo" placeholder="Ej: MetroGAS, AGC, Colegio de..."/>
+    </div>
+    <button class="btn-submit" id="btn-submit" onclick="enviar()">Enviar solicitud</button>
+  </div>
+</div>
+
+<script>
+const BACKEND = 'https://chamba-backend-vurx.onrender.com';
+let usuario = null;
+
+const RUBROS_MATRICULA_OBLIGATORIA = {
+  'Gas': 'La matrícula de gasista es obligatoria por ley (Decreto 1738/92) y la otorga la distribuidora de gas de tu zona (MetroGAS, Naturgy o Camuzzi), no ENARGAS directamente.',
+  'Electricidad': 'Se exige para conexiones nuevas, ampliaciones de potencia y habilitaciones comerciales. La otorga un colegio profesional o ente regulador según tu jurisdicción.',
+  'Plomería': 'Si trabajás en CABA, la otorga la Agencia Gubernamental de Control (AGC). Si además hacés trabajos de gas, necesitás la matrícula de gasista por separado.'
+};
+
+window.onload = async () => {
+  const u = localStorage.getItem('chamba_user');
+  if (!u) return window.location.href = '/login';
+  usuario = JSON.parse(u);
+  if (usuario.tipo === 'admin') return window.location.href = '/admin';
+  if (usuario.tipo === 'cliente') return window.location.href = '/panel-cliente';
+  cargarEspecialidades();
+};
+
+async function cargarEspecialidades() {
+  try {
+    const r = await fetch(BACKEND + '/api/especialidades');
+    const especialidades = await r.json();
+    const select = document.getElementById('f-especialidad');
+    if (Array.isArray(especialidades)) {
+      select.innerHTML = '<option value="">Elegí una especialidad</option>' +
+        especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
+    }
+  } catch(e) {}
+}
+
+function onCambioEspecialidad() {
+  const especialidad = document.getElementById('f-especialidad').value;
+  const bloque = document.getElementById('bloque-matricula-obligatoria');
+  const texto = document.getElementById('matricula-obligatoria-texto');
+  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad]) {
+    bloque.style.display = 'block';
+    texto.textContent = RUBROS_MATRICULA_OBLIGATORIA[especialidad];
+  } else {
+    bloque.style.display = 'none';
+  }
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = msg;
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function api(path, method, body) {
+  const token = localStorage.getItem('chamba_token');
+  const r = await fetch(BACKEND + path, {
+    method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return r.json();
+}
+
+async function enviar() {
+  document.getElementById('error-box').style.display = 'none';
+  const especialidad = document.getElementById('f-especialidad').value;
+  const matricula_nueva = document.getElementById('f-matricula').value.trim();
+  const matricula_organismo = document.getElementById('f-matricula-organismo').value.trim();
+
+  if (!especialidad) return showError('Elegí a qué especialidad corresponde esta matrícula.');
+  if (!matricula_nueva) return showError('Ingresá el número o código de matrícula.');
+  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad] && !matricula_organismo) {
+    return showError(`${especialidad} exige matrícula habilitante: contanos qué organismo te la otorgó.`);
+  }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  const r = await api('/api/solicitudes-matricula', 'POST', { matricula_nueva, especialidad, matricula_organismo });
+  if (r.error) {
+    btn.disabled = false; btn.textContent = 'Enviar solicitud';
+    return showError(r.error);
+  }
+
+  document.getElementById('form-card').style.display = 'none';
+  document.getElementById('link-volver').style.display = 'none';
+  document.getElementById('success-box').style.display = 'block';
+  setTimeout(() => { window.location.href = '/panel-socio#mi-perfil'; }, 1400);
+}
+</script>
+</body>
+</html>
