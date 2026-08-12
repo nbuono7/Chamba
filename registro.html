@@ -58,6 +58,12 @@
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
     .form-group textarea { resize: none; line-height: 1.5; }
     .form-group .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    .chip-sugerencia {
+      font-size: 12px; background: var(--teal-light); color: var(--teal-dark);
+      border: 1px solid var(--teal-mid); border-radius: 20px; padding: 4px 12px;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .chip-sugerencia:hover { background: var(--teal-mid); color: #fff; }
     #req-list-registro li.ok { color: #1a8f5e; }
     #req-list-registro .mark { width: 12px; display: inline-block; text-align: center; }
     .sugerencias-box { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(22,35,63,0.12); z-index: 40; max-height: 240px; overflow-y: auto; margin-top: 4px; display: none; }
@@ -193,6 +199,7 @@
         <label>Nombre de usuario <span class="required">*</span></label>
         <input type="text" id="f-usuario" placeholder="juan_garcia" oninput="chequearUsuario()" autocapitalize="off" autocorrect="off" />
         <div class="hint" id="usuario-estado">3 a 20 caracteres: minúsculas, números y guion bajo (_), sin espacios ni acentos.</div>
+        <div id="usuario-sugerencias" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -334,9 +341,11 @@ let usuarioDisponible = false;
 function chequearUsuario() {
   const input = document.getElementById('f-usuario');
   const estado = document.getElementById('usuario-estado');
+  const sugerenciasBox = document.getElementById('usuario-sugerencias');
   input.value = input.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
   const valor = input.value;
   usuarioDisponible = false;
+  sugerenciasBox.innerHTML = '';
   clearTimeout(timerChequeoUsuario);
 
   if (!valor) {
@@ -361,14 +370,24 @@ function chequearUsuario() {
         estado.style.color = '#1a8f5e';
       } else {
         usuarioDisponible = false;
-        estado.textContent = data.error || 'Ese nombre de usuario ya está en uso.';
+        estado.textContent = data.error || 'Ese usuario ya existe.';
         estado.style.color = '#a32d2d';
+        if (Array.isArray(data.sugerencias) && data.sugerencias.length) {
+          sugerenciasBox.innerHTML =
+            '<span style="font-size:12px;color:var(--text-soft);width:100%">¿Probás con alguna de estas?</span>' +
+            data.sugerencias.map(s => `<button type="button" class="chip-sugerencia" onclick="elegirSugerenciaUsuario('${s}')">${s}</button>`).join('');
+        }
       }
     } catch (e) {
       estado.textContent = 'No pudimos chequear la disponibilidad. Probá de nuevo.';
       estado.style.color = '#a32d2d';
     }
   }, 500);
+}
+
+function elegirSugerenciaUsuario(valor) {
+  document.getElementById('f-usuario').value = valor;
+  chequearUsuario();
 }
 
 function validarPassword(pass) {
