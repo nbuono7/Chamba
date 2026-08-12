@@ -189,6 +189,11 @@
         <label>Email <span class="required">*</span></label>
         <input type="email" id="f-email" placeholder="juan@gmail.com" />
       </div>
+      <div class="form-group">
+        <label>Nombre de usuario <span class="required">*</span></label>
+        <input type="text" id="f-usuario" placeholder="juan_garcia" oninput="chequearUsuario()" autocapitalize="off" autocorrect="off" />
+        <div class="hint" id="usuario-estado">3 a 20 caracteres: minúsculas, números y guion bajo (_), sin espacios ni acentos.</div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label>Contraseña <span class="required">*</span></label>
@@ -323,6 +328,49 @@ function leerArchivoComoDataURL(file) {
   });
 }
 
+let timerChequeoUsuario = null;
+let usuarioDisponible = false;
+
+function chequearUsuario() {
+  const input = document.getElementById('f-usuario');
+  const estado = document.getElementById('usuario-estado');
+  input.value = input.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+  const valor = input.value;
+  usuarioDisponible = false;
+  clearTimeout(timerChequeoUsuario);
+
+  if (!valor) {
+    estado.textContent = '3 a 20 caracteres: minúsculas, números y guion bajo (_), sin espacios ni acentos.';
+    estado.style.color = 'var(--text-soft)';
+    return;
+  }
+  if (valor.length < 3) {
+    estado.textContent = 'Muy corto — necesita al menos 3 caracteres.';
+    estado.style.color = '#a32d2d';
+    return;
+  }
+  estado.textContent = 'Chequeando disponibilidad...';
+  estado.style.color = 'var(--text-soft)';
+  timerChequeoUsuario = setTimeout(async () => {
+    try {
+      const r = await fetch(`${BACKEND}/api/usuarios/chequear-usuario?nombre_usuario=${encodeURIComponent(valor)}`);
+      const data = await r.json();
+      if (data.disponible) {
+        usuarioDisponible = true;
+        estado.textContent = '✓ Disponible';
+        estado.style.color = '#1a8f5e';
+      } else {
+        usuarioDisponible = false;
+        estado.textContent = data.error || 'Ese nombre de usuario ya está en uso.';
+        estado.style.color = '#a32d2d';
+      }
+    } catch (e) {
+      estado.textContent = 'No pudimos chequear la disponibilidad. Probá de nuevo.';
+      estado.style.color = '#a32d2d';
+    }
+  }, 500);
+}
+
 function validarPassword(pass) {
   if (!pass || pass.length <= 6) return 'La contraseña tiene que tener más de 6 caracteres.';
   if (!/[A-Za-z]/.test(pass)) return 'La contraseña tiene que incluir al menos una letra.';
@@ -352,16 +400,19 @@ async function registrar() {
   const nombre = document.getElementById('f-nombre').value.trim();
   const telefono = document.getElementById('f-telefono').value.trim();
   const email = document.getElementById('f-email').value.trim();
+  const nombre_usuario = document.getElementById('f-usuario').value.trim();
   const password = document.getElementById('f-password').value;
   const password2 = document.getElementById('f-password2').value;
   const direccion_residencia = document.getElementById('f-direccion').value.trim();
 
-  if (!nombre || !email || !telefono || !password || !direccion_residencia) return showError('Completá todos los campos obligatorios.');
+  if (!nombre || !email || !nombre_usuario || !telefono || !password || !direccion_residencia) return showError('Completá todos los campos obligatorios.');
+  if (nombre_usuario.length < 3) return showError('El nombre de usuario tiene que tener al menos 3 caracteres.');
+  if (!usuarioDisponible) return showError('Elegí un nombre de usuario disponible antes de continuar (mirá el chequeo debajo del campo).');
   const errorPassword = validarPassword(password);
   if (errorPassword) return showError(errorPassword);
   if (password !== password2) return showError('Las contraseñas no coinciden.');
 
-  const body = { nombre, email, telefono, tipo: tipoSeleccionado, password, direccion_residencia };
+  const body = { nombre, email, nombre_usuario, telefono, tipo: tipoSeleccionado, password, direccion_residencia };
 
   if (tipoSeleccionado === 'socio') {
     const dni = document.getElementById('f-dni').value.trim();
