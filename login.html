@@ -121,7 +121,25 @@
         </div>
       </div>
       <button class="btn-submit" id="btn-login" onclick="doLogin()">Ingresar</button>
+      <div class="link-reg" style="margin-top:10px"><a href="#" onclick="mostrarPaso('olvide');return false">¿Olvidaste tu contraseña?</a></div>
       <div class="link-reg"><a href="#" onclick="mostrarPaso('email');return false">← Usar código por email en su lugar</a></div>
+    </div>
+
+    <!-- OLVIDÉ MI CONTRASEÑA -->
+    <div id="paso-olvide" style="display:none">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email-olvide" placeholder="juan@gmail.com" onkeydown="if(event.key==='Enter')pedirResetPassword()"/>
+      </div>
+      <button class="btn-submit" id="btn-pedir-reset" onclick="pedirResetPassword()">Enviar link de recuperación</button>
+      <div class="link-reg"><a href="#" onclick="mostrarPaso('password');return false">← Volver</a></div>
+    </div>
+
+    <!-- CONFIRMACIÓN DE ENVÍO -->
+    <div id="paso-olvide-enviado" style="display:none;text-align:center">
+      <div style="font-size:40px;margin-bottom:12px">📩</div>
+      <div style="font-size:15px;color:var(--text);line-height:1.6;margin-bottom:16px">Si ese email tiene una cuenta en ChamBA, te mandamos un link para cambiar tu contraseña. Revisá tu bandeja de entrada (y spam, por las dudas).</div>
+      <div class="link-reg"><a href="#" onclick="mostrarPaso('password');return false">← Volver a ingresar</a></div>
     </div>
 
     <div class="link-reg">¿No tenés cuenta? <a href="/registro">Registrate acá</a></div>
@@ -137,8 +155,29 @@ function mostrarPaso(paso) {
   document.getElementById('paso-email').style.display = paso === 'email' ? 'block' : 'none';
   document.getElementById('paso-codigo').style.display = paso === 'codigo' ? 'block' : 'none';
   document.getElementById('paso-password').style.display = paso === 'password' ? 'block' : 'none';
+  document.getElementById('paso-olvide').style.display = paso === 'olvide' ? 'block' : 'none';
+  document.getElementById('paso-olvide-enviado').style.display = paso === 'olvide-enviado' ? 'block' : 'none';
   clearInterval(timerReenvioLogin);
   if (paso === 'password') document.getElementById('f-email-pass').value = document.getElementById('f-email').value.trim();
+  if (paso === 'olvide') document.getElementById('f-email-olvide').value = document.getElementById('f-email-pass').value.trim();
+}
+
+async function pedirResetPassword() {
+  const btn = document.getElementById('btn-pedir-reset');
+  const errorBox = document.getElementById('error-box');
+  errorBox.style.display = 'none';
+  const email = document.getElementById('f-email-olvide').value.trim();
+  if (!email) return showError('Ingresá tu email.');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch(`${BACKEND}/api/usuarios/olvide-password`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!r.ok) { const data = await r.json().catch(() => ({})); return showError(data.error || 'No se pudo enviar el link.'); }
+    mostrarPaso('olvide-enviado');
+  } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
+  finally { btn.disabled = false; btn.textContent = 'Enviar link de recuperación'; }
 }
 
 function togglePass() {
