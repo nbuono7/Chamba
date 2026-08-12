@@ -377,6 +377,26 @@ app.get('/api/usuarios/:id/fotos-verificacion', auth, soloAdmin, async (req, res
   }
 });
 
+/** Genera hasta 3 variantes disponibles de un nombre de usuario ya tomado. */
+async function generarSugerenciasUsuario(base) {
+  const sugerencias = [];
+  const candidatos = [
+    base + Math.floor(Math.random() * 90 + 10),           // ej: juan23
+    base + '_' + Math.floor(Math.random() * 90 + 10),      // ej: juan_45
+    base + new Date().getFullYear().toString().slice(-2),  // ej: juan26
+    base + Math.floor(Math.random() * 900 + 100),          // ej: juan734
+    base + '_oficial',
+  ];
+  for (const c of candidatos) {
+    if (sugerencias.length >= 3) break;
+    const cNorm = c.toLowerCase().slice(0, 20);
+    if (!/^[a-z0-9_]{3,20}$/.test(cNorm) || sugerencias.includes(cNorm)) continue;
+    const existe = await sb(`usuarios?nombre_usuario=eq.${encodeURIComponent(cNorm)}&select=id`);
+    if (existe.length === 0) sugerencias.push(cNorm);
+  }
+  return sugerencias;
+}
+
 // Chequeo de disponibilidad en vivo mientras el usuario escribe (sin auth, es antes de tener cuenta)
 app.get('/api/usuarios/chequear-usuario', async (req, res) => {
   try {
@@ -384,7 +404,9 @@ app.get('/api/usuarios/chequear-usuario', async (req, res) => {
     const v = validarNombreUsuario(nombre_usuario);
     if (!v.ok) return res.json({ disponible: false, error: v.error });
     const existe = await sb(`usuarios?nombre_usuario=eq.${encodeURIComponent(nombre_usuario)}&select=id`);
-    res.json({ disponible: existe.length === 0 });
+    if (existe.length === 0) return res.json({ disponible: true });
+    const sugerencias = await generarSugerenciasUsuario(nombre_usuario);
+    res.json({ disponible: false, error: 'Ese usuario ya existe.', sugerencias });
   } catch (e) {
     res.status(500).json({ disponible: false, error: 'No se pudo chequear.' });
   }
