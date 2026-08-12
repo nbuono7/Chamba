@@ -56,6 +56,12 @@
     .actividad-texto { font-size: 14px; color: var(--text); line-height: 1.4; }
     .actividad-fecha { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
     .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; line-height: 1.4; }
+    .chip-sugerencia {
+      font-size: 12px; background: var(--teal-light); color: var(--teal-dark);
+      border: 1px solid var(--teal-mid); border-radius: 20px; padding: 4px 12px;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .chip-sugerencia:hover { background: var(--teal-mid); color: #fff; }
     .page-title { font-family: 'Sora', sans-serif; font-size: 25px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
     .page-sub { font-size: 14px; color: var(--text-mid); margin-bottom: 28px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(22,35,63,0.05); }
@@ -304,6 +310,7 @@
           <label>Nuevo nombre de usuario</label>
           <input type="text" id="nuevo-usuario" placeholder="tu_usuario_nuevo" oninput="chequearUsuarioPerfil()" autocapitalize="off" autocorrect="off"/>
           <div class="hint" id="usuario-perfil-estado">3 a 20 caracteres: minúsculas, números y guion bajo (_).</div>
+          <div id="usuario-perfil-sugerencias" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
         </div>
         <button class="btn btn-teal btn-sm" onclick="cambiarNombreUsuario()">Cambiar nombre de usuario</button>
       </div></div>
@@ -497,9 +504,11 @@ let usuarioPerfilDisponible = false;
 function chequearUsuarioPerfil() {
   const input = document.getElementById('nuevo-usuario');
   const estado = document.getElementById('usuario-perfil-estado');
+  const sugerenciasBox = document.getElementById('usuario-perfil-sugerencias');
   input.value = input.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
   const valor = input.value;
   usuarioPerfilDisponible = false;
+  sugerenciasBox.innerHTML = '';
   clearTimeout(timerChequeoUsuarioPerfil);
 
   if (!valor) {
@@ -529,14 +538,24 @@ function chequearUsuarioPerfil() {
         estado.style.color = '#1a8f5e';
       } else {
         usuarioPerfilDisponible = false;
-        estado.textContent = data.error || 'Ese nombre de usuario ya está en uso.';
+        estado.textContent = data.error || 'Ese usuario ya existe.';
         estado.style.color = '#a32d2d';
+        if (Array.isArray(data.sugerencias) && data.sugerencias.length) {
+          sugerenciasBox.innerHTML =
+            '<span style="font-size:12px;color:var(--text-soft);width:100%">¿Probás con alguna de estas?</span>' +
+            data.sugerencias.map(s => `<button type="button" class="chip-sugerencia" onclick="elegirSugerenciaUsuarioPerfil('${s}')">${s}</button>`).join('');
+        }
       }
     } catch (e) {
       estado.textContent = 'No pudimos chequear la disponibilidad. Probá de nuevo.';
       estado.style.color = '#a32d2d';
     }
   }, 500);
+}
+
+function elegirSugerenciaUsuarioPerfil(valor) {
+  document.getElementById('nuevo-usuario').value = valor;
+  chequearUsuarioPerfil();
 }
 
 async function cambiarNombreUsuario() {
