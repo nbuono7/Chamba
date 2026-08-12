@@ -212,10 +212,11 @@
                 <button class="filter-tab" onclick="filtrarSocios('pendiente',this)">Pendientes</button>
                 <button class="filter-tab" onclick="filtrarSocios('aprobado',this)">Aprobados</button>
                 <button class="filter-tab" onclick="filtrarSocios('rechazado',this)">Rechazados</button>
+                <button class="filter-tab" onclick="filtrarSocios('suspendido',this)">Suspendidos</button>
               </div>
-              <input class="search-input" placeholder="Buscar..." oninput="buscarUsuarios('socio', this.value)"/>
+              <input class="search-input" placeholder="Buscar por nombre, usuario o email..." oninput="buscarUsuarios('socio', this.value)"/>
             </div>
-            <table><thead><tr><th>Nombre</th><th>Especialidad</th><th>DNI</th><th>Reputación</th><th>Estado</th><th></th></tr></thead><tbody id="socios-reg-tbody"></tbody></table>
+            <table><thead><tr><th>Nombre</th><th>Usuario</th><th>Especialidad</th><th>DNI</th><th>Reputación</th><th>Estado</th><th></th></tr></thead><tbody id="socios-reg-tbody"></tbody></table>
           </div>
         </div>
 
@@ -420,7 +421,7 @@ function updateBadges() {
 function set(id, val) { const el=document.getElementById(id); el.textContent=val; el.style.display=val?'inline':'none'; }
 
 function badge(e) {
-  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado', pendiente:'badge-amber|Pendiente', aprobado:'badge-green|Aprobado', rechazado:'badge-red|Rechazado', aprobada:'badge-green|Aprobada', rechazada:'badge-red|Rechazada', abierta:'badge-red|Abierta', en_revision:'badge-amber|En revisión', resuelta:'badge-green|Resuelta' };
+  const map = { nuevo:'badge-red|Nuevo', en_proceso:'badge-amber|En proceso', completado:'badge-green|Completado', cancelado:'badge-gray|Cancelado', pendiente:'badge-amber|Pendiente', aprobado:'badge-green|Aprobado', rechazado:'badge-red|Rechazado', suspendido:'badge-gray|Suspendido', aprobada:'badge-green|Aprobada', rechazada:'badge-red|Rechazada', abierta:'badge-red|Abierta', en_revision:'badge-amber|En revisión', resuelta:'badge-green|Resuelta' };
   const [cls, label] = (map[e] || 'badge-gray|' + e).split('|');
   return `<span class="badge ${cls}">${label}</span>`;
 }
@@ -488,7 +489,7 @@ function renderSociosReg(lista) {
   renderResumenSocios();
   const socios = usuarios.filter(u => u.tipo === 'socio');
   const data = (lista || socios).filter(s => filtroSocios === 'todos' || s.estado === filtroSocios);
-  document.getElementById('socios-reg-tbody').innerHTML = data.length ? data.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.especialidad||'—'}</td><td>${s.dni||'—'}</td><td>${s.promedio_estrellas ? s.promedio_estrellas+' ⭐' : '—'}</td><td>${badge(s.estado)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${s.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No hay socios</td></tr>';
+  document.getElementById('socios-reg-tbody').innerHTML = data.length ? data.map(s => `<tr><td class="td-primary">${s.nombre}</td><td>${s.nombre_usuario ? '@'+s.nombre_usuario : '—'}</td><td>${s.especialidad||'—'}</td><td>${s.dni||'—'}</td><td>${s.promedio_estrellas ? s.promedio_estrellas+' ⭐' : '—'}</td><td>${badge(s.estado)}</td><td><button class="btn btn-ghost btn-sm" onclick="verUsuario('${s.id}')">Ver</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty">No hay socios</td></tr>';
 }
 function filtrarSocios(f, btn) { filtroSocios=f; document.querySelectorAll('#sub-users-socios .filter-tab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderSociosReg(); }
 
@@ -585,7 +586,7 @@ async function toggleEspecialidad(id, activa) {
   toast(activa ? 'Especialidad desbloqueada ✅' : 'Especialidad bloqueada 🚫');
 }
 function buscarUsuarios(tipo, q) {
-  const data = usuarios.filter(u => u.tipo === tipo && (u.nombre.toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase())));
+  const data = usuarios.filter(u => u.tipo === tipo && (u.nombre.toLowerCase().includes(q.toLowerCase()) || u.email.toLowerCase().includes(q.toLowerCase()) || (u.nombre_usuario||'').toLowerCase().includes(q.toLowerCase())));
   tipo === 'cliente' ? renderClientesReg(data) : renderSociosReg(data);
 }
 
@@ -661,6 +662,7 @@ async function verUsuario(id) {
   }
   document.getElementById('modal-usuario-content').innerHTML = `
     <div class="modal-field"><label>Nombre</label><div class="val">${u.nombre}</div></div>
+    <div class="modal-field"><label>Usuario</label><div class="val">${u.nombre_usuario ? '@'+u.nombre_usuario : '—'}</div></div>
     <div class="modal-field"><label>Email</label><div class="val">${u.email}</div></div>
     <div class="modal-field"><label>Teléfono</label><div class="val">${u.telefono||'—'}</div></div>
     ${u.tipo === 'socio' ? `
@@ -668,22 +670,38 @@ async function verUsuario(id) {
     <div class="modal-field"><label>Especialidad</label><div class="val">${u.especialidad||'—'}</div></div>
     <div class="modal-field"><label>DNI</label><div class="val">${u.dni||'—'}</div></div>
     <div class="modal-field"><label>Experiencia</label><div class="val">${u.experiencia||'—'}</div></div>
-    <div class="modal-field"><label>Matrícula</label><div class="val">${u.matricula||'—'}</div></div>
+    <div class="modal-field"><label>Matrícula</label><div class="val">${u.matricula||'—'}${u.matricula_organismo ? ' · '+u.matricula_organismo : ''}</div></div>
     <div class="modal-field"><label>Reputación</label><div class="val">${u.promedio_estrellas ? u.promedio_estrellas+' ⭐ ('+(u.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
     <div class="modal-field"><label>Trabajos completados</label><div class="val">${u.trabajos_completados||0}</div></div>
     ` : ''}
+    <div class="modal-field"><label>Ubicación</label><div class="val" id="modal-usuario-ubicacion">Cargando...</div></div>
     ${fotosHtml}
     <div class="modal-field"><label>Estado</label><div class="val">${badge(u.estado)}</div></div>
     <div class="modal-field"><label>Registrado</label><div class="val">${fmtDate(u.created_at)}</div></div>
     <hr class="modal-divider">
     <div class="modal-actions">
       ${u.estado==='pendiente'?`<button class="btn btn-teal" onclick="cambiarEstadoUsuario('${u.id}','aprobado')">✅ Aprobar</button><button class="btn btn-red" onclick="cambiarEstadoUsuario('${u.id}','rechazado')">❌ Rechazar</button>`:''}
-      ${u.estado==='aprobado'?`<button class="btn btn-red" onclick="cambiarEstadoUsuario('${u.id}','rechazado')">Suspender</button>`:''}
-      ${u.estado==='rechazado'?`<button class="btn btn-teal" onclick="cambiarEstadoUsuario('${u.id}','aprobado')">Reactivar</button>`:''}
+      ${u.estado==='aprobado'?`<button class="btn btn-red" onclick="cambiarEstadoUsuario('${u.id}','suspendido')">⏸️ Suspender</button>`:''}
+      ${(u.estado==='rechazado'||u.estado==='suspendido')?`<button class="btn btn-teal" onclick="cambiarEstadoUsuario('${u.id}','aprobado')">Reactivar</button>`:''}
       <button class="btn btn-red" onclick="eliminarUsuario('${u.id}')">Eliminar</button>
       <button class="btn btn-ghost" onclick="closeModal('modal-usuario')">Cerrar</button>
     </div>`;
   openModal('modal-usuario');
+
+  try {
+    const ubs = await api(`/api/ubicaciones?usuario_id=${u.id}`);
+    const el = document.getElementById('modal-usuario-ubicacion');
+    if (el) {
+      if (Array.isArray(ubs) && ubs.length) {
+        el.innerHTML = ubs.map(x => `${x.direccion}${x.predeterminada ? ' <span class="badge badge-green" style="margin-left:4px">Predeterminada</span>' : ''}`).join('<br/>');
+      } else {
+        el.textContent = 'Sin ubicaciones cargadas';
+      }
+    }
+  } catch (e) {
+    const el = document.getElementById('modal-usuario-ubicacion');
+    if (el) el.textContent = 'No se pudo cargar';
+  }
 
   if (u.tipo === 'socio') {
     try {
@@ -702,7 +720,13 @@ async function verUsuario(id) {
     }
   }
 }
-async function cambiarEstadoUsuario(id, estado) { await api(`/api/usuarios/${id}`,'PATCH',{estado}); await cargarTodo(); closeModal('modal-usuario'); toast(estado==='aprobado'?'Usuario aprobado ✅':'Usuario rechazado'); }
+async function cambiarEstadoUsuario(id, estado) {
+  await api(`/api/usuarios/${id}`,'PATCH',{estado});
+  await cargarTodo();
+  closeModal('modal-usuario');
+  const mensajes = { aprobado: 'Usuario aprobado ✅', rechazado: 'Usuario rechazado', suspendido: 'Usuario suspendido ⏸️' };
+  toast(mensajes[estado] || 'Estado actualizado');
+}
 async function eliminarUsuario(id) { if(!confirm('¿Eliminar este usuario?'))return; await api(`/api/usuarios/${id}`,'DELETE'); await cargarTodo(); closeModal('modal-usuario'); toast('Usuario eliminado'); }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
