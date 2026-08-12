@@ -58,6 +58,8 @@
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); }
     .form-group textarea { resize: none; line-height: 1.5; }
     .form-group .hint { font-size: 12px; color: var(--text-soft); margin-top: 4px; }
+    #req-list-registro li.ok { color: #1a8f5e; }
+    #req-list-registro .mark { width: 12px; display: inline-block; text-align: center; }
     .sugerencias-box { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(22,35,63,0.12); z-index: 40; max-height: 240px; overflow-y: auto; margin-top: 4px; display: none; }
     .sugerencias-box.open { display: block; }
     .sugerencia-item { display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px; cursor: pointer; font-size: 13px; border-top: 1px solid var(--border); }
@@ -190,13 +192,19 @@
       <div class="form-row">
         <div class="form-group">
           <label>Contraseña <span class="required">*</span></label>
-          <input type="password" id="f-password" placeholder="Mínimo 8 caracteres" />
+          <input type="password" id="f-password" placeholder="Más de 6 caracteres" oninput="chequearRequisitosPassword()" />
         </div>
         <div class="form-group">
           <label>Repetir contraseña <span class="required">*</span></label>
           <input type="password" id="f-password2" placeholder="Repetí tu contraseña" />
         </div>
       </div>
+      <ul id="req-list-registro" style="list-style:none;margin:-8px 0 14px;display:flex;flex-wrap:wrap;gap:4px 14px">
+        <li id="req-len" style="font-size:12px;color:var(--text-soft);display:flex;align-items:center;gap:5px"><span class="mark">○</span> Más de 6 caracteres</li>
+        <li id="req-letra" style="font-size:12px;color:var(--text-soft);display:flex;align-items:center;gap:5px"><span class="mark">○</span> Una letra</li>
+        <li id="req-num" style="font-size:12px;color:var(--text-soft);display:flex;align-items:center;gap:5px"><span class="mark">○</span> Un número</li>
+        <li id="req-sim" style="font-size:12px;color:var(--text-soft);display:flex;align-items:center;gap:5px"><span class="mark">○</span> Un símbolo (!@#$%...)</li>
+      </ul>
 
       <div class="form-group" style="position:relative">
         <label>Dirección donde vivís <span class="required">*</span></label>
@@ -315,6 +323,27 @@ function leerArchivoComoDataURL(file) {
   });
 }
 
+function validarPassword(pass) {
+  if (!pass || pass.length <= 6) return 'La contraseña tiene que tener más de 6 caracteres.';
+  if (!/[A-Za-z]/.test(pass)) return 'La contraseña tiene que incluir al menos una letra.';
+  if (!/[0-9]/.test(pass)) return 'La contraseña tiene que incluir al menos un número.';
+  if (!/[^A-Za-z0-9]/.test(pass)) return 'La contraseña tiene que incluir al menos un símbolo (ej: !@#$%&).';
+  return null;
+}
+
+function chequearRequisitosPassword() {
+  const pass = document.getElementById('f-password').value;
+  const marcar = (id, cumple) => {
+    const li = document.getElementById(id);
+    li.classList.toggle('ok', cumple);
+    li.querySelector('.mark').textContent = cumple ? '✓' : '○';
+  };
+  marcar('req-len', pass.length > 6);
+  marcar('req-letra', /[A-Za-z]/.test(pass));
+  marcar('req-num', /[0-9]/.test(pass));
+  marcar('req-sim', /[^A-Za-z0-9]/.test(pass));
+}
+
 async function registrar() {
   const btn = document.getElementById('btn-submit');
   const errorBox = document.getElementById('error-box');
@@ -328,7 +357,8 @@ async function registrar() {
   const direccion_residencia = document.getElementById('f-direccion').value.trim();
 
   if (!nombre || !email || !telefono || !password || !direccion_residencia) return showError('Completá todos los campos obligatorios.');
-  if (password.length < 8) return showError('La contraseña debe tener al menos 8 caracteres.');
+  const errorPassword = validarPassword(password);
+  if (errorPassword) return showError(errorPassword);
   if (password !== password2) return showError('Las contraseñas no coinciden.');
 
   const body = { nombre, email, telefono, tipo: tipoSeleccionado, password, direccion_residencia };
