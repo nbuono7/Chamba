@@ -5,7 +5,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 require('dotenv').config();
-const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer, emailNuevaDisputa } = require('./emailService');
+const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer, emailNuevaDisputa, emailRestablecerPassword } = require('./emailService');
 
 const app = express();
 app.use(cors());
@@ -25,6 +25,15 @@ const PISO_COMISION = 1000; // piso fijo en pesos, para que trabajos muy chicos 
 // RUBROS_MATRICULA_OBLIGATORIA en registro.html y panel-socio.html — si se agrega un rubro
 // ahí, agregarlo también acá para que la validación del servidor no quede desactualizada).
 const RUBROS_MATRICULA_OBLIGATORIA = ['Gas', 'Electricidad', 'Plomería'];
+
+/** Valida que una contraseña tenga más de 6 caracteres y combine letras, números y símbolos. */
+function validarPassword(password) {
+  if (!password || password.length <= 6) return { ok: false, error: 'La contraseña tiene que tener más de 6 caracteres.' };
+  if (!/[A-Za-z]/.test(password)) return { ok: false, error: 'La contraseña tiene que incluir al menos una letra.' };
+  if (!/[0-9]/.test(password)) return { ok: false, error: 'La contraseña tiene que incluir al menos un número.' };
+  if (!/[^A-Za-z0-9]/.test(password)) return { ok: false, error: 'La contraseña tiene que incluir al menos un símbolo (ej: !@#$%&).' };
+  return { ok: true };
+}
 
 /** Calcula la comisión de ChamBA sobre un precio acordado: el mayor entre el % y el piso fijo. */
 function calcularComision(precioAcordado) {
@@ -447,6 +456,59 @@ app.post('/api/usuarios/login', async (req, res) => {
   const { password_hash, ...safeUser } = user;
   const token = jwt.sign({ id: user.id, tipo: user.tipo, email: user.email, nombre: user.nombre }, JWT_SECRET, { expiresIn: '30d' });
   res.json({ ok: true, usuario: safeUser, token });
+});
+
+// Pide el link de recuperación de contraseña. Responde siempre "ok" exista o no la cuenta,
+// para no revelarle a un desconocido qué emails están registrados en ChamBA.
+app.post('/api/usuarios/olvide-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Ingresá tu email.' });
+    const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id,nombre,email`);
+    if (users.length) {
+      const user = users[0];
+      const crypto = require('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+      const expira_at = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hora
+      await sb('password_reset_tokens', 'POST', { email: user.email, token, expira_at, usado: false });
+      const link = `https://chamba-vert.vercel.app/restablecer-password?token=${token}`;
+      emailRestablecerPassword(user.nombre, user.email, link);
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en POST /usuarios/olvide-password:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo procesar el pedido.' });
+  }
+});
+
+// Confirma el link y cambia la contraseña.
+app.post('/api/usuarios/restablecer-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Faltan datos.' });
+    const vPass = validarPassword(password);
+    if (!vPass.ok) return res.status(400).json({ error: vPass.error });
+
+    const rows = await sb(`password_reset_tokens?token=eq.${encodeURIComponent(token)}&usado=eq.false&select=*`);
+    if (!rows.length) return res.status(400).json({ error: 'Este link ya fue usado o no es válido. Pedí uno nuevo.' });
+    const registro = rows[0];
+    if (new Date(registro.expira_at) < new Date()) return res.status(400).json({ error: 'Este link venció. Pedí uno nuevo desde "Olvidé mi contraseña".' });
+
+    const users = await sb(`usuarios?email=eq.${encodeURIComponent(registro.email)}&select=id`);
+    if (!users.length) return res.status(404).json({ error: 'No encontramos la cuenta asociada a este link.' });
+
+    const bcrypt = require('bcryptjs');
+    const password_hash = await bcrypt.hash(password, 10);
+    await sb(`usuarios?id=eq.${users[0].id}`, 'PATCH', { password_hash });
+    await sb(`password_reset_tokens?token=eq.${encodeURIComponent(token)}`, 'PATCH', { usado: true });
+    // invalida también cualquier otro link viejo que haya quedado pendiente para el mismo email
+    await sb(`password_reset_tokens?email=eq.${encodeURIComponent(registro.email)}&usado=eq.false`, 'PATCH', { usado: true });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('❌ Error en POST /usuarios/restablecer-password:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo restablecer la contraseña.' });
+  }
 });
 
 // ── CÓDIGOS DE EMAIL (confirmar registro / iniciar sesión sin contraseña) ──
