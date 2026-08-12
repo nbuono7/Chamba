@@ -35,6 +35,15 @@ function validarPassword(password) {
   return { ok: true };
 }
 
+/** Valida el formato de un nombre de usuario: 3 a 20 caracteres, solo minúsculas, números y guion bajo. */
+function validarNombreUsuario(nombre_usuario) {
+  if (!nombre_usuario) return { ok: false, error: 'Elegí un nombre de usuario.' };
+  if (!/^[a-z0-9_]{3,20}$/.test(nombre_usuario)) {
+    return { ok: false, error: 'El nombre de usuario tiene que tener entre 3 y 20 caracteres, solo minúsculas, números y guion bajo (_), sin espacios ni acentos.' };
+  }
+  return { ok: true };
+}
+
 /** Calcula la comisión de ChamBA sobre un precio acordado: el mayor entre el % y el piso fijo. */
 function calcularComision(precioAcordado) {
   const comisionPorcentual = Math.round(precioAcordado * COMISION);
@@ -368,13 +377,32 @@ app.get('/api/usuarios/:id/fotos-verificacion', auth, soloAdmin, async (req, res
   }
 });
 
+// Chequeo de disponibilidad en vivo mientras el usuario escribe (sin auth, es antes de tener cuenta)
+app.get('/api/usuarios/chequear-usuario', async (req, res) => {
+  try {
+    const nombre_usuario = (req.query.nombre_usuario || '').toLowerCase().trim();
+    const v = validarNombreUsuario(nombre_usuario);
+    if (!v.ok) return res.json({ disponible: false, error: v.error });
+    const existe = await sb(`usuarios?nombre_usuario=eq.${encodeURIComponent(nombre_usuario)}&select=id`);
+    res.json({ disponible: existe.length === 0 });
+  } catch (e) {
+    res.status(500).json({ disponible: false, error: 'No se pudo chequear.' });
+  }
+});
+
 app.post('/api/usuarios/registro', async (req, res) => {
-  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, matricula_organismo, mensaje_solicitud, password, direccion_residencia, direccion_trabajo, dni_foto, foto_perfil } = req.body;
+  const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, matricula_organismo, mensaje_solicitud, password, nombre_usuario, direccion_residencia, direccion_trabajo, dni_foto, foto_perfil } = req.body;
   const exists = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
   if (exists.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email.' });
 
   const vPass = validarPassword(password);
   if (!vPass.ok) return res.status(400).json({ error: vPass.error });
+
+  const nombreUsuarioNormalizado = (nombre_usuario || '').toLowerCase().trim();
+  const vUsuario = validarNombreUsuario(nombreUsuarioNormalizado);
+  if (!vUsuario.ok) return res.status(400).json({ error: vUsuario.error });
+  const usuarioExiste = await sb(`usuarios?nombre_usuario=eq.${encodeURIComponent(nombreUsuarioNormalizado)}&select=id`);
+  if (usuarioExiste.length > 0) return res.status(400).json({ error: 'Ese nombre de usuario ya está en uso. Elegí otro.' });
 
   if (tipo === 'socio' && RUBROS_MATRICULA_OBLIGATORIA.includes(especialidad) && (!matricula || !matricula_organismo)) {
     return res.status(400).json({ error: `${especialidad} exige matrícula habilitante: completá el número y el organismo que te la otorgó.` });
@@ -408,7 +436,7 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const bcrypt = require('bcryptjs');
   const password_hash = await bcrypt.hash(password, 10);
   const estado = tipo === 'cliente' ? 'aprobado' : 'pendiente';
-  const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, matricula_organismo, mensaje_solicitud, password_hash, estado, email_verificado: false });
+  const data = await sb('usuarios', 'POST', { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, matricula_organismo, mensaje_solicitud, password_hash, estado, email_verificado: false, nombre_usuario: nombreUsuarioNormalizado, nombre_usuario_actualizado_at: new Date().toISOString() });
   if (data.error || (Array.isArray(data) && data[0]?.code)) return res.status(400).json({ error: 'Error al registrar.' });
   const nuevoUsuario = data[0];
 
@@ -446,8 +474,10 @@ app.post('/api/usuarios/registro', async (req, res) => {
 });
 
 app.post('/api/usuarios/login', async (req, res) => {
-  const { email, password } = req.body;
-  const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
+  const { identificador, password } = req.body;
+  if (!identificador) return res.status(401).json({ error: 'Email o contraseña incorrectos.' });
+  const idNorm = identificador.trim();
+  const users = await sb(`usuarios?or=(email.eq.${encodeURIComponent(idNorm)},nombre_usuario.eq.${encodeURIComponent(idNorm.toLowerCase())})&select=*`);
   if (!users.length) return res.status(401).json({ error: 'Email o contraseña incorrectos.' });
   const user = users[0];
   const bcrypt = require('bcryptjs');
@@ -456,6 +486,7 @@ app.post('/api/usuarios/login', async (req, res) => {
   if (!user.email_verificado) return res.status(403).json({ error: 'Todavía no confirmaste tu email. Revisá tu bandeja de entrada.' });
   if (user.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
   if (user.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
+  if (user.estado === 'suspendido') return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
   const { password_hash, ...safeUser } = user;
   const token = jwt.sign({ id: user.id, tipo: user.tipo, email: user.email, nombre: user.nombre }, JWT_SECRET, { expiresIn: '30d' });
   res.json({ ok: true, usuario: safeUser, token });
@@ -465,9 +496,10 @@ app.post('/api/usuarios/login', async (req, res) => {
 // para no revelarle a un desconocido qué emails están registrados en ChamBA.
 app.post('/api/usuarios/olvide-password', async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: 'Ingresá tu email.' });
-    const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id,nombre,email`);
+    const { identificador } = req.body;
+    if (!identificador) return res.status(400).json({ error: 'Ingresá tu usuario o email.' });
+    const idNorm = identificador.trim();
+    const users = await sb(`usuarios?or=(email.eq.${encodeURIComponent(idNorm)},nombre_usuario.eq.${encodeURIComponent(idNorm.toLowerCase())})&select=id,nombre,email`);
     if (users.length) {
       const user = users[0];
       const crypto = require('crypto');
@@ -542,19 +574,23 @@ async function generarYEnviarCodigo(email, tipo) {
 
 app.post('/api/enviar-codigo', async (req, res) => {
   try {
-    const { email, tipo } = req.body;
-    if (!email || !['login', 'registro'].includes(tipo)) return res.status(400).json({ error: 'Datos inválidos.' });
-    const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id,nombre,estado,tipo,email_verificado`);
-    if (!users.length) return res.status(404).json({ error: 'No encontramos una cuenta con ese email.' });
+    const { identificador, tipo } = req.body;
+    if (!identificador || !['login', 'registro'].includes(tipo)) return res.status(400).json({ error: 'Datos inválidos.' });
+    const idNorm = identificador.trim();
+    const users = tipo === 'registro'
+      ? await sb(`usuarios?email=eq.${encodeURIComponent(idNorm)}&select=id,nombre,email,estado,tipo,email_verificado`)
+      : await sb(`usuarios?or=(email.eq.${encodeURIComponent(idNorm)},nombre_usuario.eq.${encodeURIComponent(idNorm.toLowerCase())})&select=id,nombre,email,estado,tipo,email_verificado`);
+    if (!users.length) return res.status(404).json({ error: tipo === 'registro' ? 'No encontramos una cuenta con ese email.' : 'No encontramos una cuenta con ese usuario o email.' });
     const u = users[0];
     if (tipo === 'login') {
       if (!u.email_verificado) return res.status(403).json({ error: 'Todavía no confirmaste tu email. Revisá tu bandeja de entrada.' });
       if (u.tipo === 'socio' && u.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
-      if (u.tipo === 'socio' && u.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
+      if (u.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
+      if (u.estado === 'suspendido') return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
     }
-    const codigo = await generarYEnviarCodigo(email, tipo);
-    await emailCodigoVerificacion(u.nombre, email, codigo, tipo);
-    res.json({ ok: true });
+    const codigo = await generarYEnviarCodigo(u.email, tipo);
+    await emailCodigoVerificacion(u.nombre, u.email, codigo, tipo);
+    res.json({ ok: true, email: u.email });
   } catch (e) {
     console.error('❌ Error en /enviar-codigo:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo enviar el código.' });
@@ -582,12 +618,43 @@ app.post('/api/verificar-codigo', async (req, res) => {
     const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
     if (!users.length) return res.status(404).json({ error: 'Usuario no encontrado.' });
     const user = users[0];
+    if (user.estado === 'suspendido') return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
     const { password_hash, ...safeUser } = user;
     const token = jwt.sign({ id: user.id, tipo: user.tipo, email: user.email, nombre: user.nombre }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ ok: true, usuario: safeUser, token });
   } catch (e) {
     console.error('❌ Error en /verificar-codigo:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo verificar el código.' });
+  }
+});
+
+// Cambiar el nombre de usuario propio — limitado a una vez cada 3 meses.
+app.post('/api/usuarios/cambiar-usuario', auth, async (req, res) => {
+  try {
+    const nuevo = (req.body.nombre_usuario || '').toLowerCase().trim();
+    const v = validarNombreUsuario(nuevo);
+    if (!v.ok) return res.status(400).json({ error: v.error });
+
+    const [actual] = await sb(`usuarios?id=eq.${req.usuario.id}&select=nombre_usuario,nombre_usuario_actualizado_at`);
+    if (!actual) return res.status(404).json({ error: 'Usuario no encontrado.' });
+    if (nuevo === actual.nombre_usuario) return res.status(400).json({ error: 'Ese ya es tu nombre de usuario actual.' });
+
+    if (actual.nombre_usuario_actualizado_at) {
+      const proximoCambio = new Date(actual.nombre_usuario_actualizado_at);
+      proximoCambio.setMonth(proximoCambio.getMonth() + 3);
+      if (new Date() < proximoCambio) {
+        return res.status(400).json({ error: `Ya cambiaste tu nombre de usuario recientemente. Vas a poder volver a cambiarlo a partir del ${proximoCambio.toLocaleDateString('es-AR')}.` });
+      }
+    }
+
+    const enUso = await sb(`usuarios?nombre_usuario=eq.${encodeURIComponent(nuevo)}&select=id`);
+    if (enUso.length > 0) return res.status(400).json({ error: 'Ese nombre de usuario ya está en uso. Elegí otro.' });
+
+    await sb(`usuarios?id=eq.${req.usuario.id}`, 'PATCH', { nombre_usuario: nuevo, nombre_usuario_actualizado_at: new Date().toISOString() });
+    res.json({ ok: true, nombre_usuario: nuevo });
+  } catch (e) {
+    console.error('❌ Error en POST /usuarios/cambiar-usuario:', e.message, e.supabase || '');
+    res.status(500).json({ error: 'No se pudo cambiar el nombre de usuario.' });
   }
 });
 
