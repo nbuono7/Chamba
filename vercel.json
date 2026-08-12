@@ -7,6 +7,7 @@
     { "source": "/panel-socio", "destination": "/panel-socio.html" },
     { "source": "/solicitar-socio", "destination": "/solicitar-socio.html" },
     { "source": "/solicitar-matricula", "destination": "/solicitar-matricula.html" },
+    { "source": "/restablecer-password", "destination": "/restablecer-password.html" },
     { "source": "/", "destination": "/index.html" }
   ]
 }
