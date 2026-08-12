@@ -373,6 +373,9 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const exists = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
   if (exists.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email.' });
 
+  const vPass = validarPassword(password);
+  if (!vPass.ok) return res.status(400).json({ error: vPass.error });
+
   if (tipo === 'socio' && RUBROS_MATRICULA_OBLIGATORIA.includes(especialidad) && (!matricula || !matricula_organismo)) {
     return res.status(400).json({ error: `${especialidad} exige matrícula habilitante: completá el número y el organismo que te la otorgó.` });
   }
