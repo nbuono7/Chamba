@@ -135,6 +135,18 @@ async function emailCodigoPorVencer(nombre, email, tipo) {
     </div>`);
 }
 
+// Email: link para restablecer la contraseña
+async function emailRestablecerPassword(nombre, email, link) {
+  await sendEmail(email, 'Restablecé tu contraseña de ChamBA', `
+    <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+      <h2 style="color:#E2662D">🔑 Restablecé tu contraseña</h2>
+      <p>Hola ${nombre ? nombre : ''}, recibimos un pedido para cambiar la contraseña de tu cuenta en ChamBA.</p>
+      <a href="${link}" style="display:inline-block;background:#E2662D;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:8px">Cambiar mi contraseña →</a>
+      <p style="color:#888;font-size:13px;margin-top:20px">Este link vence en 1 hora. Si no pediste esto, ignorá el mensaje — tu contraseña actual sigue funcionando igual.</p>
+      <p style="color:#888;font-size:12px;margin-top:16px">ChamBA — Profesionales del hogar</p>
+    </div>`);
+}
+
 // Email: nueva disputa (aviso al admin)
 async function emailNuevaDisputa(nombreAdmin, emailAdmin, servicio, motivo) {
   await sendEmail(emailAdmin, `⚠️ Nueva disputa: ${servicio}`, `
@@ -147,4 +159,4 @@ async function emailNuevaDisputa(nombreAdmin, emailAdmin, servicio, motivo) {
     </div>`);
 }
 
-module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer, emailNuevaDisputa };
+module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer, emailNuevaDisputa, emailRestablecerPassword };
