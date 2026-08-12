@@ -345,6 +345,17 @@
       </div></div>
 
       <div class="card" style="margin-top:16px"><div class="card-body">
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px">👤 Nombre de usuario</div>
+        <div style="font-size:13px;color:var(--text-soft);margin-bottom:14px">Tu usuario actual es <strong id="usuario-actual">—</strong>. Podés cambiarlo, pero solo una vez cada 3 meses.</div>
+        <div class="form-group">
+          <label>Nuevo nombre de usuario</label>
+          <input type="text" id="nuevo-usuario" placeholder="tu_usuario_nuevo" oninput="chequearUsuarioPerfil()" autocapitalize="off" autocorrect="off"/>
+          <div class="hint" id="usuario-perfil-estado">3 a 20 caracteres: minúsculas, números y guion bajo (_).</div>
+        </div>
+        <button class="btn btn-teal btn-sm" onclick="cambiarNombreUsuario()">Cambiar nombre de usuario</button>
+      </div></div>
+
+      <div class="card" style="margin-top:16px"><div class="card-body">
         <div style="font-size:15px;font-weight:600;margin-bottom:4px">🎓 Matrícula</div>
         <div style="font-size:13px;color:var(--text-soft);margin-bottom:12px">¿Estudiaste una tecnicatura nueva? Solicitá agregar una matrícula — el equipo de ChamBA la va a revisar y aprobar.</div>
         <a href="/solicitar-matricula" class="btn btn-teal btn-sm" style="display:inline-block;text-decoration:none">Solicitar matrícula →</a>
@@ -1170,6 +1181,71 @@ function renderPerfil() {
     <div><div class="perfil-label">Reputación</div><div class="perfil-val">${usuario.promedio_estrellas ? usuario.promedio_estrellas+' ⭐ ('+(usuario.total_calificaciones||0)+' reviews)' : 'Sin calificaciones aún'}</div></div>
     <div><div class="perfil-label">Trabajos completados</div><div class="perfil-val">${usuario.trabajos_completados||0}</div></div>
     <div><div class="perfil-label">Estado</div><div class="perfil-val">${usuario.estado==='aprobado'?'✅ Aprobado':'⏳ Pendiente'}</div></div>`;
+  const usuarioActualEl = document.getElementById('usuario-actual');
+  if (usuarioActualEl) usuarioActualEl.textContent = '@' + (usuario.nombre_usuario || '—');
+}
+
+let timerChequeoUsuarioPerfil = null;
+let usuarioPerfilDisponible = false;
+
+function chequearUsuarioPerfil() {
+  const input = document.getElementById('nuevo-usuario');
+  const estado = document.getElementById('usuario-perfil-estado');
+  input.value = input.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+  const valor = input.value;
+  usuarioPerfilDisponible = false;
+  clearTimeout(timerChequeoUsuarioPerfil);
+
+  if (!valor) {
+    estado.textContent = '3 a 20 caracteres: minúsculas, números y guion bajo (_).';
+    estado.style.color = 'var(--text-soft)';
+    return;
+  }
+  if (valor.length < 3) {
+    estado.textContent = 'Muy corto — necesita al menos 3 caracteres.';
+    estado.style.color = '#a32d2d';
+    return;
+  }
+  if (valor === usuario.nombre_usuario) {
+    estado.textContent = 'Ese ya es tu nombre de usuario actual.';
+    estado.style.color = '#a32d2d';
+    return;
+  }
+  estado.textContent = 'Chequeando disponibilidad...';
+  estado.style.color = 'var(--text-soft)';
+  timerChequeoUsuarioPerfil = setTimeout(async () => {
+    try {
+      const r = await fetch(`${BACKEND}/api/usuarios/chequear-usuario?nombre_usuario=${encodeURIComponent(valor)}`);
+      const data = await r.json();
+      if (data.disponible) {
+        usuarioPerfilDisponible = true;
+        estado.textContent = '✓ Disponible';
+        estado.style.color = '#1a8f5e';
+      } else {
+        usuarioPerfilDisponible = false;
+        estado.textContent = data.error || 'Ese nombre de usuario ya está en uso.';
+        estado.style.color = '#a32d2d';
+      }
+    } catch (e) {
+      estado.textContent = 'No pudimos chequear la disponibilidad. Probá de nuevo.';
+      estado.style.color = '#a32d2d';
+    }
+  }, 500);
+}
+
+async function cambiarNombreUsuario() {
+  const valor = document.getElementById('nuevo-usuario').value.trim();
+  if (!valor) return showInfo('⚠️', 'Falta el nombre de usuario', 'Escribí el nuevo nombre de usuario que querés usar.');
+  if (!usuarioPerfilDisponible) return showInfo('⚠️', 'Todavía no', 'Elegí un nombre de usuario disponible antes de continuar (mirá el chequeo debajo del campo).');
+  const r = await api('/api/usuarios/cambiar-usuario', 'POST', { nombre_usuario: valor });
+  if (r.error) return showInfo('❌', 'No se pudo cambiar', r.error);
+  usuario = { ...usuario, nombre_usuario: r.nombre_usuario };
+  localStorage.setItem('chamba_user', JSON.stringify(usuario));
+  document.getElementById('nuevo-usuario').value = '';
+  document.getElementById('usuario-perfil-estado').textContent = '3 a 20 caracteres: minúsculas, números y guion bajo (_).';
+  document.getElementById('usuario-perfil-estado').style.color = 'var(--text-soft)';
+  renderPerfil();
+  showInfo('✅', 'Listo', 'Tu nombre de usuario se actualizó. Vas a poder volver a cambiarlo recién en 3 meses.');
 }
 
 // ── UBICACIONES: buscar → confirmar en mapa → detalles (estilo PedidosYa) ──
