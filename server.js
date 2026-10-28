@@ -358,8 +358,9 @@ app.patch('/api/especialidades/:id', auth, soloAdmin, async (req, res) => {
 });
 
 app.get('/api/usuarios', auth, async (req, res) => {
-  const tipo = req.query.tipo ? `&tipo=eq.${req.query.tipo}` : '';
-  res.json(await sb(`usuarios?select=id,nombre,email,telefono,tipo,estado,especialidad,dni,experiencia,matricula,trabajos_completados,promedio_estrellas,total_calificaciones,saldo_disponible,saldo_bloqueado,created_at&order=created_at.desc${tipo}`));
+  const tipo = req.query.tipo ? `&tipo=eq.${encodeURIComponent(req.query.tipo)}` : '';
+  const propietario = req.usuario.tipo === 'admin' ? '' : `&id=eq.${encodeURIComponent(req.usuario.id)}`;
+  res.json(await sb(`usuarios?select=id,nombre,email,telefono,tipo,estado,especialidad,dni,experiencia,matricula,trabajos_completados,promedio_estrellas,total_calificaciones,saldo_disponible,saldo_bloqueado,created_at&order=created_at.desc${tipo}${propietario}`));
 });
 
 // Fotos de DNI y perfil de un Socio, solo para el admin (URLs firmadas, el bucket es privado)
@@ -414,6 +415,7 @@ app.get('/api/usuarios/chequear-usuario', async (req, res) => {
 
 app.post('/api/usuarios/registro', async (req, res) => {
   const { nombre, email, telefono, tipo, especialidad, dni, experiencia, matricula, matricula_organismo, mensaje_solicitud, password, nombre_usuario, direccion_residencia, direccion_trabajo, dni_foto, foto_perfil } = req.body;
+  if (!['cliente', 'socio'].includes(tipo)) return res.status(400).json({ error: 'Tipo de cuenta inválido.' });
   const exists = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=id`);
   if (exists.length > 0) return res.status(400).json({ error: 'Ya existe una cuenta con ese email.' });
 
@@ -685,7 +687,11 @@ app.patch('/api/usuarios/:id', auth, async (req, res) => {
     if (req.usuario.id !== req.params.id && req.usuario.tipo !== 'admin') {
       return res.status(403).json({ error: 'No podés editar el perfil de otra persona.' });
     }
-    const prev = await sb(`usuarios?id=eq.${req.params.id}&select=*`);
+    const permitidos = req.usuario.tipo === 'admin' ? ['nombre', 'telefono', 'estado'] : ['nombre', 'telefono'];
+    if (Object.keys(req.body).some(k => !permitidos.includes(k))) {
+      return res.status(403).json({ error: 'Este campo no se puede modificar desde el perfil.' });
+    }
+    const prev = await sb(`usuarios?id=eq.${encodeURIComponent(req.params.id)}&select=*`);
     const u = prev[0];
 
     let body = req.body;
@@ -701,7 +707,7 @@ app.patch('/api/usuarios/:id', auth, async (req, res) => {
       if (req.body.estado === 'aprobado' && u.tipo === 'socio') emailSocioAprobado(u.nombre, u.email);
       if (req.body.estado === 'rechazado' && u.tipo === 'socio') emailSocioRechazado(u.nombre, u.email);
     }
-    res.json(data);
+    res.json(data.map(({ password_hash, ...usuario }) => usuario));
   } catch (e) {
     console.error('❌ Error en PATCH /usuarios:', e.message, e.supabase || '');
     res.status(500).json({ error: 'No se pudo actualizar.', detalle: e.message });
@@ -1101,8 +1107,16 @@ app.post('/api/pedidos/:id/verificar-codigo', auth, async (req, res) => {
 });
 
 // ── MENSAJES (solo si chat_habilitado) ──
-app.get('/api/mensajes/:pedido_id', async (req, res) => {
-  try { res.json(await sb(`mensajes?pedido_id=eq.${req.params.pedido_id}&select=*&order=created_at.asc`)); }
+app.get('/api/mensajes/:pedido_id', auth, async (req, res) => {
+  try {
+    const id = encodeURIComponent(req.params.pedido_id);
+    const [pedido] = await sb(`pedidos?id=eq.${id}&select=usuario_id,profesional_id,chat_habilitado`);
+    if (!pedido || ![pedido.usuario_id, pedido.profesional_id].includes(req.usuario.id)) {
+      return res.status(403).json({ error: 'No sos parte de esta conversación.' });
+    }
+    if (!pedido.chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
+    res.json(await sb(`mensajes?pedido_id=eq.${id}&select=*&order=created_at.asc`));
+  }
   catch (e) { console.error('❌ Error en GET /mensajes:', e.message, e.supabase || ''); res.status(500).json({ error: 'No se pudieron cargar los mensajes.' }); }
 });
 app.post('/api/mensajes', auth, async (req, res) => {
@@ -1135,9 +1149,10 @@ app.post('/api/mensajes', auth, async (req, res) => {
 });
 
 // ── SOLICITUDES DE MATRÍCULA ──
-app.get('/api/solicitudes-matricula', async (req, res) => {
+app.get('/api/solicitudes-matricula', auth, async (req, res) => {
   try {
-    const socio_id = req.query.socio_id ? `&socio_id=eq.${req.query.socio_id}` : '';
+    const propietario = req.usuario.tipo === 'admin' ? req.query.socio_id : req.usuario.id;
+    const socio_id = propietario ? `&socio_id=eq.${encodeURIComponent(propietario)}` : '';
     res.json(await sb(`solicitudes_matricula?select=*&order=created_at.desc${socio_id}`));
   } catch (e) {
     console.error('❌ Error en GET /solicitudes-matricula:', e.message, e.supabase || '');
