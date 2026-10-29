@@ -13,3 +13,35 @@
   .nav-logo--compact-mobile .brand-logo { width: 32px; height: 32px; object-fit: contain; }
   .logo .brand-logo { width: 108px; }
 }
+
+/* Interface palette derived from the original designer artwork.
+   SVG artwork is kept untouched. Legacy variable names preserve existing UI logic. */
+:root {
+  --teal: #B84A11;
+  --teal-dark: #923A0D;
+  --teal-deeper: #702C0A;
+  --teal-light: #FAEDE5;
+  --teal-mid: #E6A27B;
+  --navy: #161616;
+  --navy-mid: #2B2927;
+  --navy-soft: #B9B2AC;
+  --bg: #F7F5F1;
+  --bg-off: #F7F5F1;
+  --bg-dark: #161616;
+  --card: #FFFFFF;
+  --text: #22201E;
+  --text-mid: #5D5651;
+  --text-soft: #756D66;
+  --border-hover: #B84A11;
+}
+.hero::before {
+  background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(184,74,17,0.16) 0%, transparent 70%);
+}
+.hero-badge { background: rgba(184,74,17,0.15); border-color: rgba(230,162,123,0.4); }
+.hero h1 span { color: var(--teal-mid); }
+.hero p, #ia .section-sub { color: rgba(255,255,255,0.75); }
+.ia-features li::before { background: rgba(184,74,17,0.25); }
+.demo-chip strong { color: var(--teal-dark); }
+.nav-links a.nav-cta, .nav-links a.nav-cta:hover { color: #FFFFFF; }
+.chip-sugerencia:hover { background: var(--teal-dark); }
+footer { color: rgba(255,255,255,0.72); }
