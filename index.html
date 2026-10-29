@@ -27,7 +27,6 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>" />
 
   <!-- Datos estructurados para buscadores -->
   <script type="application/ld+json">
@@ -373,12 +372,15 @@
     gtag('js', new Date());
     gtag('config', 'G-LTK3QRMZCW');
   </script>
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-negro.svg">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-blanco.svg" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/assets/brand/brand.css">
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="#">Cham<span>BA</span></a>
+  <a class="nav-logo nav-logo--compact-mobile" href="#"><picture><source media="(max-width: 480px)" srcset="/assets/brand/reduccion-negro.svg"><img class="brand-logo" src="/assets/brand/logo-negro.svg" alt="ChamBA" width="1827" height="295"></picture></a>
   <div class="nav-links">
     <a href="#servicios" class="nav-link-desktop">Servicios</a>
     <a href="#como-funciona" class="nav-link-desktop">Cómo funciona</a>
@@ -413,37 +415,37 @@
   <p class="section-sub">Contamos con profesionales matriculados y con experiencia en todas las áreas del hogar.</p>
   <div class="servicios-grid">
     <div class="servicio-card" onclick="irAServicio('Plomería')">
-      <div class="servicio-icon">🔧</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-plomeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Plomería</div>
       <div class="servicio-desc">Pérdidas de agua, cañerías tapadas, desagotes, instalaciones sanitarias.</div>
     </div>
     <div class="servicio-card" onclick="irAServicio('Electricidad')">
-      <div class="servicio-icon">⚡</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-electricidad-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Electricidad</div>
       <div class="servicio-desc">Instalaciones eléctricas, cortocircuitos, tableros, luces y enchufes.</div>
     </div>
     <div class="servicio-card" onclick="irAServicio('Gas')">
-      <div class="servicio-icon">🔥</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-gas-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Gas</div>
       <div class="servicio-desc">Gasistas matriculados para instalaciones, pérdidas y conexión de artefactos.</div>
     </div>
     <div class="servicio-card" onclick="irAServicio('Limpieza')">
-      <div class="servicio-icon">✨</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-limpieza-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Limpieza</div>
       <div class="servicio-desc">Servicio de mucama por día, semana o de forma permanente.</div>
     </div>
     <div class="servicio-card" onclick="irAServicio('Pintura')">
-      <div class="servicio-icon">🎨</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-pintura-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Pintura</div>
       <div class="servicio-desc">Pintura de interiores y exteriores, paredes, techos y aberturas.</div>
     </div>
     <div class="servicio-card" onclick="irAServicio('Albañilería')">
-      <div class="servicio-icon">🏗️</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-albanileria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Albañilería</div>
       <div class="servicio-desc">Reparaciones, reformas, revestimientos y trabajos de construcción en general.</div>
     </div>
     <div class="servicio-card" onclick="irAServicio('Cerrajería')">
-      <div class="servicio-icon">🔑</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-cerrajeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Cerrajería</div>
       <div class="servicio-desc">Aperturas de puertas, cambio de cerraduras, copias de llaves y sistemas de seguridad.</div>
     </div>
@@ -453,7 +455,7 @@
       <div class="servicio-desc">Diagnóstico de fallas, service, frenos y mantenimiento para tu auto.</div>
     </div>
     <div class="servicio-card" onclick="irAServicio('Jardinero')">
-      <div class="servicio-icon">🌱</div>
+      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-jardineria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
       <div class="servicio-name">Jardinería</div>
       <div class="servicio-desc">Poda, corte de césped, diseño y mantenimiento de espacios verdes.</div>
     </div>
@@ -525,7 +527,7 @@
     <!-- FORMULARIO -->
     <div class="app-form">
       <div class="app-form-header">
-        <div class="app-form-logo">Cham<span>BA</span></div>
+        <div class="app-form-logo"><img class="brand-logo" src="/assets/brand/logo-negro.svg" alt="ChamBA" width="1827" height="295"></div>
         <div class="app-form-tag">Diagnóstico con IA</div>
       </div>
       <div class="app-form-body">
@@ -535,15 +537,15 @@
           <div class="form-group">
             <label>¿Qué tipo de servicio necesitás?</label>
             <div class="services-mini">
-              <button class="service-mini-btn" onclick="selectService('Plomería', this)"><div class="s-icon">🔧</div><div class="s-name">Plomería</div></button>
-              <button class="service-mini-btn" onclick="selectService('Electricidad', this)"><div class="s-icon">⚡</div><div class="s-name">Electricidad</div></button>
-              <button class="service-mini-btn" onclick="selectService('Gas', this)"><div class="s-icon">🔥</div><div class="s-name">Gas</div></button>
-              <button class="service-mini-btn" onclick="selectService('Limpieza', this)"><div class="s-icon">✨</div><div class="s-name">Limpieza</div></button>
-              <button class="service-mini-btn" onclick="selectService('Pintura', this)"><div class="s-icon">🎨</div><div class="s-name">Pintura</div></button>
-              <button class="service-mini-btn" onclick="selectService('Albañilería', this)"><div class="s-icon">🏗️</div><div class="s-name">Albañilería</div></button>
-              <button class="service-mini-btn" onclick="selectService('Cerrajería', this)"><div class="s-icon">🔑</div><div class="s-name">Cerrajería</div></button>
+              <button class="service-mini-btn" onclick="selectService('Plomería', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-plomeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Plomería</div></button>
+              <button class="service-mini-btn" onclick="selectService('Electricidad', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-electricidad-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Electricidad</div></button>
+              <button class="service-mini-btn" onclick="selectService('Gas', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-gas-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Gas</div></button>
+              <button class="service-mini-btn" onclick="selectService('Limpieza', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-limpieza-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Limpieza</div></button>
+              <button class="service-mini-btn" onclick="selectService('Pintura', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-pintura-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Pintura</div></button>
+              <button class="service-mini-btn" onclick="selectService('Albañilería', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-albanileria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Albañilería</div></button>
+              <button class="service-mini-btn" onclick="selectService('Cerrajería', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-cerrajeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Cerrajería</div></button>
               <button class="service-mini-btn" onclick="selectService('Mecánica', this)"><div class="s-icon">🔩</div><div class="s-name">Mecánica</div></button>
-              <button class="service-mini-btn" onclick="selectService('Jardinero', this)"><div class="s-icon">🌱</div><div class="s-name">Jardinería</div></button>
+              <button class="service-mini-btn" onclick="selectService('Jardinero', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-jardineria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Jardinería</div></button>
             </div>
           </div>
           <div class="form-group">
@@ -620,7 +622,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-logo">Cham<span>BA</span></div>
+  <div class="footer-logo"><img class="brand-logo" src="/assets/brand/logo-blanco.svg" alt="ChamBA" width="1827" height="295"></div>
   <p>Profesionales del hogar, cuando los necesitás.</p>
   <p style="margin-top:8px">Buenos Aires, Argentina</p>
 </footer>
@@ -805,3 +807,4 @@
 </script>
 </body>
 </html>
+
