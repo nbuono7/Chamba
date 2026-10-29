@@ -45,7 +45,7 @@
 .service-entry .service-name{font-size:15px;font-weight:600;display:block;}.service-entry .service-description{font-size:10px;color:var(--text-mid);display:block;margin-top:4px;line-height:1.5;}
 .service-entry .service-arrow{margin-left:auto;color:var(--teal);font-size:20px;transition:transform .2s;}.service-entry:hover .service-arrow{transform:translate(3px,-3px);}
 .directory-note{font-size:11px;color:var(--text-mid);margin-top:25px;}.catalog-message{padding:24px 0;font-size:13px;grid-column:1/-1;}.catalog-retry{background:transparent;border:0;border-bottom:1px solid var(--teal);color:var(--teal);cursor:pointer;font:inherit;margin-left:8px;}
-.hub .hub-process{background:var(--ink);color:#fff;}.hub-process .eyebrow{color:var(--teal-mid);}.hub-process .text-link{color:#fff;border-color:#777;}
+.hub #como-funciona.hub-process{background:var(--ink);color:#fff;}.hub-process .eyebrow{color:var(--teal-mid);}.hub-process .text-link{color:#fff;border-color:#777;}
 .text-link{color:var(--ink);font-size:12px;text-decoration:none;border-bottom:1px solid;padding-bottom:8px;display:inline-flex;gap:28px;}
 .process-list{list-style:none;}.process-list li{display:flex;align-items:center;gap:40px;border-top:1px solid #55504A;padding:28px 0;}.process-list li:last-child{border-bottom:1px solid #55504A;}
 .step-number{font-family:Georgia,serif;font-style:italic;font-size:34px;color:var(--teal-mid);}.process-list h3{font-size:22px;font-weight:500;margin-bottom:7px;letter-spacing:-.5px;}.process-list p{font-size:13px;color:#C4BFB8;}.step-mark{margin-left:auto;font-size:28px;font-weight:300;color:var(--teal-mid);}
