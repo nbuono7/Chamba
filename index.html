@@ -375,152 +375,44 @@
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-negro.svg">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-blanco.svg" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="/assets/brand/brand.css">
+  <link rel="stylesheet" href="/assets/hub/hub.css">
 </head>
-<body>
+<body class="hub">
 
-<!-- NAV -->
-<nav>
-  <a class="nav-logo nav-logo--compact-mobile" href="#"><picture><source media="(max-width: 480px)" srcset="/assets/brand/reduccion-negro.svg"><img class="brand-logo" src="/assets/brand/logo-negro.svg" alt="ChamBA" width="1827" height="295"></picture></a>
-  <div class="nav-links">
-    <a href="#servicios" class="nav-link-desktop">Servicios</a>
-    <a href="#como-funciona" class="nav-link-desktop">Cómo funciona</a>
-    <a href="#ia" class="nav-link-desktop">IA</a>
-    <a href="/login" style="font-size:14px;color:var(--text-mid);text-decoration:none;padding:8px 16px;border:1px solid var(--border-hover);border-radius:8px;transition:all 0.15s" onmouseover="this.style.borderColor='#E2662D'" onmouseout="this.style.borderColor='rgba(0,0,0,0.2)'">Ingresar</a><a href="/registro" class="nav-cta" style="margin-left:8px">Registrarse</a>
-  </div>
+<a class="skip-link" href="#servicios">Ir a los servicios</a>
+<nav class="hub-nav" aria-label="Navegación principal">
+  <a class="nav-logo nav-logo--compact-mobile" href="/" aria-label="ChamBA, inicio"><picture><source media="(max-width:480px)" srcset="/assets/brand/reduccion-negro.svg"><img class="brand-logo" src="/assets/brand/logo-negro.svg" alt="ChamBA" width="1827" height="295"></picture></a>
+  <div class="nav-links"><a class="nav-link-desktop" href="#servicios">Los oficios</a><a class="nav-link-desktop" href="#como-funciona">Cómo funciona</a><a href="/login" class="hub-login">Ingresar</a><a class="nav-cta" href="/registro">Crear cuenta <span aria-hidden="true">↗</span></a></div>
 </nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-badge">Profesionales verificados en Buenos Aires</div>
-    <h1>El profesional que necesitás,<br><span>cuando lo necesitás</span></h1>
-    <p>Plomeros, electricistas, gasistas, cerrajeros y mucho más. Recibí ofertas de varios profesionales, comparalas y elegí con quién trabajar.</p>
-    <div class="hero-btns">
-      <a href="#app-section" class="btn-hero-primary">Pedir un servicio</a>
-      <a href="#como-funciona" class="btn-hero-secondary">Cómo funciona</a>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="stat-num">+20</div><div class="stat-label">Profesionales</div></div>
-      <div class="stat"><div class="stat-num">48h</div><div class="stat-label">Tiempo de respuesta</div></div>
-      <div class="stat"><div class="stat-num">9</div><div class="stat-label">Rubros disponibles</div></div>
-      <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Pago protegido</div></div>
-    </div>
+<main>
+<section class="hero hub-hero">
+  <div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> OFICIOS CERCA. TRATOS CLAROS.</p>
+  <h1>De la lista<br>de pendientes<br><em>a lo hecho.</em></h1>
+  <p class="hero-description">La canilla. La pintura. Las cajas de la mudanza.<br>Encontrá quién se ocupe, compará ofertas y acordá el trabajo directamente con un profesional.</p>
+  <div class="hero-btns"><a class="btn-hero-primary" href="#servicios">¿Qué necesitás resolver? <span aria-hidden="true">↗</span></a><a class="hero-text-link" href="#como-funciona">Así funciona <span aria-hidden="true">↓</span></a></div>
+  <div class="hero-footnote"><span>VOS ELEGÍS EL OFICIO.</span><span>VOS ACORDÁS EL PRECIO.</span></div></div>
+  <div class="work-board" aria-label="De los pendientes de casa al trabajo resuelto">
+    <div class="board-top"><span>LA CASA, EN MARCHA.</span><span aria-hidden="true">Nº 001</span></div>
+    <div class="board-paper"><span class="paper-hole" aria-hidden="true"></span><p class="paper-heading">Para hacer en casa</p><div class="paper-task"><span class="task-box" aria-hidden="true"></span> Esa canilla que pierde.</div><div class="paper-task"><span class="task-box" aria-hidden="true"></span> Una mano de pintura.</div><div class="paper-task"><span class="task-box" aria-hidden="true"></span> Mover todo a la casa nueva.</div><p class="paper-note">Siempre hay algo por hacer.</p></div>
+    <div class="trade-stamp" aria-hidden="true"><img src="/assets/brand/icono-fletes-color.svg" alt="" width="335" height="295"><span>MANOS<br>A LA OBRA.</span></div>
+    <div class="board-bottom"><span>Una necesidad. Varias ofertas.</span><span aria-hidden="true">↗</span></div>
   </div>
 </section>
-
-<!-- SERVICIOS -->
-<section id="servicios">
-  <div class="section-label">Servicios</div>
-  <h2 class="section-title">Todo lo que necesita tu hogar</h2>
-  <p class="section-sub">Contamos con profesionales matriculados y con experiencia en todas las áreas del hogar.</p>
-  <div class="servicios-grid">
-    <div class="servicio-card" onclick="irAServicio('Plomería')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-plomeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Plomería</div>
-      <div class="servicio-desc">Pérdidas de agua, cañerías tapadas, desagotes, instalaciones sanitarias.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Electricidad')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-electricidad-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Electricidad</div>
-      <div class="servicio-desc">Instalaciones eléctricas, cortocircuitos, tableros, luces y enchufes.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Gas')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-gas-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Gas</div>
-      <div class="servicio-desc">Gasistas matriculados para instalaciones, pérdidas y conexión de artefactos.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Limpieza')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-limpieza-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Limpieza</div>
-      <div class="servicio-desc">Servicio de mucama por día, semana o de forma permanente.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Pintura')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-pintura-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Pintura</div>
-      <div class="servicio-desc">Pintura de interiores y exteriores, paredes, techos y aberturas.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Albañilería')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-albanileria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Albañilería</div>
-      <div class="servicio-desc">Reparaciones, reformas, revestimientos y trabajos de construcción en general.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Cerrajería')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-cerrajeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Cerrajería</div>
-      <div class="servicio-desc">Aperturas de puertas, cambio de cerraduras, copias de llaves y sistemas de seguridad.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Mecánica')">
-      <div class="servicio-icon">🔩</div>
-      <div class="servicio-name">Mecánica</div>
-      <div class="servicio-desc">Diagnóstico de fallas, service, frenos y mantenimiento para tu auto.</div>
-    </div>
-    <div class="servicio-card" onclick="irAServicio('Jardinero')">
-      <div class="servicio-icon"><img class="brand-service-icon" src="/assets/brand/icono-jardineria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div>
-      <div class="servicio-name">Jardinería</div>
-      <div class="servicio-desc">Poda, corte de césped, diseño y mantenimiento de espacios verdes.</div>
-    </div>
-  </div>
+<div class="hub-strip" aria-hidden="true"><span>BUENOS AIRES</span><span>DEL PROBLEMA AL PROFESIONAL</span><span>CHAMBA SE HACE.</span></div>
+<section id="servicios" class="hub-services">
+  <div class="section-heading"><div><p class="eyebrow">01 / EL DIRECTORIO</p><h2>Empezá por<br><em>lo que necesitás.</em></h2></div><p>Del arreglo de todos los días<br>a ese cambio que venís postergando.</p></div>
+  <div id="hub-service-list" class="service-directory" aria-live="polite" aria-busy="true"><p class="catalog-message">Buscando los oficios disponibles…</p></div>
+  <p class="directory-note">Elegí un oficio para empezar. También podés describir tu problema más abajo.</p>
 </section>
-
-<!-- CÓMO FUNCIONA -->
-<section id="como-funciona">
-  <div class="section-label">Proceso</div>
-  <h2 class="section-title">Simple y sin sorpresas</h2>
-  <p class="section-sub">En pocos pasos tenés al profesional en tu casa y el precio claro antes de empezar.</p>
-  <div class="pasos">
-    <div class="paso">
-      <div class="paso-num">1</div>
-      <div class="paso-title">Describí el problema</div>
-      <div class="paso-desc">Contanos qué necesitás y subí fotos si querés. La IA te ayuda a diagnosticarlo al instante.</div>
-    </div>
-    <div class="paso">
-      <div class="paso-num">2</div>
-      <div class="paso-title">Recibí ofertas</div>
-      <div class="paso-desc">Varios socios ven tu pedido y te mandan su precio para hacer el trabajo.</div>
-    </div>
-    <div class="paso">
-      <div class="paso-num">3</div>
-      <div class="paso-title">Elegí y negociá</div>
-      <div class="paso-desc">Comparás las ofertas, contraofertás si querés, y elegís con quién trabajar.</div>
-    </div>
-    <div class="paso">
-      <div class="paso-num">4</div>
-      <div class="paso-title">Pagá seguro</div>
-      <div class="paso-desc">El dinero queda retenido en ChamBA y se libera cuando el cliente confirma el trabajo terminado.</div>
-    </div>
-  </div>
+<section id="como-funciona" class="hub-process">
+  <div class="section-heading"><div><p class="eyebrow">02 / SIN VUELTAS</p><h2>El trabajo se acuerda.<br><em>La decisión es tuya.</em></h2></div><a class="text-link" href="#app-section">Empezá tu consulta <span aria-hidden="true">↗</span></a></div>
+  <ol class="process-list"><li><span class="step-number">01</span><div><h3>Contá qué pasa.</h3><p>Describí el trabajo. Agregá fotos si ayudan a entenderlo.</p></div><span class="step-mark" aria-hidden="true">↗</span></li><li><span class="step-number">02</span><div><h3>Escuchá las propuestas.</h3><p>Los socios interesados presentan sus ofertas. Podés comparar y contraofertar.</p></div><span class="step-mark" aria-hidden="true">↔</span></li><li><span class="step-number">03</span><div><h3>Elegí con quién hacerlo.</h3><p>Acordá el precio y los detalles. El chat los conecta para coordinar el trabajo.</p></div><span class="step-mark" aria-hidden="true">✓</span></li></ol>
 </section>
-
-<!-- IA -->
-<section id="ia">
-  <div>
-    <div class="section-label">Inteligencia Artificial</div>
-    <h2 class="section-title">Diagnosticamos tu problema antes de que llegue el profesional</h2>
-    <p class="section-sub">Subí una foto y nuestra IA analiza el problema, te dice qué profesional necesitás y te da un presupuesto estimado.</p>
-    <ul class="ia-features">
-      <li>Identificá qué profesional necesitás con una foto</li>
-      <li>Presupuesto estimado antes de llamar a nadie</li>
-      <li>Recomendaciones mientras esperás al profesional</li>
-      <li>Reconoce marcas, modelos y tipos de instalaciones</li>
-      <li>Te avisa si podés resolverlo vos mismo</li>
-    </ul>
-  </div>
-  <div class="ia-demo">
-    <div class="ia-demo-label">Ejemplo de diagnóstico</div>
-    <div class="demo-msg">💬 "Tengo una pérdida de agua debajo del fregadero, lleva 2 días así..."</div>
-    <div class="demo-result">
-      <div class="demo-chip"><strong>Profesional recomendado</strong>Plomero matriculado</div>
-      <div class="demo-chip"><strong>Urgencia</strong>Media — no es emergencia inmediata</div>
-      <div class="demo-chip"><strong>Costo estimado</strong>$15.000 – $35.000</div>
-      <div class="demo-chip"><strong>Consejo</strong>Cerrá la llave de paso del fregadero para evitar daños mientras esperás.</div>
-    </div>
-  </div>
-</section>
-
+<section id="ia" class="hub-guidance"><div><p class="eyebrow">03 / UNA AYUDA PARA ARRANCAR</p><h2>“Algo pasa.<br><em>No sé a quién llamar.”</em></h2></div><div class="guidance-copy"><p>No hace falta saber de caños, cables o instalaciones para pedir ayuda.</p><p>Describí lo que ves o subí una foto. El diagnóstico con IA puede orientarte sobre el profesional que necesitás y darte una estimación de precio.</p><a class="text-link" href="#app-section">Consultar mi problema <span aria-hidden="true">↓</span></a><span class="small-note">Una orientación inicial. El presupuesto final lo acordás con el socio.</span></div></section>
 <!-- APP / FORMULARIO -->
 <section id="app-section">
-  <div class="section-label">Pedí tu servicio</div>
-  <h2 class="section-title">Empezá ahora</h2>
+  <div class="section-label">04 / TU PRÓXIMO PASO</div>
+  <h2 class="section-title">Contanos <em>qué pasa.</em></h2>
   <p class="section-sub">Describí tu problema y la IA te ayuda a entender qué necesitás y cuánto puede costar.</p>
 
   <div class="app-wrapper">
@@ -536,17 +428,7 @@
         <div class="screen active" id="screen-home">
           <div class="form-group">
             <label>¿Qué tipo de servicio necesitás?</label>
-            <div class="services-mini">
-              <button class="service-mini-btn" onclick="selectService('Plomería', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-plomeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Plomería</div></button>
-              <button class="service-mini-btn" onclick="selectService('Electricidad', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-electricidad-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Electricidad</div></button>
-              <button class="service-mini-btn" onclick="selectService('Gas', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-gas-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Gas</div></button>
-              <button class="service-mini-btn" onclick="selectService('Limpieza', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-limpieza-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Limpieza</div></button>
-              <button class="service-mini-btn" onclick="selectService('Pintura', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-pintura-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Pintura</div></button>
-              <button class="service-mini-btn" onclick="selectService('Albañilería', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-albanileria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Albañilería</div></button>
-              <button class="service-mini-btn" onclick="selectService('Cerrajería', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-cerrajeria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Cerrajería</div></button>
-              <button class="service-mini-btn" onclick="selectService('Mecánica', this)"><div class="s-icon">🔩</div><div class="s-name">Mecánica</div></button>
-              <button class="service-mini-btn" onclick="selectService('Jardinero', this)"><div class="s-icon"><img class="brand-service-icon" src="/assets/brand/icono-jardineria-color.svg" alt="" aria-hidden="true" width="335" height="295"></div><div class="s-name">Jardinería</div></button>
-            </div>
+            <div class="services-mini" id="hub-service-selector"><p class="catalog-message">Cargando oficios…</p></div>
           </div>
           <div class="form-group">
             <label>Describí el problema</label>
@@ -620,13 +502,9 @@
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo"><img class="brand-logo" src="/assets/brand/logo-blanco.svg" alt="ChamBA" width="1827" height="295"></div>
-  <p>Profesionales del hogar, cuando los necesitás.</p>
-  <p style="margin-top:8px">Buenos Aires, Argentina</p>
-</footer>
-
+</main>
+<section class="hub-partner"><p class="eyebrow">DEL OTRO LADO DEL TRABAJO</p><h2>¿Lo tuyo es <em>hacer?</em></h2><a href="/registro" class="partner-link">Sumate como socio <span aria-hidden="true">↗</span></a><p>Tu oficio, nuevas oportunidades.</p></section>
+<footer class="hub-footer"><div class="footer-logo"><img class="brand-logo" src="/assets/brand/logo-blanco.svg" alt="ChamBA" width="1827" height="295"></div><p>Oficios cerca. Tratos claros.</p><a href="#servicios">Volver a los oficios ↑</a><span>Buenos Aires, Argentina</span></footer>
 <script>
   const BACKEND_URL = 'https://chamba-backend-vurx.onrender.com';
 
@@ -673,6 +551,7 @@
   }
 
   function irAServicio(service) {
+    if (!window.hubCatalog || !window.hubCatalog.has(service)) return;
     if (!usuarioLogueado) {
       window.location.href = '/registro';
       return;
@@ -682,9 +561,11 @@
   }
 
   function selectService(service, btn) {
+    if (!window.hubCatalog || !window.hubCatalog.has(service)) return;
     selectedService = service;
     document.querySelectorAll('.service-mini-btn').forEach(b => b.classList.remove('selected'));
-    if (btn) btn.classList.add('selected');
+    const elegido = btn || [...document.querySelectorAll('.service-mini-btn')].find(b => b.dataset.service === service);
+    if (elegido) elegido.classList.add('selected');
   }
 
   function goHome() {
@@ -805,6 +686,7 @@
     `;
   }
 </script>
+<script src="/assets/hub/hub.js" defer></script>
 </body>
 </html>
 
