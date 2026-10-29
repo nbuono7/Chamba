@@ -1,0 +1,12 @@
+/* Designer-supplied artwork: keep original proportions and colors. */
+.brand-logo { display: block; width: 160px; height: auto; max-width: 100%; }
+.nav-logo, .logo { flex-shrink: 0; }
+.logo .brand-logo { width: 124px; }
+.footer-logo .brand-logo { width: 186px; margin: 0 auto; }
+.app-form-logo .brand-logo { width: 148px; }
+.brand-service-icon { display: block; width: 64px; height: auto; }
+.s-icon .brand-service-icon { width: 32px; }
+@media (max-width: 480px) {
+  .nav-logo .brand-logo { width: 132px; }
+  .logo .brand-logo { width: 108px; }
+}

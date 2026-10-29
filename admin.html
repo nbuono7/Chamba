@@ -114,13 +114,16 @@
     .tipo-admin { background: #f1f1f1; color: #666; }
     @media(max-width:768px) { .topbar-inner { padding: 0 14px; } .logo { margin-right: 10px; } .nav-item { padding: 0 9px; font-size: 13px; } .user-name { display: none; } .main { padding: 20px 14px 40px; } .card { overflow-x: auto; } table { min-width: 640px; } }
   </style>
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-negro.svg">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-blanco.svg" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/assets/brand/brand.css">
 </head>
 <body>
 
 <div id="app">
 <div class="topbar">
   <div class="topbar-inner">
-    <div class="logo">Cham<span>BA</span></div>
+    <div class="logo"><img class="brand-logo" src="/assets/brand/logo-blanco.svg" alt="ChamBA" width="1827" height="295"></div>
     <nav class="topnav">
       <button class="nav-item active" onclick="goTo('dashboard',this)">Dashboard</button>
       <button class="nav-item" onclick="goTo('pedidos',this)">Pedidos <span class="nav-badge" id="badge-pedidos" style="display:none">0</span></button>
@@ -807,3 +810,4 @@ async function eliminarPost(id) {
 </script>
 </body>
 </html>
+

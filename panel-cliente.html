@@ -184,11 +184,14 @@
 
     @media(max-width:768px) { .topbar-inner { padding: 0 14px; } .logo { margin-right: 10px; } .nav-item { padding: 0 9px; font-size: 13px; } .user-name { display: none; } .main { padding: 20px 14px 40px; } }
   </style>
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-negro.svg">
+  <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-blanco.svg" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/assets/brand/brand.css">
 </head>
 <body>
 <div class="topbar">
   <div class="topbar-inner">
-    <a href="/" class="logo" style="text-decoration:none">Cham<span>BA</span></a>
+    <a href="/" class="logo" style="text-decoration:none"><img class="brand-logo" src="/assets/brand/logo-blanco.svg" alt="ChamBA" width="1827" height="295"></a>
     <nav class="topnav">
       <button class="nav-item active" onclick="goTo('inicio',this)">Inicio</button>
       <button class="nav-item" id="nav-mis-trabajos" onclick="goTo('mis-trabajos',this)">Mis trabajos <span id="badge-trabajos-total" class="nav-badge" style="display:none">0</span></button>
@@ -1368,3 +1371,4 @@ async function publicarForo() {
 </script>
 </body>
 </html>
+
