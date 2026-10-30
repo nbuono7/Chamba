@@ -31,7 +31,7 @@
     active.forEach(r=>{
       const [file,description]=details[normalize(r.nombre)] || [null,'Consultá por este servicio.'];
       const label=normalize(r.nombre)==='jardinero'?'Jardinería':r.nombre;
-      const button=node('button','service-entry');button.type='button';button.dataset.service=r.nombre;
+      const button=node('button','servicio-card');button.type='button';button.dataset.service=r.nombre;
       button.append(icon(file));const text=node('span');text.append(node('span','service-name',label),node('span','service-description',description));button.append(text,node('span','service-arrow','↗'));button.lastChild.setAttribute('aria-hidden','true');
       button.addEventListener('click',()=>irAServicio(r.nombre));list.append(button);
       if(selector){const mini=node('button','service-mini-btn');mini.type='button';mini.dataset.service=r.nombre;mini.append(icon(file),node('span','s-name',label));mini.addEventListener('click',()=>selectService(r.nombre,mini));if(typeof selectedService!=='undefined' && selectedService===r.nombre)mini.classList.add('selected');selector.append(mini);}
