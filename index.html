@@ -366,12 +366,7 @@
   </style>
   <!-- Google Analytics (GA4) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LTK3QRMZCW"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-LTK3QRMZCW');
-  </script>
+  <script src="/assets/pages/index-0.js" defer></script>
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-negro.svg">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-blanco.svg" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="/assets/brand/brand.css">
@@ -385,6 +380,9 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
 .catalog-message { grid-column:1/-1; font-size:14px; padding:18px 0; }
 .catalog-retry { border:0; background:transparent; color:var(--teal); cursor:pointer; font:inherit; text-decoration:underline; margin-left:8px; }
 </style>
+<script src="/assets/shared/purify.min.js"></script>
+<script src="/assets/shared/chamba.js"></script>
+<link rel="stylesheet" href="/assets/shared/chamba.css">
 </head>
 <body>
 
@@ -395,7 +393,7 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
     <a href="#servicios" class="nav-link-desktop">Servicios</a>
     <a href="#como-funciona" class="nav-link-desktop">Cómo funciona</a>
     <a href="#ia" class="nav-link-desktop">IA</a>
-    <a href="/login" style="font-size:14px;color:var(--text-mid);text-decoration:none;padding:8px 16px;border:1px solid var(--border-hover);border-radius:8px;transition:all 0.15s" onmouseover="this.style.borderColor='#E2662D'" onmouseout="this.style.borderColor='rgba(0,0,0,0.2)'">Ingresar</a><a href="/registro" class="nav-cta" style="margin-left:8px">Registrarse</a>
+    <a href="/login" style="font-size:14px;color:var(--text-mid);text-decoration:none;padding:8px 16px;border:1px solid var(--border-hover);border-radius:8px;transition:all 0.15s" data-event-0="" data-event-1="">Ingresar</a><a href="/registro" class="nav-cta" style="margin-left:8px">Registrarse</a>
   </div>
 </nav>
 
@@ -410,9 +408,9 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
       <a href="#como-funciona" class="btn-hero-secondary">Cómo funciona</a>
     </div>
     <div class="stats">
-      <div class="stat"><div class="stat-num">+20</div><div class="stat-label">Profesionales</div></div>
-      <div class="stat"><div class="stat-num">48h</div><div class="stat-label">Tiempo de respuesta</div></div>
-      <div class="stat"><div class="stat-num">9</div><div class="stat-label">Rubros disponibles</div></div>
+      <div class="stat"><div class="stat-num">Socios</div><div class="stat-label">Por especialidad</div></div>
+      <div class="stat"><div class="stat-num">Directo</div><div class="stat-label">Coordinás con tu socio</div></div>
+      <div class="stat"><div class="stat-num" id="catalog-count">—</div><div class="stat-label">Rubros disponibles</div></div>
       <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Pago protegido</div></div>
     </div>
   </div>
@@ -422,7 +420,7 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
 <section id="servicios">
   <div class="section-label">Servicios</div>
   <h2 class="section-title">Todo lo que necesita tu hogar</h2>
-  <p class="section-sub">Contamos con profesionales matriculados y con experiencia en todas las áreas del hogar.</p>
+  <p class="section-sub">Encontrá socios por especialidad y consultá su experiencia y acreditaciones.</p>
   <div class="servicios-grid" id="hub-service-list" aria-live="polite" aria-busy="true"><p class="catalog-message">Cargando servicios disponibles…</p></div>
 </section>
 
@@ -499,7 +497,7 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
         <!-- PANTALLA HOME MINI -->
         <div class="screen active" id="screen-home">
           <div class="form-group">
-            <label>¿Qué tipo de servicio necesitás?</label>
+            <label for="problem-desc">¿Qué tipo de servicio necesitás?</label>
             <div class="services-mini" id="hub-service-selector"></div>
           </div>
           <div class="form-group">
@@ -509,27 +507,27 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
           <div class="form-group">
             <label>Fotos del problema <span style="font-weight:400;color:var(--text-soft)">(opcional, hasta 4)</span></label>
             <div class="photo-options">
-              <button type="button" class="photo-opt-btn" onclick="document.getElementById('photo-input-camera').click()">
+              <button type="button" class="photo-opt-btn" data-event-2="">
                 <div class="photo-opt-icon">📷</div><div class="photo-opt-label">Cámara</div>
               </button>
-              <button type="button" class="photo-opt-btn" onclick="document.getElementById('photo-input-gallery').click()">
+              <button type="button" class="photo-opt-btn" data-event-3="">
                 <div class="photo-opt-icon">🖼️</div><div class="photo-opt-label">Fototeca</div>
               </button>
-              <button type="button" class="photo-opt-btn" onclick="document.getElementById('photo-input-file').click()">
+              <button type="button" class="photo-opt-btn" data-event-4="">
                 <div class="photo-opt-icon">📎</div><div class="photo-opt-label">Archivo</div>
               </button>
             </div>
-            <input type="file" id="photo-input-camera" accept="image/*" capture="environment" onchange="handlePhotos(event)" style="display:none">
-            <input type="file" id="photo-input-gallery" accept="image/*" multiple onchange="handlePhotos(event)" style="display:none">
-            <input type="file" id="photo-input-file" accept="image/*" multiple onchange="handlePhotos(event)" style="display:none">
+            <input type="file" id="photo-input-camera" accept="image/*" capture="environment" data-event-5="" style="display:none">
+            <input type="file" id="photo-input-gallery" accept="image/*" multiple data-event-6="" style="display:none">
+            <input type="file" id="photo-input-file" accept="image/*" multiple data-event-7="" style="display:none">
             <div class="photo-preview" id="photo-preview"></div>
           </div>
-          <button class="btn-primary" onclick="analyzeWithAI()">🤖 Analizar con IA</button>
+          <button class="btn-primary" data-event-8="">🤖 Analizar con IA</button>
         </div>
 
         <!-- PANTALLA RESULTADO -->
         <div class="screen" id="screen-result">
-          <button class="back-btn" onclick="goHome()" style="margin-bottom:16px">← Volver</button>
+          <button class="back-btn" data-event-9="" style="margin-bottom:16px">← Volver</button>
           <div class="thinking" id="thinking">
             <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
             <span style="font-size:14px;color:var(--text-mid)">Analizando tu problema...</span>
@@ -553,7 +551,7 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
         <div class="info-icon">✅</div>
         <div>
           <div class="info-title">Profesionales verificados</div>
-          <div class="info-desc">Todos nuestros profesionales están matriculados y verificados antes de trabajar con nosotros.</div>
+          <div class="info-desc">Revisamos las solicitudes de los socios y sus acreditaciones según el rubro.</div>
         </div>
       </div>
       <div class="info-card">
@@ -581,188 +579,9 @@ button.servicio-card { font-family:inherit; text-align:left; color:inherit; }
   <p style="margin-top:8px">Buenos Aires, Argentina</p>
 </footer>
 
-<script>
-  const BACKEND_URL = 'https://chamba-backend-vurx.onrender.com';
-
-  let selectedService = '';
-  let photoBase64List = [];
-  let usuarioLogueado = null;
-
-  // Chequear si hay usuario logueado al cargar la página
-  window.addEventListener('DOMContentLoaded', () => {
-    const u = localStorage.getItem('chamba_user');
-    if (u) {
-      usuarioLogueado = JSON.parse(u);
-      // Cambiar nav: mostrar nombre y panel
-      const navLinks = document.querySelector('.nav-links');
-      if (navLinks) {
-        navLinks.innerHTML = `
-          <a href="#servicios" class="nav-link-desktop">Servicios</a>
-          <a href="#como-funciona" class="nav-link-desktop">Cómo funciona</a>
-          <a href="#ia" class="nav-link-desktop">IA</a>
-          <a href="${usuarioLogueado.tipo === 'socio' ? '/panel-socio' : '/panel-cliente'}" class="nav-cta">Mi panel</a>
-        `;
-      }
-    } else {
-      // Mostrar bloqueo en la sección de IA
-      mostrarBloqueIA();
-    }
-  });
-
-  function mostrarBloqueIA() {
-    const formBody = document.querySelector('.app-form-body');
-    if (!formBody) return;
-    formBody.innerHTML = `
-      <div style="text-align:center;padding:32px 16px">
-        <div style="font-size:48px;margin-bottom:16px">🔒</div>
-        <div style="font-size:18px;font-weight:600;margin-bottom:8px">Registrate para usar la IA</div>
-        <div style="font-size:14px;color:var(--text-mid);margin-bottom:24px;line-height:1.6">
-          El diagnóstico con IA está disponible para usuarios registrados en ChamBA. Es gratis y tarda menos de 1 minuto.
-        </div>
-        <a href="/registro" style="display:inline-block;background:var(--teal);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:500;font-size:15px;margin-bottom:12px">Crear cuenta gratis</a>
-        <br>
-        <a href="/login" style="font-size:14px;color:var(--teal);text-decoration:none">Ya tengo cuenta → Ingresar</a>
-      </div>
-    `;
-  }
-
-  function irAServicio(service) {
-    if (!window.hubCatalog || !window.hubCatalog.has(service)) return;
-    if (!usuarioLogueado) {
-      window.location.href = '/registro';
-      return;
-    }
-    document.getElementById('app-section').scrollIntoView({ behavior: 'smooth' });
-    setTimeout(() => selectService(service), 500);
-  }
-
-  function selectService(service, btn) {
-    if (!window.hubCatalog || !window.hubCatalog.has(service)) return;
-    selectedService = service;
-    document.querySelectorAll('.service-mini-btn').forEach(b => b.classList.remove('selected'));
-    const elegido = btn || [...document.querySelectorAll('.service-mini-btn')].find(b => b.dataset.service === service);
-    if (elegido) elegido.classList.add('selected');
-  }
-
-  function goHome() {
-    setScreen('screen-home');
-    document.getElementById('result-content').innerHTML = '';
-    selectedPhotoFiles = [];
-    photoBase64List = [];
-    const preview = document.getElementById('photo-preview');
-    if (preview) preview.innerHTML = '';
-  }
-
-  function setScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  let selectedPhotoFiles = [];
-
-  function leerArchivoComoDataURL(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function handlePhotos(event) {
-    const files = Array.from(event.target.files || []);
-    const MAX_FOTOS = 4;
-    const TAMANO_MAX = 8 * 1024 * 1024; // 8MB
-    for (const file of files) {
-      if (selectedPhotoFiles.length >= MAX_FOTOS) { alert(`Máximo ${MAX_FOTOS} fotos.`); break; }
-      if (file.size > TAMANO_MAX) { alert(`"${file.name}" pesa más de 8MB. Probá con otra foto.`); continue; }
-      selectedPhotoFiles.push(file);
-    }
-    event.target.value = ''; // permite volver a elegir el mismo archivo si lo saca y lo quiere subir de nuevo
-    renderPhotoPreview();
-  }
-
-  async function renderPhotoPreview() {
-    const preview = document.getElementById('photo-preview');
-    preview.innerHTML = '';
-    photoBase64List = [];
-    for (let i = 0; i < selectedPhotoFiles.length; i++) {
-      const idx = i;
-      const dataUrl = await leerArchivoComoDataURL(selectedPhotoFiles[idx]);
-      photoBase64List.push(dataUrl.split(',')[1]);
-      const wrap = document.createElement('div');
-      wrap.className = 'photo-thumb-wrap';
-      wrap.innerHTML = `<img src="${dataUrl}" class="photo-thumb" alt="Foto ${idx + 1}">`;
-      const removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'photo-remove';
-      removeBtn.textContent = '×';
-      removeBtn.setAttribute('aria-label', 'Sacar esta foto');
-      removeBtn.onclick = () => { selectedPhotoFiles.splice(idx, 1); renderPhotoPreview(); };
-      wrap.appendChild(removeBtn);
-      preview.appendChild(wrap);
-    }
-  }
-
-  async function analyzeWithAI() {
-    if (!usuarioLogueado) { window.location.href = '/login'; return; }
-    const desc = document.getElementById('problem-desc').value.trim();
-    if (!selectedService && !desc && photoBase64List.length === 0) {
-      alert('Por favor elegí un servicio o describí el problema.');
-      return;
-    }
-    setScreen('screen-result');
-    document.getElementById('thinking').style.display = 'flex';
-    document.getElementById('result-content').innerHTML = '';
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/analizar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ servicio: selectedService || 'No especificado', descripcion: desc, fotos: photoBase64List })
-      });
-      const result = await response.json();
-      if (result.error) throw new Error(result.error);
-      showResult(result);
-    } catch (err) {
-      document.getElementById('thinking').style.display = 'none';
-      document.getElementById('result-content').innerHTML =
-        `<div class="error-box"><strong>Error:</strong> ${err.message || 'No se pudo conectar. Verificá tu conexión.'}</div>`;
-    }
-  }
-
-  function showResult(r) {
-    document.getElementById('thinking').style.display = 'none';
-    const urgClass = r.urgencia === 'Alta' ? 'urgencia-alta' : r.urgencia === 'Media' ? 'urgencia-media' : 'urgencia-baja';
-    document.getElementById('result-content').innerHTML = `
-      <div class="result-card green">
-        <div class="card-label">Profesional recomendado</div>
-        <div class="pro-name">${r.profesional}</div>
-        <span class="urgencia-badge ${urgClass}">Urgencia ${r.urgencia}</span>
-      </div>
-      <div class="result-card">
-        <div class="card-label">Diagnóstico</div>
-        <div class="card-content">${r.diagnostico}</div>
-      </div>
-      <div class="result-card">
-        <div class="card-label">Costo estimado</div>
-        <div class="price-range">$${Number(r.precio_min).toLocaleString('es-AR')} – $${Number(r.precio_max).toLocaleString('es-AR')}</div>
-        <div class="price-note">Estimación orientativa. El precio final puede variar.</div>
-      </div>
-      <div class="result-card">
-        <div class="card-label">Mientras esperás</div>
-        <div class="card-content">${r.recomendacion}</div>
-      </div>
-      ${r.puede_solo ? `<div class="result-card" style="border-color:#F0955F;background:#FBE9DC;">
-        <div class="card-label" style="color:var(--teal-deeper)">¿Lo podés resolver vos?</div>
-        <div class="card-content" style="color:var(--teal-deeper)">Puede que puedas solucionarlo sin un profesional. Si tenés dudas, igual te recomendamos consultar.</div>
-      </div>` : ''}
-      <a href="/panel-cliente" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--teal);color:#fff;padding:13px;border-radius:10px;text-decoration:none;font-weight:500;font-size:15px;margin-top:4px">
-        📋 Ir a mi panel para pedir el servicio
-      </a>
-    `;
-  }
-</script>
+<script src="/assets/pages/index-1.js" defer></script>
 <script src="/assets/hub/hub.js" defer></script>
+<script src="/assets/pages/index-events.js" defer></script>
 </body>
 </html>
 

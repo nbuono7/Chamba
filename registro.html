@@ -103,6 +103,9 @@
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-negro.svg">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-blanco.svg" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="/assets/brand/brand.css">
+<script src="/assets/shared/purify.min.js"></script>
+<script src="/assets/shared/chamba.js"></script>
+<link rel="stylesheet" href="/assets/shared/chamba.css">
 </head>
 <body>
 <div class="bg-emojis">
@@ -145,12 +148,12 @@
 
   <!-- TIPO -->
   <div class="tipo-selector">
-    <div class="tipo-card" id="tipo-cliente" onclick="selectTipo('cliente')">
+    <div role="button" tabindex="0" class="tipo-card" id="tipo-cliente" data-event-0="">
       <div class="tipo-icon">🏠</div>
       <div class="tipo-name">Cliente</div>
       <div class="tipo-desc">Quiero contratar servicios para mi hogar</div>
     </div>
-    <div class="tipo-card" id="tipo-socio" onclick="selectTipo('socio')">
+    <div role="button" tabindex="0" class="tipo-card" id="tipo-socio" data-event-1="">
       <div class="tipo-icon">🔧</div>
       <div class="tipo-name">Socio</div>
       <div class="tipo-desc">Soy un profesional y quiero ofrecer mis servicios</div>
@@ -159,8 +162,8 @@
 
   <!-- FORM -->
   <div class="card" id="form-card" style="display:none">
-    <div class="error-box" id="error-box"></div>
-    <div class="success-box" id="success-box">
+    <div class="error-box" role="alert" id="error-box"></div>
+    <div class="success-box" role="status" id="success-box">
       <div class="success-icon">✅</div>
       <div class="success-title" id="success-title">¡Registro exitoso!</div>
       <div id="success-msg"></div>
@@ -170,14 +173,14 @@
 
     <div id="verificar-box" style="display:none">
       <div class="form-group">
-        <label>Te mandamos un código a <strong id="verif-email-destino"></strong></label>
-        <input type="text" id="verif-codigo" placeholder="Código de 6 dígitos" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarCodigoRegistro()"/>
+        <label for="verif-codigo">Te mandamos un código a <strong id="verif-email-destino"></strong></label>
+        <input type="text" id="verif-codigo" placeholder="Código de 6 dígitos" maxlength="6" inputmode="numeric" data-event-2=""/>
       </div>
-      <div class="error-box" id="verif-error-box"></div>
-      <button class="btn-submit" id="btn-verif" onclick="confirmarCodigoRegistro()">Confirmar</button>
+      <div class="error-box" role="alert" id="verif-error-box"></div>
+      <button class="btn-submit" id="btn-verif" data-event-3="">Confirmar</button>
       <div style="text-align:center;margin-top:14px;font-size:13px">
         <span id="verif-reenviar-timer" style="color:var(--text-soft)"></span>
-        <button type="button" id="btn-reenviar-codigo" onclick="reenviarCodigoRegistro()" style="display:none;background:none;border:none;color:var(--teal);font-weight:500;cursor:pointer;font-size:13px">Reenviar código</button>
+        <button type="button" id="btn-reenviar-codigo" data-event-4="" style="display:none;background:none;border:none;color:var(--teal);font-weight:500;cursor:pointer;font-size:13px">Reenviar código</button>
       </div>
     </div>
 
@@ -186,31 +189,31 @@
       <div class="form-section">Datos personales</div>
       <div class="form-row">
         <div class="form-group">
-          <label>Nombre completo <span class="required">*</span></label>
+          <label for="f-nombre">Nombre completo <span class="required">*</span></label>
           <input type="text" id="f-nombre" placeholder="Juan García" />
         </div>
         <div class="form-group">
-          <label>Teléfono <span class="required">*</span></label>
+          <label for="f-telefono">Teléfono <span class="required">*</span></label>
           <input type="tel" id="f-telefono" placeholder="11 5544 3322" />
         </div>
       </div>
       <div class="form-group">
-        <label>Email <span class="required">*</span></label>
+        <label for="f-email">Email <span class="required">*</span></label>
         <input type="email" id="f-email" placeholder="juan@gmail.com" />
       </div>
       <div class="form-group">
-        <label>Nombre de usuario <span class="required">*</span></label>
-        <input type="text" id="f-usuario" placeholder="juan_garcia" oninput="chequearUsuario()" autocapitalize="off" autocorrect="off" />
+        <label for="f-usuario">Nombre de usuario <span class="required">*</span></label>
+        <input type="text" id="f-usuario" placeholder="juan_garcia" data-event-5="" autocapitalize="off" autocorrect="off" />
         <div class="hint" id="usuario-estado">3 a 20 caracteres: minúsculas, números y guion bajo (_), sin espacios ni acentos.</div>
         <div id="usuario-sugerencias" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Contraseña <span class="required">*</span></label>
-          <input type="password" id="f-password" placeholder="Más de 6 caracteres" oninput="chequearRequisitosPassword()" />
+          <label for="f-password">Contraseña <span class="required">*</span></label>
+          <input type="password" id="f-password" placeholder="Más de 6 caracteres" data-event-6="" />
         </div>
         <div class="form-group">
-          <label>Repetir contraseña <span class="required">*</span></label>
+          <label for="f-password2">Repetir contraseña <span class="required">*</span></label>
           <input type="password" id="f-password2" placeholder="Repetí tu contraseña" />
         </div>
       </div>
@@ -222,8 +225,8 @@
       </ul>
 
       <div class="form-group" style="position:relative">
-        <label>Dirección donde vivís <span class="required">*</span></label>
-        <input type="text" id="f-direccion" placeholder="Ej: Alsina 450, Bahía Blanca" autocomplete="off" oninput="onBuscarDireccion(this, 'f-direccion-sugerencias')"/>
+        <label for="f-direccion">Dirección donde vivís <span class="required">*</span></label>
+        <input type="text" id="f-direccion" placeholder="Ej: Alsina 450, Bahía Blanca" autocomplete="off" data-event-7=""/><button type="button" class="address-search" data-event-8="">Buscar dirección</button><small class="address-hint">Buscá calle, número y ciudad. No incluyas nombres ni datos privados. © OpenStreetMap</small>
         <div id="f-direccion-sugerencias" class="sugerencias-box"></div>
         <div class="hint">La usamos para mostrarte trabajos y socios cercanos a vos.</div>
       </div>
@@ -233,21 +236,21 @@
         <div class="form-section">Información profesional</div>
         <div class="form-row">
           <div class="form-group">
-            <label>DNI <span class="required">*</span></label>
+            <label for="f-dni">DNI <span class="required">*</span></label>
             <input type="text" id="f-dni" placeholder="28.445.123" />
           </div>
           <div class="form-group">
-            <label>Especialidad <span class="required">*</span></label>
-            <select id="f-especialidad" onchange="onCambioEspecialidad()"><option value="">Elegí una especialidad</option></select>
+            <label for="f-especialidad">Especialidad <span class="required">*</span></label>
+            <select id="f-especialidad" data-event-9=""><option value="">Elegí una especialidad</option></select>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Años de experiencia <span class="required">*</span></label>
+            <label for="f-experiencia">Años de experiencia <span class="required">*</span></label>
             <input type="text" id="f-experiencia" placeholder="Ej: 8 años" />
           </div>
           <div class="form-group">
-            <label>Número de matrícula</label>
+            <label for="f-matricula">Número de matrícula</label>
             <input type="text" id="f-matricula" placeholder="Ej: MAT-PLO-1234" />
             <div class="hint" id="f-matricula-hint">Si no tenés, dejalo vacío</div>
           </div>
@@ -255,12 +258,12 @@
         <div class="form-group" id="bloque-matricula-obligatoria" style="display:none;background:#eef4ff;border:1px solid #93c5fd;border-radius:8px;padding:14px">
           <div style="font-size:13.5px;font-weight:600;color:#1e40af;margin-bottom:6px">🎓 Este rubro exige matrícula habilitante</div>
           <div id="matricula-obligatoria-texto" style="font-size:13px;color:#1e40af;margin-bottom:10px"></div>
-          <label>¿Qué organismo te la otorgó? <span class="required">*</span></label>
+          <label for="f-matricula-organismo">¿Qué organismo te la otorgó? <span class="required">*</span></label>
           <input type="text" id="f-matricula-organismo" placeholder="Ej: MetroGAS, AGC, Colegio de..."/>
         </div>
         <div class="form-group" style="position:relative">
-          <label>Zona donde trabajás</label>
-          <input type="text" id="f-direccion-trabajo" placeholder="Ej: Barrio Palihue, Bahía Blanca" autocomplete="off" oninput="onBuscarDireccion(this, 'f-direccion-trabajo-sugerencias')"/>
+          <label for="f-direccion-trabajo">Zona donde trabajás</label>
+          <input type="text" id="f-direccion-trabajo" placeholder="Ej: Barrio Palihue, Bahía Blanca" autocomplete="off" data-event-10=""/><button type="button" class="address-search" data-event-11="">Buscar dirección</button><small class="address-hint">Buscá calle, número y ciudad. No incluyas nombres ni datos privados. © OpenStreetMap</small>
           <div id="f-direccion-trabajo-sugerencias" class="sugerencias-box"></div>
           <div class="hint">Completalo solo si es distinta a donde vivís. Si la dejás vacía, usamos la misma dirección.</div>
         </div>
@@ -269,12 +272,12 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Foto de tu DNI (frente) <span class="required">*</span></label>
-            <input type="file" id="f-dni-foto" accept="image/jpeg,image/png,image/webp"/>
+            <label for="f-dni-foto">Foto de tu DNI (frente) <span class="required">*</span></label>
+            <input type="file" id="f-dni-foto" accept="image/jpeg,image/png,image/webp"/><p class="address-hint">Tu DNI se usa para revisar tu solicitud y solo lo ve administración. La foto de perfil se comparte con el cliente cuando confirma el trabajo. No subas documentos de otras personas.</p>
             <div class="hint">Solo la ve nuestro equipo, para verificar tu identidad. Nunca se muestra públicamente.</div>
           </div>
           <div class="form-group">
-            <label>Foto de perfil (con tu cara) <span class="required">*</span></label>
+            <label for="f-foto-perfil">Foto de perfil (con tu cara) <span class="required">*</span></label>
             <input type="file" id="f-foto-perfil" accept="image/jpeg,image/png,image/webp"/>
             <div class="hint">Solo se la mostramos al Cliente después de que paga por el trabajo — así elige en base a tu experiencia y calificaciones, no a tu aspecto. Sacala con fondo claro y buena luz, que se te vea bien la cara.</div>
           </div>
@@ -284,340 +287,14 @@
       <!-- CONTRASEÑA -->
       <div class="form-section">Seguridad</div>
 
-      <button class="btn-submit" id="btn-submit" onclick="registrar()">Crear cuenta</button>
+      <button class="btn-submit" id="btn-submit" data-event-12="">Crear cuenta</button>
       <div class="link-login">¿Ya tenés cuenta? <a href="/login.html">Ingresá acá</a></div>
     </div>
   </div>
 </div>
 
-<script>
-const BACKEND = 'https://chamba-backend-vurx.onrender.com';
-let tipoSeleccionado = null;
-let emailRegistrado = '';
-let timerReenvio = null;
-
-// Rubros con matrícula habilitante exigida por ley/normativa (no es una lista completa de "requisitos",
-// es la que determina si desbloqueamos el bloque de matrícula obligatoria en el registro).
-const RUBROS_MATRICULA_OBLIGATORIA = {
-  'Gas': 'La matrícula de gasista es obligatoria por ley (Decreto 1738/92) y la otorga la distribuidora de gas de tu zona (MetroGAS, Naturgy o Camuzzi), no ENARGAS directamente.',
-  'Electricidad': 'Se exige para conexiones nuevas, ampliaciones de potencia y habilitaciones comerciales. La otorga un colegio profesional o ente regulador según tu jurisdicción.',
-  'Plomería': 'Si trabajás en CABA, la otorga la Agencia Gubernamental de Control (AGC). Si además hacés trabajos de gas, necesitás la matrícula de gasista por separado.'
-};
-
-function onCambioEspecialidad() {
-  const especialidad = document.getElementById('f-especialidad').value;
-  const bloque = document.getElementById('bloque-matricula-obligatoria');
-  const texto = document.getElementById('matricula-obligatoria-texto');
-  const hint = document.getElementById('f-matricula-hint');
-  if (RUBROS_MATRICULA_OBLIGATORIA[especialidad]) {
-    bloque.style.display = 'block';
-    texto.textContent = RUBROS_MATRICULA_OBLIGATORIA[especialidad];
-    hint.textContent = 'Este rubro exige matrícula — completá también el organismo que te la otorgó abajo.';
-  } else {
-    bloque.style.display = 'none';
-    hint.textContent = 'Si no tenés, dejalo vacío';
-  }
-}
-
-function selectTipo(tipo) {
-  tipoSeleccionado = tipo;
-  document.getElementById('tipo-cliente').classList.toggle('selected', tipo === 'cliente');
-  document.getElementById('tipo-socio').classList.toggle('selected', tipo === 'socio');
-  document.getElementById('form-card').style.display = 'block';
-  document.getElementById('socio-fields').classList.toggle('visible', tipo === 'socio');
-  document.getElementById('btn-submit').textContent = tipo === 'cliente' ? 'Crear cuenta' : 'Enviar solicitud';
-  document.getElementById('form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function leerArchivoComoDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-let timerChequeoUsuario = null;
-let usuarioDisponible = false;
-
-function chequearUsuario() {
-  const input = document.getElementById('f-usuario');
-  const estado = document.getElementById('usuario-estado');
-  const sugerenciasBox = document.getElementById('usuario-sugerencias');
-  input.value = input.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
-  const valor = input.value;
-  usuarioDisponible = false;
-  sugerenciasBox.innerHTML = '';
-  clearTimeout(timerChequeoUsuario);
-
-  if (!valor) {
-    estado.textContent = '3 a 20 caracteres: minúsculas, números y guion bajo (_), sin espacios ni acentos.';
-    estado.style.color = 'var(--text-soft)';
-    return;
-  }
-  if (valor.length < 3) {
-    estado.textContent = 'Muy corto — necesita al menos 3 caracteres.';
-    estado.style.color = '#a32d2d';
-    return;
-  }
-  estado.textContent = 'Chequeando disponibilidad...';
-  estado.style.color = 'var(--text-soft)';
-  timerChequeoUsuario = setTimeout(async () => {
-    try {
-      const r = await fetch(`${BACKEND}/api/usuarios/chequear-usuario?nombre_usuario=${encodeURIComponent(valor)}`);
-      const data = await r.json();
-      if (data.disponible) {
-        usuarioDisponible = true;
-        estado.textContent = '✓ Disponible';
-        estado.style.color = '#1a8f5e';
-      } else {
-        usuarioDisponible = false;
-        estado.textContent = data.error || 'Ese usuario ya existe.';
-        estado.style.color = '#a32d2d';
-        if (Array.isArray(data.sugerencias) && data.sugerencias.length) {
-          sugerenciasBox.innerHTML =
-            '<span style="font-size:12px;color:var(--text-soft);width:100%">¿Probás con alguna de estas?</span>' +
-            data.sugerencias.map(s => `<button type="button" class="chip-sugerencia" onclick="elegirSugerenciaUsuario('${s}')">${s}</button>`).join('');
-        }
-      }
-    } catch (e) {
-      estado.textContent = 'No pudimos chequear la disponibilidad. Probá de nuevo.';
-      estado.style.color = '#a32d2d';
-    }
-  }, 500);
-}
-
-function elegirSugerenciaUsuario(valor) {
-  document.getElementById('f-usuario').value = valor;
-  chequearUsuario();
-}
-
-function validarPassword(pass) {
-  if (!pass || pass.length <= 6) return 'La contraseña tiene que tener más de 6 caracteres.';
-  if (!/[A-Za-z]/.test(pass)) return 'La contraseña tiene que incluir al menos una letra.';
-  if (!/[0-9]/.test(pass)) return 'La contraseña tiene que incluir al menos un número.';
-  if (!/[^A-Za-z0-9]/.test(pass)) return 'La contraseña tiene que incluir al menos un símbolo (ej: !@#$%&).';
-  return null;
-}
-
-function chequearRequisitosPassword() {
-  const pass = document.getElementById('f-password').value;
-  const marcar = (id, cumple) => {
-    const li = document.getElementById(id);
-    li.classList.toggle('ok', cumple);
-    li.querySelector('.mark').textContent = cumple ? '✓' : '○';
-  };
-  marcar('req-len', pass.length > 6);
-  marcar('req-letra', /[A-Za-z]/.test(pass));
-  marcar('req-num', /[0-9]/.test(pass));
-  marcar('req-sim', /[^A-Za-z0-9]/.test(pass));
-}
-
-async function registrar() {
-  const btn = document.getElementById('btn-submit');
-  const errorBox = document.getElementById('error-box');
-  errorBox.style.display = 'none';
-
-  const nombre = document.getElementById('f-nombre').value.trim();
-  const telefono = document.getElementById('f-telefono').value.trim();
-  const email = document.getElementById('f-email').value.trim();
-  const nombre_usuario = document.getElementById('f-usuario').value.trim();
-  const password = document.getElementById('f-password').value;
-  const password2 = document.getElementById('f-password2').value;
-  const direccion_residencia = document.getElementById('f-direccion').value.trim();
-
-  if (!nombre || !email || !nombre_usuario || !telefono || !password || !direccion_residencia) return showError('Completá todos los campos obligatorios.');
-  if (nombre_usuario.length < 3) return showError('El nombre de usuario tiene que tener al menos 3 caracteres.');
-  if (!usuarioDisponible) return showError('Elegí un nombre de usuario disponible antes de continuar (mirá el chequeo debajo del campo).');
-  const errorPassword = validarPassword(password);
-  if (errorPassword) return showError(errorPassword);
-  if (password !== password2) return showError('Las contraseñas no coinciden.');
-
-  const body = { nombre, email, nombre_usuario, telefono, tipo: tipoSeleccionado, password, direccion_residencia };
-
-  if (tipoSeleccionado === 'socio') {
-    const dni = document.getElementById('f-dni').value.trim();
-    const especialidad = document.getElementById('f-especialidad').value;
-    const experiencia = document.getElementById('f-experiencia').value.trim();
-    const matricula = document.getElementById('f-matricula').value.trim();
-    const matricula_organismo = document.getElementById('f-matricula-organismo').value.trim();
-    const direccion_trabajo = document.getElementById('f-direccion-trabajo').value.trim();
-    if (!dni || !especialidad || !experiencia) return showError('Completá todos los campos obligatorios para socios.');
-    if (RUBROS_MATRICULA_OBLIGATORIA[especialidad] && (!matricula || !matricula_organismo)) {
-      return showError(`${especialidad} exige matrícula habilitante: completá el número y el organismo que te la otorgó.`);
-    }
-
-    const archivoDni = document.getElementById('f-dni-foto').files[0];
-    const archivoPerfil = document.getElementById('f-foto-perfil').files[0];
-    if (!archivoDni) return showError('Subí una foto de tu DNI (frente).');
-    if (!archivoPerfil) return showError('Subí una foto de perfil donde se te vea la cara.');
-
-    const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp'];
-    const TAMANO_MAX = 8 * 1024 * 1024; // 8MB
-    for (const [archivo, etiqueta] of [[archivoDni, 'La foto de DNI'], [archivoPerfil, 'La foto de perfil']]) {
-      if (!TIPOS_PERMITIDOS.includes(archivo.type)) return showError(`${etiqueta} tiene que ser una imagen (JPG, PNG o WEBP).`);
-      if (archivo.size > TAMANO_MAX) return showError(`${etiqueta} pesa más de 8MB. Subí una versión más liviana.`);
-    }
-
-    let dni_foto, foto_perfil;
-    try {
-      const [dataUrlDni, dataUrlPerfil] = await Promise.all([leerArchivoComoDataURL(archivoDni), leerArchivoComoDataURL(archivoPerfil)]);
-      dni_foto = { data: dataUrlDni.split(',')[1], mime: archivoDni.type };
-      foto_perfil = { data: dataUrlPerfil.split(',')[1], mime: archivoPerfil.type };
-    } catch (e) {
-      return showError('No pudimos leer las fotos. Probá subirlas de nuevo.');
-    }
-
-    Object.assign(body, { dni, especialidad, experiencia, matricula, matricula_organismo, direccion_trabajo, dni_foto, foto_perfil });
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Registrando...';
-
-  try {
-    const r = await fetch(`${BACKEND}/api/usuarios/registro`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const data = await r.json();
-    if (!r.ok) return showError(data.error || 'Error al registrar.');
-
-    document.getElementById('form-content').style.display = 'none';
-    emailRegistrado = email;
-    document.getElementById('verif-email-destino').textContent = email;
-    document.getElementById('verificar-box').style.display = 'block';
-    iniciarTimerReenvio();
-  } catch (e) {
-    showError('No se pudo conectar al servidor. Intentá de nuevo.');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = tipoSeleccionado === 'cliente' ? 'Crear cuenta' : 'Enviar solicitud';
-  }
-}
-
-function iniciarTimerReenvio() {
-  clearInterval(timerReenvio);
-  let restante = 60;
-  const timerEl = document.getElementById('verif-reenviar-timer');
-  const btn = document.getElementById('btn-reenviar-codigo');
-  btn.style.display = 'none';
-  timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
-  timerReenvio = setInterval(() => {
-    restante--;
-    if (restante <= 0) {
-      clearInterval(timerReenvio);
-      timerEl.textContent = '';
-      btn.style.display = 'inline';
-    } else {
-      timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
-    }
-  }, 1000);
-}
-
-async function confirmarCodigoRegistro() {
-  const codigo = document.getElementById('verif-codigo').value.trim();
-  const errorBox = document.getElementById('verif-error-box');
-  errorBox.style.display = 'none';
-  if (!codigo) { errorBox.textContent = 'Ingresá el código que te mandamos.'; errorBox.style.display = 'block'; return; }
-  const btn = document.getElementById('btn-verif');
-  btn.disabled = true; btn.textContent = 'Confirmando...';
-  try {
-    const r = await fetch(`${BACKEND}/api/verificar-codigo`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailRegistrado, codigo, tipo: 'registro' })
-    });
-    const data = await r.json();
-    if (!r.ok) { errorBox.textContent = data.error || 'Código incorrecto.'; errorBox.style.display = 'block'; return; }
-    clearInterval(timerReenvio);
-    document.getElementById('verificar-box').style.display = 'none';
-    const box = document.getElementById('success-box');
-    box.style.display = 'block';
-    if (tipoSeleccionado === 'cliente') {
-      document.getElementById('success-title').textContent = '¡Bienvenido a ChamBA!';
-      document.getElementById('success-msg').textContent = 'Confirmamos tu email. Ya podés iniciar sesión y pedir servicios.';
-    } else {
-      document.getElementById('success-title').textContent = '¡Email confirmado!';
-      document.getElementById('success-msg').textContent = 'Ahora nuestro equipo va a revisar tu solicitud y te avisamos por email en las próximas 48hs.';
-    }
-  } catch (e) {
-    errorBox.textContent = 'No se pudo conectar al servidor. Intentá de nuevo.'; errorBox.style.display = 'block';
-  } finally {
-    btn.disabled = false; btn.textContent = 'Confirmar';
-  }
-}
-
-async function reenviarCodigoRegistro() {
-  const btn = document.getElementById('btn-reenviar-codigo');
-  btn.disabled = true;
-  try {
-    await fetch(`${BACKEND}/api/enviar-codigo`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailRegistrado, tipo: 'registro' })
-    });
-    iniciarTimerReenvio();
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-// ── Sugerencias de dirección (autocompletar, como Google Maps/PedidosYa) ──
-const _timersBusqueda = {};
-let _sugerenciasCache = [];
-
-function onBuscarDireccion(input, boxId) {
-  clearTimeout(_timersBusqueda[boxId]);
-  const box = document.getElementById(boxId);
-  const texto = input.value;
-  if (!texto || texto.trim().length < 3) { box.classList.remove('open'); return; }
-  _timersBusqueda[boxId] = setTimeout(async () => {
-    try {
-      const r = await fetch(`${BACKEND}/api/geocodificar-buscar?q=${encodeURIComponent(texto)}`);
-      const data = await r.json();
-      _sugerenciasCache = Array.isArray(data) ? data : [];
-      if (!_sugerenciasCache.length) {
-        box.innerHTML = '<div class="sugerencia-item" style="color:var(--text-soft)">No encontramos direcciones. Probá con calle, número y ciudad.</div>';
-        box.classList.add('open');
-        return;
-      }
-      box.innerHTML = _sugerenciasCache.map((s, i) => `<div class="sugerencia-item" onclick="elegirSugerencia('${input.id}','${boxId}',${i})"><span>📍</span><span>${s.display_name}</span></div>`).join('');
-      box.classList.add('open');
-    } catch(e) {}
-  }, 400);
-}
-
-function elegirSugerencia(inputId, boxId, i) {
-  const s = _sugerenciasCache[i];
-  if (!s) return;
-  document.getElementById(inputId).value = s.display_name;
-  document.getElementById(boxId).classList.remove('open');
-}
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.form-group[style*="position:relative"]')) document.querySelectorAll('.sugerencias-box').forEach(b => b.classList.remove('open'));
-});
-
-function showError(msg) {
-  const box = document.getElementById('error-box');
-  box.textContent = msg;
-  box.style.display = 'block';
-  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  document.getElementById('btn-submit').disabled = false;
-}
-
-(async () => {
-  try {
-    const r = await fetch(BACKEND + '/api/especialidades');
-    const especialidades = await r.json();
-    const select = document.getElementById('f-especialidad');
-    if (Array.isArray(especialidades)) {
-      select.innerHTML = '<option value="">Elegí una especialidad</option>' +
-        especialidades.filter(e => e.activa).map(e => `<option>${e.nombre}</option>`).join('');
-    }
-  } catch(e) {}
-})();
-</script>
+<script src="/assets/pages/registro-0.js" defer></script>
+<script src="/assets/pages/registro-events.js" defer></script>
 </body>
 </html>
 

@@ -1,0 +1,9 @@
+:focus-visible{outline:3px solid #B84A11;outline-offset:3px}
+.address-search{display:block;margin:8px 0;padding:9px 14px;border:1px solid #B84A11;border-radius:8px;color:#923A0D;background:#fff;cursor:pointer;font:inherit}
+.address-hint{display:block;color:#5D5651;font-size:12px;line-height:1.5}
+#chamba-notice{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);max-width:min(90vw,620px);padding:16px 22px;background:#22201E;color:white;border-radius:10px;z-index:10000;box-shadow:0 4px 24px #0003}
+@media(max-width:600px){.topbar-inner{flex-wrap:wrap;height:auto;min-height:64px}.topbar nav,.nav-items,.nav-links{flex-wrap:wrap}.modal{width:min(95vw,600px);max-height:90dvh;overflow:auto}.chat-input{min-width:0}.form-row{grid-template-columns:1fr}button,a,input,select{touch-action:manipulation}.nav-item{min-height:44px}.tipo-card{min-height:80px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.draft-photos{margin:12px 0}.draft-photos img{width:90px;height:90px;object-fit:cover;border-radius:8px;margin:0 8px 8px 0}
+.chat-older{display:block;margin:4px auto 12px;padding:10px 14px;min-height:44px;border:1px solid currentColor;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}.chat-older:disabled{opacity:.65;cursor:wait}.chat-empty{color:var(--text-soft);font-size:13px;text-align:center;padding:14px}

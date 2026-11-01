@@ -1,3 +1,7 @@
 node_modules/
 .env
-.DS_Store
+.env.*
+!.env.example
+public-dist/
+supabase/.temp/
+coverage/
