@@ -44,6 +44,46 @@ window.Chamba=(()=>{
   for(const [i,url]of photos.entries()){if(!/^data:image\/(jpeg|png|webp);base64,/.test(url))continue;const img=document.createElement('img');img.src=url;img.alt='Foto de la consulta '+(i+1);box.append(img);}input.after(box);
  }
  function messageId(job,text){const previous=messages.get(job);if(previous?.text===text)return previous.id;const item={text,id:crypto.randomUUID()};messages.set(job,item);return item.id;}
+ const chats=new Map();
+ async function chat(job,request,user,legacyRole,older=false){
+  const key=user.id+':'+job;
+  let state=chats.get(key);
+  if(!state){state={items:[],latest:null,before:null,revision:null,follow:true,top:0};chats.set(key,state);}
+  function render(prepend=false){
+   const box=document.getElementById('chat-'+job);if(!box)return;
+   const same=state.element===box,oldHeight=same?box.scrollHeight:0,oldTop=same?box.scrollTop:state.top;
+   const signature=JSON.stringify([state.before,state.items]);
+   if(same&&signature===state.signature)return;
+   const nodes=[];
+   if(state.before){const button=document.createElement('button');button.type='button';button.className='chat-older';button.textContent='Ver mensajes anteriores';button.addEventListener('click',async()=>{button.disabled=true;try{await chat(job,request,user,legacyRole,true);}catch(e){notice(e.message);}finally{button.disabled=false;}});nodes.push(button);}
+   for(const m of state.items){const el=document.createElement('div');el.className='chat-msg '+((m.autor_id?m.autor_id===user.id:m.rol===legacyRole)?'yo':'otro');const author=document.createElement('div');author.className='chat-msg-meta';author.textContent=m.autor;el.append(author,document.createTextNode(m.contenido));nodes.push(el);}
+   if(!state.items.length){const empty=document.createElement('div');empty.className='chat-empty';empty.textContent='Chat habilitado — coordiná con la otra persona';nodes.push(empty);}
+   box.replaceChildren(...nodes);
+   box.scrollTop=prepend?oldTop+box.scrollHeight-oldHeight:state.follow?box.scrollHeight:oldTop;
+   if(!same)box.addEventListener('scroll',()=>{state.top=box.scrollTop;state.follow=box.scrollHeight-box.scrollTop-box.clientHeight<60;},{passive:true});
+   state.element=box;state.signature=signature;state.top=box.scrollTop;
+  }
+  render();
+  if(state.loading)return state.loading;
+  if(older&&!state.before)return;
+  state.loading=(async()=>{
+   let cursor=older?state.before:state.latest;
+   let result=await request('/api/mensajes/'+job+'?page=true'+(cursor?'&'+(older?'before':'after')+'='+encodeURIComponent(cursor):''));
+   if(result.reset){state.items=[];state.latest=null;state.before=null;state.follow=true;state.top=0;cursor=null;older=false;result=await request('/api/mensajes/'+job+'?page=true');}
+   // Accept the old array contract during a coordinated API/frontend deployment.
+   if(Array.isArray(result)){state.items=result;state.before=null;state.latest=null;}
+   else{
+    if(state.revision!==null&&state.revision!==result.revision)state.items=[];
+    state.revision=result.revision;
+    const combined=older?[...result.messages,...state.items]:[...state.items,...result.messages];
+    state.items=[...new Map(combined.map(m=>[m.id,m])).values()];
+    if(older||!cursor||result.reset)state.before=result.next_before;
+    if(!older&&result.latest)state.latest=result.latest;
+   }
+   render(older);
+  })();
+  try{await state.loading;}finally{state.loading=null;}
+ }
  function labelFields(){
   document.querySelectorAll('label:not([for])').forEach((label,i)=>{let input=label.nextElementSibling;if(!input?.matches('input,select,textarea'))input=label.parentElement?.querySelector('input,select,textarea');if(input){if(!input.id)input.id='label-field-'+i;label.htmlFor=input.id;}});
  }
@@ -84,5 +124,5 @@ window.Chamba=(()=>{
   if(e.key==='Escape'){modal.classList.remove('open');return;}
   if(e.key==='Tab'){const focusable=[...modal.querySelectorAll('button,a,input,textarea,select,[tabindex="0"]')].filter(x=>!x.disabled&&x.getClientRects().length);const first=focusable[0],last=focusable.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}
  });
- return {escape,html,bind,run,notice,api,quote,response,saveDraftPhotos,draftPhotos,showDraftPhotos,clearDraft,services:value=>String(value||'').split(',').map(x=>x.trim()).filter(Boolean),messageId,messageDone:job=>messages.delete(job)};
+ return {escape,html,bind,run,notice,api,quote,response,saveDraftPhotos,draftPhotos,showDraftPhotos,clearDraft,chat,services:value=>String(value||'').split(',').map(x=>x.trim()).filter(Boolean),messageId,messageDone:job=>messages.delete(job)};
 })();

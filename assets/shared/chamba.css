@@ -6,3 +6,4 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .draft-photos{margin:12px 0}.draft-photos img{width:90px;height:90px;object-fit:cover;border-radius:8px;margin:0 8px 8px 0}
+.chat-older{display:block;margin:4px auto 12px;padding:10px 14px;min-height:44px;border:1px solid currentColor;border-radius:8px;background:transparent;color:inherit;font:inherit;font-size:13px;cursor:pointer}.chat-older:disabled{opacity:.65;cursor:wait}.chat-empty{color:var(--text-soft);font-size:13px;text-align:center;padding:14px}

@@ -108,6 +108,7 @@ function soloAdmin(req, res, next) {
 
 const sbH = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` };
 const sb = async (path, method='GET', body=null) => {
+ try {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method, headers: body ? { ...sbH, 'Prefer': 'return=representation' } : sbH,
     body: body ? JSON.stringify(body) : null
@@ -121,6 +122,11 @@ const sb = async (path, method='GET', body=null) => {
     throw err;
   }
   return data;
+ } catch (error) {
+   // Transport/JSON failures are outages, not expired sessions.
+   if (error.status) throw error;
+   throw Object.assign(new Error('No pudimos conectar con la base de datos. Intentá nuevamente.'), {status:503});
+ }
 };
 
 function signToken(user) { return jwt.sign({id:user.id,tipo:user.tipo,email:user.email,nombre:user.nombre,sv:user.session_version||0},JWT_SECRET,{expiresIn:'7d',algorithm:'HS256'}); }
@@ -285,6 +291,19 @@ async function borrarArchivos(paths) {
  try {const r=await fetch(`${SUPABASE_URL}/storage/v1/object/identificaciones`,{method:'DELETE',headers:sbH,body:JSON.stringify({prefixes:paths})});if(!r.ok)throw Error('Storage cleanup failed');}
  catch(e){console.error('Archivos huérfanos pendientes de limpieza:',paths,e.message);}
 }
+async function recuperarCarga(uploads, lookup, writeStarted, error) {
+  if (writeStarted) {
+    try {
+      const [saved] = await sb(lookup);
+      if (saved) return saved;
+    } catch { return null; } // Cannot establish whether the files are referenced.
+    // A timeout can leave a transaction running even after a read returns empty.
+    // Delete only after a definitive database rejection, never on an ambiguous write.
+    if (!/^[0-9A-Z]{5}$/.test(error.supabase?.code||'')) return null;
+  }
+  await borrarArchivos(uploads);
+  return null;
+}
 async function validarEspecialidades(value) {
  const requested=splitServices(value),active=await sb('especialidades?activa=eq.true&select=nombre');
  if(!requested.length||requested.some(s=>!active.some(a=>a.nombre===s)))throw Object.assign(Error('Elegí una especialidad disponible.'),{status:400});
@@ -306,6 +325,8 @@ async function firmarUrl(bucket, path, expiresIn = 3600) {
 // ── VERIFICACIÓN DE IDENTIDAD (comprobantes de monotributo u otra prueba, además de la matrícula) ──
 app.post('/api/verificaciones-identidad', auth, async (req, res) => {
   const uploads=[];
+  const submissionId=crypto.randomUUID();
+  let writeStarted=false;
   try {
     if(req.usuario.tipo!=='socio')return res.status(403).json({error:'Esta opción es para Socios.'});
     const { monotributo, facturas } = req.body; // monotributo: {data,mime}; facturas: [{data,mime}, ...] hasta 3
@@ -322,22 +343,25 @@ app.post('/api/verificaciones-identidad', auth, async (req, res) => {
     }
 
     const extMono = (monotributo.mime.split('/')[1] || 'bin').replace('jpeg', 'jpg');
-    const pathMono = `${req.usuario.id}/monotributo_${Date.now()}.${extMono}`;
-    await subirArchivo('identificaciones', pathMono, monotributo.data, monotributo.mime);uploads.push(pathMono);
+    const pathMono = `${req.usuario.id}/monotributo_${submissionId}.${extMono}`;
+    uploads.push(pathMono);await subirArchivo('identificaciones', pathMono, monotributo.data, monotributo.mime);
 
     const pathsFacturas = [];
     for (let i = 0; i < facturas.length; i++) {
       const ext = (facturas[i].mime.split('/')[1] || 'bin').replace('jpeg', 'jpg');
-      const path = `${req.usuario.id}/factura_${Date.now()}_${i}.${ext}`;
+      const path = `${req.usuario.id}/factura_${submissionId}_${i}.${ext}`;
+      uploads.push(path);
       await subirArchivo('identificaciones', path, facturas[i].data, facturas[i].mime);
-      pathsFacturas.push(path);uploads.push(path);
+      pathsFacturas.push(path);
     }
 
-    const body = { socio_id: req.usuario.id, estado: 'pendiente', comprobante_monotributo: pathMono };
+    const body = { id: submissionId, socio_id: req.usuario.id, estado: 'pendiente', comprobante_monotributo: pathMono };
     ['factura_cliente_1', 'factura_cliente_2', 'factura_cliente_3', 'factura_cliente_4'].forEach((campo, i) => { if (pathsFacturas[i]) body[campo] = pathsFacturas[i]; });
+    writeStarted=true;
     res.json(await sb('verificaciones_identidad', 'POST', body));
   } catch (e) {
-    await borrarArchivos(uploads);
+    const saved=await recuperarCarga(uploads,`verificaciones_identidad?id=eq.${submissionId}&socio_id=eq.${req.usuario.id}&select=*`,writeStarted,e);
+    if(saved)return res.json([saved]);
     console.error('❌ Error en POST /verificaciones-identidad:', e.message, e.supabase?.code || '');
     res.status(500).json({ error: e.message || 'No se pudo enviar la verificación.' });
   }
@@ -551,22 +575,22 @@ app.post('/api/usuarios/registro', async (req, res) => {
   const password_hash = await bcrypt.hash(password, 10);
   const estado = tipo === 'cliente' ? 'aprobado' : 'pendiente';
   const uid=crypto.randomUUID(), uploads=[];
+  let writeStarted=false;
   const user={id:uid,nombre:nombre.trim(),email,telefono,tipo,especialidad,dni,experiencia,matricula,matricula_organismo,mensaje_solicitud,password_hash,estado,nombre_usuario:nombreUsuarioNormalizado};
   try {
     if(tipo==='socio') {
       for(const [field,file] of [['dni_foto_path',dni_foto],['foto_perfil_path',foto_perfil]]) {
         const path=`${uid}/${field}_${crypto.randomUUID()}.${file.mime.split('/')[1].replace('jpeg','jpg')}`;
-        await subirArchivo('identificaciones',path,file.data,file.mime);uploads.push(path);user[field]=path;
+        uploads.push(path);await subirArchivo('identificaciones',path,file.data,file.mime);user[field]=path;
       }
     }
     const locations=[{etiqueta:'Casa',direccion:direccion_residencia,...coordsResidencia,tipo:'residencia',predeterminada:true}];
     if(tipo==='socio')locations.push({etiqueta:'Zona de trabajo',direccion:direccionTrabajoFinal,...coordsTrabajo,tipo:'trabajo',predeterminada:false});
+    writeStarted=true;
     await sb('rpc/chamba_register','POST',{p_user:user,p_locations:locations});
   } catch(e) {
-    // A timeout can occur after commit. Never delete referenced documents blindly.
-    let confirmed;
-    try{const [saved]=await sb(`usuarios?id=eq.${uid}&select=id`);confirmed=!!saved;}catch{throw e;}
-    if(!confirmed){await borrarArchivos(uploads);throw e;}
+    const saved=await recuperarCarga(uploads,`usuarios?id=eq.${uid}&select=id`,writeStarted,e);
+    if(!saved)throw e;
   }
 
   try {
@@ -999,6 +1023,27 @@ app.get('/api/mensajes/:pedido_id', auth, async (req, res) => {
       return res.status(403).json({ error: 'No sos parte de esta conversación.' });
     }
     if (!pedido.chat_habilitado) return res.status(403).json({ error: 'El chat se habilita después del pago.' });
+    if(req.query.page==='true') {
+      let cursor=null;
+      const direction=req.query.before?'before':req.query.after?'after':null;
+      if(req.query.before&&req.query.after)return res.status(400).json({error:'Paginación inválida.'});
+      if(direction) {
+        try {
+          const value=req.query[direction];
+          if(typeof value!=='string'||value.length>400)throw Error();
+          cursor=JSON.parse(Buffer.from(value,'base64url').toString());
+          if(!uuid(cursor.id)||!Number.isInteger(cursor.revision)||typeof cursor.at!=='string'||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?(?:Z|[+-]\d\d:\d\d)$/.test(cursor.at)||!Number.isFinite(Date.parse(cursor.at)))throw Error();
+        }catch{return res.status(400).json({error:'Paginación inválida.'});}
+      }
+      if(cursor&&cursor.revision!==pedido.revision)return res.json({messages:[],revision:pedido.revision,reset:true});
+      const op=direction==='after'?'gt':'lt',sort=direction==='after'?'asc':'desc';
+      const filter=cursor?`&or=(created_at.${op}.${encodeURIComponent(cursor.at)},and(created_at.eq.${encodeURIComponent(cursor.at)},id.${op}.${cursor.id}))`:'';
+      const rows=await sb(`mensajes?pedido_id=eq.${id}&revision=eq.${pedido.revision}&select=*&order=created_at.${sort},id.${sort}&limit=51${filter}`);
+      const more=rows.length>50,items=rows.slice(0,50);
+      if(sort==='desc')items.reverse();
+      const encode=m=>m?Buffer.from(JSON.stringify({at:m.created_at,id:m.id,revision:pedido.revision})).toString('base64url'):null;
+      return res.json({messages:items,revision:pedido.revision,next_before:direction!=='after'&&more?encode(items[0]):null,latest:encode(items.at(-1)),has_more_after:direction==='after'&&more});
+    }
     res.json(await sbAll(`mensajes?pedido_id=eq.${id}&revision=eq.${pedido.revision}&select=*&order=created_at.asc,id.asc`));
   }
   catch (e) { console.error('❌ Error en GET /mensajes:', e.message, e.supabase?.code || ''); res.status(500).json({ error: 'No se pudieron cargar los mensajes.' }); }
@@ -1044,6 +1089,7 @@ app.get('/api/solicitudes-matricula', auth, async (req, res) => {
 // y queda "pendiente" con el mismo flujo de aprobación que ya usa el admin para socios nuevos.
 app.post('/api/usuarios/solicitar-socio', auth, async (req, res) => {
   const uploads=[];
+  let writeStarted=false,lookup='';
   try {
     const { dni, especialidad, experiencia, matricula, matricula_organismo, direccion_trabajo, dni_foto, foto_perfil } = req.body;
     if (!dni || !especialidad || !experiencia) return res.status(400).json({ error: 'Completá DNI, especialidad y años de experiencia.' });
@@ -1073,15 +1119,19 @@ app.post('/api/usuarios/solicitar-socio', auth, async (req, res) => {
 
     const extDni = (dni_foto.mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
     const extPerfil = (foto_perfil.mime.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-    const pathDni = `${req.usuario.id}/dni_${Date.now()}.${extDni}`;
-    const pathPerfil = `${req.usuario.id}/perfil_${Date.now()}.${extPerfil}`;
-    await subirArchivo('identificaciones', pathDni, dni_foto.data, dni_foto.mime);uploads.push(pathDni);
-    await subirArchivo('identificaciones', pathPerfil, foto_perfil.data, foto_perfil.mime);uploads.push(pathPerfil);
+    const submissionId=crypto.randomUUID();
+    const pathDni = `${req.usuario.id}/dni_${submissionId}.${extDni}`;
+    const pathPerfil = `${req.usuario.id}/perfil_${submissionId}.${extPerfil}`;
+    uploads.push(pathDni);await subirArchivo('identificaciones', pathDni, dni_foto.data, dni_foto.mime);
+    uploads.push(pathPerfil);await subirArchivo('identificaciones', pathPerfil, foto_perfil.data, foto_perfil.mime);
 
+    lookup=`usuarios?id=eq.${req.usuario.id}&dni_foto_path=eq.${encodeURIComponent(pathDni)}&foto_perfil_path=eq.${encodeURIComponent(pathPerfil)}&select=id`;
+    writeStarted=true;
     await sb('rpc/chamba_submit_partner','POST',{p_actor:req.usuario.id,p_data:{dni,especialidad,experiencia,matricula,matricula_organismo,dni_foto_path:pathDni,foto_perfil_path:pathPerfil},p_location:coordsTrabajo?{direccion:direccion_trabajo,...coordsTrabajo}:null});
     res.json({ ok: true });
   } catch (e) {
-    await borrarArchivos(uploads);
+    const saved=await recuperarCarga(uploads,lookup,writeStarted,e);
+    if(saved)return res.json({ok:true});
     console.error('❌ Error en POST /usuarios/solicitar-socio:', e.message, e.supabase?.code || '');
     res.status(500).json({ error: 'No se pudo enviar la solicitud.' });
   }

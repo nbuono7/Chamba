@@ -50,7 +50,8 @@ Render: build `npm ci --include=dev && npm run check && npm test`; start `npm st
 - Los Socios conservan la opción de contratar servicios como Clientes.
 - Sesiones: se verifica estado y rol actual en cada operación; suspender, cambiar contraseña o cambiar rol revoca tokens anteriores. Duración máxima de nuevos tokens: siete días.
 - Las búsquedas de direcciones requieren pulsar Buscar o Enter. Nominatim se consulta en una cola de una solicitud cada 1,1 segundos, con caché y atribución.
-- Registro guarda cuenta y ubicaciones juntas después de subir documentos. Si falla, limpia los archivos recién subidos. Un error de email permite pedir otro código; nunca se informa que fue enviado cuando el proveedor lo rechazó.
+- Registro guarda cuenta y ubicaciones juntas después de subir documentos. Ante un rechazo confirmado, limpia los archivos de ese intento. Si se interrumpe la respuesta, primero consulta si la operación quedó guardada; cuando no puede confirmarlo conserva los documentos para evitar pérdidas. Esto también se aplica al cambio de Cliente a Socio y a los comprobantes de identidad. Un error de email permite pedir otro código; nunca se informa que fue enviado cuando el proveedor lo rechazó.
+- El chat carga los 50 mensajes más recientes, permite ver mensajes anteriores y consulta solo los nuevos durante los refrescos. Conserva el borrador y la posición de lectura, incluso cuando se redibuja el panel. La paginación queda limitada a la conversación y asignación actual.
 
 ## Despliegue coordinado
 
@@ -68,5 +69,5 @@ No volver al servidor antiguo después de activar las transacciones nuevas: volv
 - Entrega real de correo y diagnóstico real de IA con cuentas aisladas; carga/concurrencia multi conexión.
 - Verificación de backups y ensayo de restauración. No se afirma recuperación garantizada sin esa prueba.
 - Política de retención/eliminación de DNI y comprobantes: definir plazo, responsable y canal de solicitud antes de automatizar borrados. No eliminar documentos existentes por una política inventada.
-- Paginación visible y carga incremental del historial a gran escala. Se quitaron las solicitudes de ofertas por cada pedido y se recorren páginas de base de datos para no truncar registros; esto todavía no es una interfaz de historial paginado.
+- Paginación visible del historial de pedidos a gran escala. El chat ya usa carga incremental; para pedidos se quitaron las solicitudes de ofertas por cada pedido y se recorren páginas de base de datos para no truncar registros, pero esto todavía no es una interfaz de pedidos paginada.
 - Cookies HttpOnly exigirían un cambio coordinado de dominio/autenticación/CSRF. Se conserva la arquitectura actual con datos escapados, sanitización y CSP; no afirmar que localStorage se volvió HttpOnly.

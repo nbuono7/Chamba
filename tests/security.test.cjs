@@ -54,3 +54,19 @@ test('malformed IDs and anonymous AI requests are rejected before data access',a
 test('assigned partner never receives completion code',async()=>{
  const h=harness([[{...chat,id:job,estado:'en_proceso',codigo_verificacion:'1234'}],[],[]]);const r=await h.request('get','/api/pedidos',partner);assert.equal(r.status,200);assert.equal(r.body[0].codigo_verificacion,undefined);
 });
+test('chat pages return the latest 50 messages in chronological order with bounded database reads',async()=>{
+ const rows=Array.from({length:51},(_,i)=>({id:`77777777-7777-4777-8777-${String(100-i).padStart(12,'0')}`,created_at:'2026-11-01T12:00:00.123456+00:00',contenido:String(100-i)}));
+ const h=harness([[chat],rows]),r=await h.request('get','/api/mensajes/'+job+'?page=true',client);
+ assert.equal(r.status,200);assert.equal(r.body.messages.length,50);assert.equal(r.body.messages[0].contenido,'51');assert.equal(r.body.messages.at(-1).contenido,'100');
+ assert.ok(r.body.next_before);assert.match(h.calls[1][0],/limit=51/);assert.match(h.calls[1][0],/revision=eq.2/);
+ const cursor=JSON.parse(Buffer.from(r.body.next_before,'base64url').toString());assert.equal(cursor.at,rows[0].created_at);assert.equal(cursor.revision,2);
+ const next=harness([[chat],[]]);assert.equal((await next.request('get','/api/mensajes/'+job+'?page=true&before='+r.body.next_before,partner)).status,200);
+ assert.match(next.calls[1][0],/created_at\.lt\./);assert.match(next.calls[1][0],/id\.lt\./);
+});
+test('chat rejects malformed cursors and resets cursors from a previous assignment',async()=>{
+ for(const cursor of ['invalid',Buffer.from(JSON.stringify({at:'2026-01-01)or(true)',id:job,revision:2})).toString('base64url')]){
+  const h=harness([[chat]]);assert.equal((await h.request('get','/api/mensajes/'+job+'?page=true&after='+cursor,client)).status,400);assert.equal(h.calls.length,1);
+ }
+ const cursor=Buffer.from(JSON.stringify({at:'2026-11-01T12:00:00Z',id:job,revision:1})).toString('base64url'),h=harness([[chat]]);
+ const r=await h.request('get','/api/mensajes/'+job+'?page=true&after='+cursor,client);assert.equal(r.status,200);assert.equal(r.body.reset,true);assert.equal(h.calls.length,1);
+});

@@ -757,16 +757,8 @@ async function eliminarPedido(pedidoId) {
 }
 
 async function cargarMensajes(pedidoId) {
-  try {
-    const msgs = await api('/api/mensajes/' + pedidoId);
-    const box = document.getElementById('chat-' + pedidoId);
-    if (!box) return;
-    const followBottom=box.scrollHeight-box.scrollTop-box.clientHeight<60;
-    box.innerHTML = Chamba.html(Array.isArray(msgs) && msgs.length
-      ? msgs.map(m=>`<div class="chat-msg ${Chamba.escape((m.autor_id?m.autor_id===usuario.id:m.rol==='cliente')?'yo':'otro')}"><div class="chat-msg-meta">${Chamba.escape(m.autor)}</div>${Chamba.escape(m.contenido)}</div>`).join('')
-      : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:14px">Chat habilitado — coordiná con el socio</div>');
-    if(followBottom)box.scrollTop = box.scrollHeight;
-  } catch(e) {Chamba.notice("No se pudo actualizar el chat. Tus mensajes se conservan.");}
+  try { await Chamba.chat(pedidoId,api,usuario,'cliente'); }
+  catch(e) { Chamba.notice('No se pudo actualizar el chat. Tus mensajes se conservan.'); }
 }
 
 async function enviarMsg(pedidoId) {

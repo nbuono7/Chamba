@@ -14,7 +14,7 @@ create unique index calificaciones_un_trabajo on public.calificaciones(pedido_id
 create unique index ofertas_un_socio on public.ofertas(pedido_id,socio_id);
 create unique index ubicaciones_una_predeterminada on public.ubicaciones(usuario_id) where predeterminada;
 create index pedidos_estado_fecha on public.pedidos(estado,created_at desc);
-create index mensajes_pedido_fecha on public.mensajes(pedido_id,created_at);
+create index mensajes_pedido_fecha on public.mensajes(pedido_id,revision,created_at,id);
 create index codigos_email_tipo_fecha on public.codigos_login(email,tipo,created_at desc);
 create index reset_email on public.password_reset_tokens(email);
 -- Cover foreign keys with no index beginning with their columns.

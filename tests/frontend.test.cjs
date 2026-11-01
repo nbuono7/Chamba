@@ -56,6 +56,35 @@ test('chat draft remains after network failure and clears only after confirmatio
 });
 module.exports={page};
 
+test('chat loads older pages without duplicates and preserves reading position through panel redraws',async()=>{
+ const h=await page('panel-cliente');try{
+  const {w}=h,job='88888888-8888-4888-8888-888888888888',user={id:uuid};
+  function box(){const el=w.document.createElement('div');el.id='chat-'+job;Object.defineProperty(el,'scrollHeight',{get:()=>el.querySelectorAll('.chat-msg').length*100});Object.defineProperty(el,'clientHeight',{get:()=>100});w.document.body.append(el);return el;}
+  let el=box();const calls=[],msg=id=>({id,autor_id:uuid,autor:'Persona',contenido:'Mensaje '+id});
+  const responses=[{messages:[msg('3'),msg('4'),msg('5')],revision:2,next_before:'older',latest:'latest'},
+   {messages:[msg('6')],revision:2,next_before:null,latest:'latest6'},
+   {messages:[],revision:2,next_before:null,latest:null},
+   {messages:[msg('1'),msg('2'),msg('3')],revision:2,next_before:null,latest:'unused'}];
+  const api=async path=>{calls.push(path);return responses.shift();};
+  await w.Chamba.chat(job,api,user,'cliente');assert.equal(el.querySelectorAll('.chat-msg').length,3);assert.ok(el.querySelector('button'));
+  el.scrollTop=40;el.dispatchEvent(new w.Event('scroll'));
+  await w.Chamba.chat(job,api,user,'cliente');assert.equal(el.scrollTop,40);assert.ok(calls[1].endsWith('&after=latest'));
+  el.remove();el=box();await w.Chamba.chat(job,api,user,'cliente');assert.equal(el.scrollTop,40);assert.equal(el.querySelectorAll('.chat-msg').length,4);
+  await w.Chamba.chat(job,api,user,'cliente',true);assert.ok(calls[3].endsWith('&before=older'));assert.equal(el.querySelectorAll('.chat-msg').length,6);assert.equal(el.scrollTop,240);assert.equal(el.querySelector('button'),null);
+ }finally{h.close();}
+});
+
+test('chat replaces cached messages after assignment changes',async()=>{
+ const h=await page('panel-cliente');try{
+  const {w}=h,job='99999999-9999-4999-8999-999999999999';const el=w.document.createElement('div');el.id='chat-'+job;w.document.body.append(el);
+  const responses=[{messages:[{id:'old',contenido:'Conversación anterior'}],revision:1,next_before:null,latest:'oldcursor'},
+   {messages:[],revision:2,reset:true},
+   {messages:[{id:'new',contenido:'Nueva conversación'}],revision:2,next_before:'newolder',latest:'newcursor'}];
+  const api=async()=>responses.shift();await w.Chamba.chat(job,api,{id:uuid},'cliente');await w.Chamba.chat(job,api,{id:uuid},'cliente');
+  assert.ok(!el.textContent.includes('Conversación anterior'));assert.ok(el.textContent.includes('Nueva conversación'));assert.ok(el.querySelector('button'));
+ }finally{h.close();}
+});
+
 for(const name of ['panel-cliente','panel-socio','admin'])test(name+' renders populated jobs, forum and hostile text safely',async()=>{
  const hostile=`<img src=x onerror="window.hacked=1">O'Connor`;
  const socio='22222222-2222-4222-8222-222222222222';
