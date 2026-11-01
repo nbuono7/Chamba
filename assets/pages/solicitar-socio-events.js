@@ -1,0 +1,3 @@
+document.querySelectorAll('[data-event-0]').forEach(el=>el.addEventListener("change",function(event){Chamba.run(function(event){onCambioEspecialidad()},this,event);}));
+document.querySelectorAll('[data-event-1]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){onBuscarDireccion(document.getElementById('f-direccion-trabajo'), 'f-direccion-trabajo-sugerencias')},this,event);}));
+document.querySelectorAll('[data-event-2]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){enviar()},this,event);}));

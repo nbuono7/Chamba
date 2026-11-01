@@ -1,0 +1,5 @@
+document.querySelectorAll('[data-event-0]').forEach(el=>el.addEventListener("input",function(event){Chamba.run(function(event){chequearRequisitos()},this,event);}));
+document.querySelectorAll('[data-event-1]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){togglePass('f-pass1', this)},this,event);}));
+document.querySelectorAll('[data-event-2]').forEach(el=>el.addEventListener("keydown",function(event){Chamba.run(function(event){if(event.key==='Enter')enviar()},this,event);}));
+document.querySelectorAll('[data-event-3]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){togglePass('f-pass2', this)},this,event);}));
+document.querySelectorAll('[data-event-4]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){enviar()},this,event);}));
