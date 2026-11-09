@@ -111,7 +111,7 @@ async function confirmarCodigoLogin() {
     clearInterval(timerReenvioLogin);
     localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
     localStorage.setItem('chamba_token', data.token);
-    const destino = data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
+    const destino = ['baja','suspendido'].includes(data.usuario.estado) ? '/reclamos' : data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
     window.location.href = destino;
   } catch(e) { showError(e.message||'No se pudo conectar. Intentá de nuevo.'); }
   finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
@@ -134,7 +134,7 @@ async function doLogin() {
     if (!r.ok) return showError(data.error || 'Error al ingresar.');
     localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
     localStorage.setItem('chamba_token', data.token);
-    const destino = data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
+    const destino = ['baja','suspendido'].includes(data.usuario.estado) ? '/reclamos' : data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
     window.location.href = destino;
   } catch(e) { showError(e.message||'No se pudo conectar. Intentá de nuevo.'); }
   finally { btn.disabled = false; btn.textContent = 'Ingresar'; }

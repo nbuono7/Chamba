@@ -341,8 +341,8 @@ async function verUsuario(id) {
     <div class="modal-actions">
       ${u.estado==='pendiente'?`<button class="btn btn-teal" ${Chamba.bind("click",function(event){cambiarEstadoUsuario(`${u.id}`,'aprobado')})}>✅ Aprobar</button><button class="btn btn-red" ${Chamba.bind("click",function(event){cambiarEstadoUsuario(`${u.id}`,'rechazado')})}>❌ Rechazar</button>`:''}
       ${u.estado==='aprobado'?`<button class="btn btn-red" ${Chamba.bind("click",function(event){cambiarEstadoUsuario(`${u.id}`,'suspendido')})}>⏸️ Suspender</button>`:''}
-      ${(u.estado==='rechazado'||u.estado==='suspendido')?`<button class="btn btn-teal" ${Chamba.bind("click",function(event){cambiarEstadoUsuario(`${u.id}`,'aprobado')})}>Reactivar</button>`:''}
-      <button class="btn btn-red" ${Chamba.bind("click",function(event){eliminarUsuario(`${u.id}`)})}>Eliminar</button>
+      ${(u.estado==='rechazado'||u.estado==='suspendido'||u.estado==='baja')?`<button class="btn btn-teal" ${Chamba.bind("click",function(event){cambiarEstadoUsuario(`${u.id}`,'aprobado')})}>Reactivar</button>`:''}
+      <button class="btn btn-red" ${Chamba.bind("click",function(event){eliminarUsuario(`${u.id}`)})}>Dar de baja</button>
       <button class="btn btn-ghost" ${Chamba.bind("click",function(event){closeModal('modal-usuario')})}>Cerrar</button>
     </div>`);
   openModal('modal-usuario');
@@ -380,13 +380,14 @@ async function verUsuario(id) {
   }
 }
 async function cambiarEstadoUsuario(id, estado) {
-  await api(`/api/usuarios/${id}`,'PATCH',{estado});
+  const motivo=prompt('Motivo del cambio de estado:');if(!motivo?.trim())return;
+  await api(`/api/usuarios/${id}`,'PATCH',{estado,motivo});
   await cargarTodo();
   closeModal('modal-usuario');
   const mensajes = { aprobado: 'Usuario aprobado ✅', rechazado: 'Usuario rechazado', suspendido: 'Usuario suspendido ⏸️' };
   toast(mensajes[estado] || 'Estado actualizado');
 }
-async function eliminarUsuario(id) { if(!confirm('¿Eliminar este usuario?'))return; await api(`/api/usuarios/${id}`,'DELETE'); await cargarTodo(); closeModal('modal-usuario'); toast('Usuario eliminado'); }
+async function eliminarUsuario(id) {const motivo=prompt('Motivo obligatorio de la baja (se conserva el historial):');if(!motivo?.trim())return;await api(`/api/usuarios/${id}`,'DELETE',{motivo});await cargarTodo();closeModal('modal-usuario');toast('Cuenta dada de baja');}
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -413,7 +414,7 @@ function renderForoAdmin() {
         <div><span style="font-size:13px;font-weight:600">${Chamba.escape(p.autor_nombre)}</span><span class="tipo-chip tipo-${Chamba.escape(p.autor_tipo)}">${Chamba.escape(p.autor_tipo)}</span></div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:12px;color:var(--text-soft)">${Chamba.escape(fmtDate(p.created_at))}</span>
-          <button class="btn btn-red btn-sm" ${Chamba.bind("click",function(event){eliminarPost(`${p.id}`)})}>Eliminar</button>
+          <button class="btn btn-red btn-sm" ${Chamba.bind("click",function(event){eliminarPost(`${p.id}`)})}>Dar de baja</button>
         </div>
       </div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">${Chamba.escape(p.titulo)}</div>

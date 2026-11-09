@@ -70,3 +70,26 @@ test('chat rejects malformed cursors and resets cursors from a previous assignme
  const cursor=Buffer.from(JSON.stringify({at:'2026-11-01T12:00:00Z',id:job,revision:1})).toString('base64url'),h=harness([[chat]]);
  const r=await h.request('get','/api/mensajes/'+job+'?page=true&after='+cursor,client);assert.equal(r.status,200);assert.equal(r.body.reset,true);assert.equal(h.calls.length,1);
 });
+
+test('limited sessions can consult their wallet but cannot operate normal marketplace routes',async()=>{
+ const current={...client,estado:'baja',email_verificado:true,session_version:0};
+ let h=harness([[current]],current);let r=await h.request('get','/api/custodia/me',{...client,scope:'limited'});assert.equal(r.status,200);
+ for(const [verb,path] of [['get','/api/usuarios'],['post','/api/pedidos'],['get','/api/mensajes/'+job]]){h=harness([],current);r=await h.request(verb,path,{...client,scope:'limited'},{});assert.equal(r.status,403);assert.equal(h.calls.length,0);}
+});
+test('claim detail denies strangers before reading private attachments or identity',async()=>{
+ const h=harness([[{id:job,creado_por:client.id,contra_id:partner.id,pedido_id:job}]]);const r=await h.request('get','/api/reclamos/'+job,stranger);assert.equal(r.status,404);assert.equal(h.calls.length,1);
+});
+test('claim upload rejects PDFs and invalid MIME before storage or writes',async()=>{
+ const h=harness();const r=await h.request('post','/api/reclamos',client,{pedido_id:job,tipo:'dinero',descripcion:'Prueba',request_id:job,adjuntos:[{mime:'application/pdf',data:'JVBERi0='}]});assert.equal(r.status,400);assert.equal(h.calls.length,0);
+});
+test('new claim takes actor from live session and only whitelists business fields',async()=>{
+ const h=harness([[],{id:job}]);const r=await h.request('post','/api/reclamos',client,{pedido_id:job,tipo:'dinero',descripcion:'Prueba',request_id:job,p_actor:partner.id,estado:'finalizado',comision:0});assert.equal(r.status,200);const call=h.calls.find(c=>c[0]==='rpc/chamba_claim');assert.equal(call[2].p_actor,client.id);assert.equal(call[2].p_data.estado,undefined);assert.equal(call[2].p_data.comision,undefined);
+});
+test('withdrawal requires password reauthentication and no financial RPC is called on failure',async()=>{
+ const h=harness([[{password_hash:require('bcryptjs').hashSync('correct-password',4)}]]);const r=await h.request('post','/api/saldo/retirar',client,{password:'wrong',request_id:job,centavos:100,destino:'Test',motivo:'Test'});assert.equal(r.status,403);assert.ok(h.calls.every(c=>!c[0].startsWith('rpc/')));
+});
+test('deleting an account now calls logical deactivation and requires a reason',async()=>{
+ const admin={...stranger,tipo:'admin'};let h=harness();let r=await h.request('delete','/api/usuarios/'+client.id,admin,{});assert.equal(r.status,400);assert.equal(h.calls.length,0);
+ h=harness([{ok:true}]);r=await h.request('delete','/api/usuarios/'+client.id,admin,{motivo:'Conducta comprobada'});assert.equal(r.status,200);assert.equal(h.calls[0][0],'rpc/chamba_account');assert.equal(h.calls[0][2].p_state,'baja');
+});
+test('notification worker is inaccessible without its server secret',async()=>{const h=harness();const r=await h.request('post','/api/internal/notificaciones',client,{});assert.equal(r.status,401);assert.equal(h.calls.length,0);});

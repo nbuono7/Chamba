@@ -564,7 +564,7 @@ function renderCardProceso(p) {
         <div class="codigo-num">${Chamba.escape(p.codigo_verificacion)}</div>
       </div>
       <div class="codigo-advertencia">⚠️ <strong>Importante:</strong> Entregá este código al socio únicamente cuando haya <strong>terminado el trabajo</strong>. El código desbloquea su pago.</div>` : ''}
-    ${p.codigo_usado ? '<div style="background:var(--teal);color:#fff;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:500;margin:10px 0">✅ Código verificado — el socio cobró su pago</div>' : ''}
+    ${p.codigo_usado ? '<div style="background:var(--teal);color:#fff;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:500;margin:10px 0">✅ Código verificado — consultá el estado del dinero en Reclamos y saldo</div>' : ''}
     <div style="margin-top:14px">
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">💬 Chat con el socio</div>
       <div class="chat-box">
@@ -674,32 +674,7 @@ async function cargarDisputas() {
 }
 
 function renderBloqueDisputa(pedidoId) {
-  const existente = misDisputas.find(d => d.pedido_id === pedidoId);
-  const badge = { abierta: 'badge-amber|⏳ Reportado, en espera', en_revision: 'badge-amber|🔎 En revisión', resuelta: 'badge-green|✅ Resuelto' };
-  if (existente) {
-    const [cls, label] = (badge[existente.estado] || 'badge-gray|' + existente.estado).split('|');
-    return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <span class="badge ${Chamba.escape(cls)}">${Chamba.escape(label)}</span>
-      <div style="font-size:12px;color:var(--text-soft);margin-top:4px">Reportaste: ${Chamba.escape(existente.motivo)}${existente.resolucion ? '<br>Respuesta de ChamBA: ' + existente.resolucion : ''}</div>
-    </div>`;
-  }
-  return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-    <button class="btn btn-ghost btn-sm" ${Chamba.bind("click",function(event){toggleDisputaForm(`${pedidoId}`)})}>⚠️ Reportar un problema</button>
-    <div id="disputa-form-${Chamba.escape(pedidoId)}" style="display:none;margin-top:10px">
-      <div class="form-group"><label>¿Qué pasó?</label>
-        <select id="disputa-motivo-${Chamba.escape(pedidoId)}">
-          <option value="">Elegí un motivo</option>
-          <option>El socio no se presentó</option>
-          <option>El trabajo quedó mal hecho</option>
-          <option>No coincide con lo acordado</option>
-          <option>Problema con el pago</option>
-          <option>Otro</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Contanos más</label><textarea id="disputa-desc-${Chamba.escape(pedidoId)}" rows="3" placeholder="Describí qué pasó con el mayor detalle posible..."></textarea></div>
-      <button class="btn btn-red btn-sm" ${Chamba.bind("click",function(event){enviarDisputa(`${pedidoId}`)})}>Enviar reporte</button>
-    </div>
-  </div>`;
+ return `<p><a href="/reclamos?pedido=${Chamba.escape(pedidoId)}">Reclamos, descargos y estado del dinero →</a></p>`;
 }
 
 function toggleDisputaForm(pedidoId) {
@@ -719,17 +694,9 @@ async function enviarDisputa(pedidoId) {
 }
 
 async function aceptarOferta(ofertaId, pedidoId, precio) {
-  showConfirm('💰', '¿Confirmás el pago?',
-    `Vas a pagar ${fmt(precio)}. El dinero queda retenido en ChamBA hasta que el socio complete el trabajo y vos le entregues el código de verificación.\n\n(Los pagos reales se habilitarán próximamente)`,
-    async () => {
-      console.log('[DEBUG] Aceptando oferta:', ofertaId, 'pedido:', pedidoId);
-      const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
-      console.log('[DEBUG] Respuesta de aceptar:', r);
-      if (r.error) return showInfo('❌', 'Error', r.error);
-      await cargarTodo();
-      console.log('[DEBUG] misPedidos despues de recargar:', misPedidos);
-      irATrabajos('proceso');
-    }, '✅ Confirmar pago');
+  if(!await Custodia.confirmPayment(precio))return;
+  await api('/api/ofertas/'+ofertaId+'/aceptar','POST',{acepto_aviso:true,aviso_version:'custodia-v2'});
+  await cargarTodo();irATrabajos('proceso');
 }
 
 async function enviarContraoferta(ofertaId) {

@@ -268,7 +268,7 @@ function renderCardProceso(t) {
         <input class="codigo-digit" id="cod-${Chamba.escape(t.id)}-2" maxlength="1" inputmode="numeric" pattern="[0-9]" ${Chamba.bind("input",function(event){nextDigit(this,`cod-${t.id}-3`)})} ${Chamba.bind("keydown",function(event){prevDigit(event,`cod-${t.id}-1`,`cod-${t.id}-2`)})}/>
         <input class="codigo-digit" id="cod-${Chamba.escape(t.id)}-3" maxlength="1" inputmode="numeric" pattern="[0-9]" ${Chamba.bind("input",function(event){nextDigit(this,null)})} ${Chamba.bind("keydown",function(event){prevDigit(event,`cod-${t.id}-2`,`cod-${t.id}-3`)})}/>
       </div>
-      <button class="btn btn-teal" ${Chamba.bind("click",function(event){verificarCodigo(`${t.id}`)})}>Verificar y cobrar</button>
+      <button class="btn btn-teal" ${Chamba.bind("click",function(event){verificarCodigo(`${t.id}`)})}>Confirmar código</button>
       <div id="cod-err-${Chamba.escape(t.id)}" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></div>
     </div>
     <div class="codigo-advertencia">⚠️ <strong>Importante:</strong> Pedile el código al cliente solo cuando hayas <strong>terminado el trabajo</strong>. Tenés 4 intentos para ingresarlo correctamente.</div>
@@ -397,7 +397,7 @@ function renderActividadReciente() {
     return;
   }
   const eventosTrabajo = misTareas.map(t => {
-    if (t.estado === 'completado') return { icon: '✅', texto: `Completaste el trabajo de <strong>${Chamba.escape(t.servicio)}</strong> — cobraste ${Chamba.escape(fmt(t.precio_socio))}`, fecha: t.created_at };
+    if (t.estado === 'completado') return { icon: '✅', texto: `Completaste el trabajo de <strong>${Chamba.escape(t.servicio)}</strong> — consultá el estado del saldo en Reclamos y saldo`, fecha: t.created_at };
     if (t.estado === 'en_proceso') return { icon: '⚙️', texto: `Estás realizando el trabajo de <strong>${Chamba.escape(t.servicio)}</strong> — cobrarás ${Chamba.escape(fmt(t.precio_socio))}`, fecha: t.created_at };
     return { icon: '📤', texto: `Ofertaste en un trabajo de <strong>${Chamba.escape(t.servicio)}</strong>`, fecha: t.created_at };
   });
@@ -508,7 +508,7 @@ function renderCardCliProceso(p) {
         <div class="codigo-num">${Chamba.escape(p.codigo_verificacion)}</div>
       </div>
       <div class="codigo-advertencia">⚠️ <strong>Importante:</strong> Entregá este código al socio únicamente cuando haya <strong>terminado el trabajo</strong>. El código desbloquea su pago.</div>` : ''}
-    ${p.codigo_usado ? '<div style="background:var(--teal);color:#fff;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:500;margin:10px 0">✅ Código verificado — el socio cobró su pago</div>' : ''}
+    ${p.codigo_usado ? '<div style="background:var(--teal);color:#fff;border-radius:8px;padding:10px 14px;font-size:14px;font-weight:500;margin:10px 0">✅ Código verificado — consultá el estado del dinero en Reclamos y saldo</div>' : ''}
     <div style="margin-top:14px">
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">💬 Chat con el socio</div>
       <div class="chat-box">
@@ -541,14 +541,9 @@ function renderCardCliCompletado(p) {
 function toggleNegCliente(id) { const el=document.getElementById(id); el.style.display=el.style.display==='none'?'block':'none'; }
 
 async function aceptarOfertaCliente(ofertaId, pedidoId, precio) {
-  showConfirm('💰', '¿Confirmás el pago?',
-    `Vas a pagar ${fmt(precio)}. El dinero queda retenido en ChamBA hasta que el socio complete el trabajo y vos le entregues el código de verificación.`,
-    async () => {
-      const r = await api('/api/ofertas/' + ofertaId + '/aceptar', 'POST', { cliente_id: usuario.id });
-      if (r.error) return showInfo('❌', 'Error', r.error);
-      await cargarTodo();
-      irAServicio('proceso');
-    }, '✅ Confirmar pago');
+  if(!await Custodia.confirmPayment(precio))return;
+  await api('/api/ofertas/'+ofertaId+'/aceptar','POST',{acepto_aviso:true,aviso_version:'custodia-v2'});
+  await cargarTodo();irAServicio('proceso');
 }
 
 async function enviarContraofertaCliente(ofertaId) {
@@ -781,32 +776,7 @@ async function cargarDisputas() {
 }
 
 function renderBloqueDisputa(pedidoId) {
-  const existente = misDisputas.find(d => d.pedido_id === pedidoId);
-  const badge = { abierta: 'badge-amber|⏳ Reportado, en espera', en_revision: 'badge-amber|🔎 En revisión', resuelta: 'badge-green|✅ Resuelto' };
-  if (existente) {
-    const [cls, label] = (badge[existente.estado] || 'badge-gray|' + existente.estado).split('|');
-    return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-      <span class="badge ${Chamba.escape(cls)}">${Chamba.escape(label)}</span>
-      <div style="font-size:12px;color:var(--text-soft);margin-top:4px">Reportaste: ${Chamba.escape(existente.motivo)}${Chamba.escape(existente.resolucion ? '<br>Respuesta de ChamBA: ' + existente.resolucion : '')}</div>
-    </div>`;
-  }
-  return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-    <button class="btn btn-ghost btn-sm" ${Chamba.bind("click",function(event){toggleDisputaForm(`${pedidoId}`)})}>⚠️ Reportar un problema</button>
-    <div id="disputa-form-${Chamba.escape(pedidoId)}" style="display:none;margin-top:10px">
-      <div class="form-group"><label for="disputa-motivo-${Chamba.escape(pedidoId)}">¿Qué pasó?</label>
-        <select id="disputa-motivo-${Chamba.escape(pedidoId)}">
-          <option value="">Elegí un motivo</option>
-          <option>El cliente/socio no se presentó</option>
-          <option>El trabajo quedó mal hecho</option>
-          <option>No coincide con lo acordado</option>
-          <option>Problema con el pago</option>
-          <option>Otro</option>
-        </select>
-      </div>
-      <div class="form-group"><label for="disputa-desc-${Chamba.escape(pedidoId)}">Contanos más</label><textarea id="disputa-desc-${Chamba.escape(pedidoId)}" rows="3" placeholder="Describí qué pasó con el mayor detalle posible..."></textarea></div>
-      <button class="btn btn-red btn-sm" ${Chamba.bind("click",function(event){enviarDisputa(`${pedidoId}`)})}>Enviar reporte</button>
-    </div>
-  </div>`;
+ return `<p><a href="/reclamos?pedido=${Chamba.escape(pedidoId)}">Reclamos, descargos y estado del dinero →</a></p>`;
 }
 
 function toggleDisputaForm(pedidoId) {

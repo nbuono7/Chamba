@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/reclamos",
+      "destination": "/reclamos.html"
+    },
+    {
       "source": "/admin",
       "destination": "/admin.html"
     },

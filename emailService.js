@@ -165,3 +165,6 @@ module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechaza
 
 const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 for(const [name,fn] of Object.entries(module.exports))module.exports[name]=(...args)=>fn(...args.map((value,index)=>index!==1 && typeof value==='string'?escapeHTML(value):value));
+
+// Event content is escaped here; the durable outbox supplies a stable provider key.
+module.exports.emailEvento=(email,title,message,id)=>sendEmail(email,title,`<h2>${escapeHTML(title)}</h2><p>${escapeHTML(message)}</p><p><a href="https://chamba-vert.vercel.app/reclamos">Abrir Reclamos y saldo</a></p>`, 'chamba-event-'+id);

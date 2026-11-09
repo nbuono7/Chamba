@@ -71,3 +71,7 @@ No volver al servidor antiguo después de activar las transacciones nuevas: volv
 - Política de retención/eliminación de DNI y comprobantes: definir plazo, responsable y canal de solicitud antes de automatizar borrados. No eliminar documentos existentes por una política inventada.
 - Paginación visible del historial de pedidos a gran escala. El chat ya usa carga incremental; para pedidos se quitaron las solicitudes de ofertas por cada pedido y se recorren páginas de base de datos para no truncar registros, pero esto todavía no es una interfaz de pedidos paginada.
 - Cookies HttpOnly exigirían un cambio coordinado de dominio/autenticación/CSRF. Se conserva la arquitectura actual con datos escapados, sanitización y CSP; no afirmar que localStorage se volvió HttpOnly.
+
+## Custodia, reclamos y bajas
+
+El nuevo flujo, su compatibilidad con trabajos anteriores, las pruebas y la activación coordinada están documentados en [docs/custodia-reclamos.md](docs/custodia-reclamos.md). Los pagos siguen simulados. La página `/reclamos` requiere el backend y ambas migraciones de esta rama; una vista previa del frontend por sí sola no activa las funciones ni las tareas programadas.

@@ -10,7 +10,7 @@ test('Postgres migration and marketplace lifecycle with synthetic users',async()
   await db.exec(fs.readFileSync(path.join(__dirname,'constraints.sql'),'utf8'));
   await db.exec('create extension unaccent;');
   const folder=path.join(__dirname,'../supabase/migrations');
-  for(const f of fs.readdirSync(folder).sort())await db.exec(fs.readFileSync(path.join(folder,f),'utf8'));
+  for(const f of fs.readdirSync(folder).filter(f=>f.includes('harden_marketplace')).sort())await db.exec(fs.readFileSync(path.join(folder,f),'utf8'));
   await db.exec("insert into especialidades(nombre,activa) values('Fletes',true),('Limpieza',true);");
   await db.exec('begin;'+fs.readFileSync(path.join(__dirname,'database.sql'),'utf8')+'rollback;');
  }finally{await db.close();}

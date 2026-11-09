@@ -11,7 +11,7 @@ window.Chamba=(()=>{
   const el=event.target.closest?.(`[data-chamba-${type}]`);if(!el)return;const cb=callbacks.get(el.getAttribute(`data-chamba-${type}`));if(cb?.type===type){if(el.tagName==='A' && el.getAttribute('href')==='#')event.preventDefault();run(cb.fn,el,event);}
  });
  let config={comision_pct:13,piso_comision:1000,precio_minimo:1001};
- function quote(price){price=Math.round(Number(price)||0);const comision=Math.max(Math.round(price*config.comision_pct/100),config.piso_comision);return {comision,neto:Math.max(0,price-comision)};}
+ function quote(price){price=Math.round(Number(price)||0);const comision=Math.max(Math.round(price*config.comision_pct)/100,config.piso_comision);return {comision,neto:Math.max(0,price-comision)};}
  async function response(url,options={}){
   const r=await fetch(url,{...options,signal:options.signal||AbortSignal.timeout(85000)});
   if(!r.ok){let data;try{data=await r.json();}catch{}throw Error(data?.error||'No se pudo completar la operación. Intentá nuevamente.');}

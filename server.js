@@ -20,7 +20,7 @@ app.use(['/api/enviar-codigo','/api/usuarios/olvide-password','/api/usuarios/reg
 app.use(['/api/geocodificar','/api/geocodificar-buscar','/api/geocodificar-inverso'],limited(20));
 app.use('/api/analizar',limited(8,15*60000));
 app.use(['/api/usuarios/registro','/api/usuarios/solicitar-socio','/api/verificaciones-identidad'],limited(6,15*60000));
-app.use(['/api/usuarios/registro','/api/usuarios/solicitar-socio','/api/verificaciones-identidad','/api/analizar'],express.json({limit:'60mb'}));
+app.use(['/api/usuarios/registro','/api/usuarios/solicitar-socio','/api/verificaciones-identidad','/api/analizar','/api/reclamos'],express.json({limit:'60mb'}));
 app.use(express.json({limit:'256kb'}));
 const uuid = v => typeof v==='string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 for (const param of ['id','pedido_id','socio_id']) app.param(param,(req,res,next,value)=>uuid(value)?next():res.status(400).json({error:'Identificador inválido.'}));
@@ -75,9 +75,9 @@ function validarNombreUsuario(nombre_usuario) {
 }
 
 /** Calcula la comisión de ChamBA sobre un precio acordado: el mayor entre el % y el piso fijo. */
-function calcularComision(precioAcordado) {
-  const comisionPorcentual = Math.round(precioAcordado * COMISION);
-  const comision = Math.max(comisionPorcentual, PISO_COMISION);
+function calcularComision(precioAcordado, config = {comision_bps:1300,minimo_centavos:100000}) {
+  const comisionPorcentual = Math.round(precioAcordado * config.comision_bps / 100) / 100;
+  const comision = Math.max(comisionPorcentual, config.minimo_centavos/100);
   const precio_neto = Math.max(0,Math.round(precioAcordado) - comision);
   return { comision, precio_neto };
 }
@@ -93,7 +93,10 @@ async function auth(req, res, next) {
     const claims = jwt.verify(header.replace('Bearer ', ''), JWT_SECRET, {algorithms:['HS256']});
     if(!uuid(claims.id)) return res.status(401).json({error:'Sesión inválida.'});
     const [current] = await sb(`usuarios?id=eq.${claims.id}&select=id,tipo,email,nombre,estado,email_verificado,session_version,especialidad`);
-    if(!current || current.estado!=='aprobado' || !current.email_verificado || current.tipo!==claims.tipo || current.session_version!==(claims.sv||0)) return res.status(401).json({error:'Tu sesión cambió. Iniciá sesión nuevamente.'});
+    if(!current || !['aprobado','baja','suspendido'].includes(current.estado) || !current.email_verificado || current.tipo!==claims.tipo || current.session_version!==(claims.sv||0)) return res.status(401).json({error:'Tu sesión cambió. Iniciá sesión nuevamente.'});
+    const limitedState=current.estado!=='aprobado';
+    if(limitedState && claims.scope!=='limited')return res.status(401).json({error:'Tu sesión cambió. Iniciá sesión nuevamente.'});
+    if(limitedState && !/^\/api\/(custodia\/(me|config|trabajos)|reclamos(?:\/|$)|saldo(?:\/|$)|notificaciones(?:\/|$))/.test(req.path))return res.status(403).json({error:'Tu cuenta tiene acceso limitado a reclamos y retiro de saldo.'});
     req.usuario = current;
     next();
   } catch (e) {
@@ -129,7 +132,7 @@ const sb = async (path, method='GET', body=null) => {
  }
 };
 
-function signToken(user) { return jwt.sign({id:user.id,tipo:user.tipo,email:user.email,nombre:user.nombre,sv:user.session_version||0},JWT_SECRET,{expiresIn:'7d',algorithm:'HS256'}); }
+function signToken(user) { return jwt.sign({id:user.id,tipo:user.tipo,email:user.email,nombre:user.nombre,sv:user.session_version||0,scope:['baja','suspendido'].includes(user.estado)?'limited':'full'},JWT_SECRET,{expiresIn:'7d',algorithm:'HS256'}); }
 const secretHash=value=>crypto.createHash('sha256').update(String(value)).digest('hex');
 const splitServices=value=>String(value||'').split(',').map(x=>x.trim()).filter(Boolean);
 function textValue(value,max=2000) { if(typeof value!=='string'||!value.trim()||value.length>max) {const e=new Error('Completá los campos con datos válidos.');e.status=400;throw e;}return value.trim(); }
@@ -405,7 +408,7 @@ app.patch('/api/verificaciones-identidad/:id', auth, soloAdmin, async (req, res)
 
 app.get('/', (req, res) => res.json({ status: 'Chamba API ✅' }));
 app.get('/health',async(req,res)=>{await sb('especialidades?select=id&limit=1');res.json({ok:true});});
-app.get('/api/config',(_,res)=>res.json({comision_pct:13,piso_comision:1000,precio_minimo:1001}));
+app.get('/api/config',async(_,res)=>{const [c]=await sb('chamba_config?select=comision_bps,minimo_centavos');res.json({comision_pct:c.comision_bps/100,piso_comision:c.minimo_centavos/100,precio_minimo:Math.floor(c.minimo_centavos/100)+1});});
 
 // ── IA ──
 app.post('/api/analizar', auth, aiAccountLimit, async (req, res) => {
@@ -442,9 +445,10 @@ app.post('/api/analizar', auth, aiAccountLimit, async (req, res) => {
     }
     if(!result || !['Alta','Media','Baja'].includes(result.urgencia) || ['profesional','diagnostico','recomendacion'].some(k=>typeof result[k]!=='string'||result[k].length>6000) || ['precio_min','precio_max','precio_sugerido'].some(k=>!Number.isFinite(result[k])||result[k]<0||result[k]>100000000) || result.precio_min>result.precio_max) return res.status(502).json({error:'La IA no devolvió una estimación válida. Probá de nuevo.'});
     result.puede_solo = result.puede_solo===true;
-    result.comision_pct = COMISION * 100;
+    const [feeConfig]=await sb('chamba_config?select=comision_bps,minimo_centavos');
+    result.comision_pct = feeConfig.comision_bps / 100;
     result.precio_cliente = Math.round(result.precio_sugerido);
-    { const { comision, precio_neto } = calcularComision(result.precio_cliente);
+    { const { comision, precio_neto } = calcularComision(result.precio_cliente,feeConfig);
       result.precio_socio = precio_neto;
       result.comision_chamba = comision; }
     res.json(result);
@@ -615,7 +619,7 @@ app.post('/api/usuarios/login', async (req, res) => {
   if (!user.email_verificado) return res.status(403).json({ error: 'Todavía no confirmaste tu email. Revisá tu bandeja de entrada.' });
   if (user.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
   if (user.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
-  if (user.estado !== 'aprobado' || !user.email_verificado) return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
+  if (!['aprobado','baja','suspendido'].includes(user.estado) || !user.email_verificado) return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
   const { password_hash, ...safeUser } = user;
   const token = signToken(user);
   res.json({ ok: true, usuario: safeUser, token });
@@ -700,7 +704,7 @@ app.post('/api/enviar-codigo', async (req, res) => {
       if (!u.email_verificado) return res.status(403).json({ error: 'Todavía no confirmaste tu email. Revisá tu bandeja de entrada.' });
       if (u.tipo === 'socio' && u.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
       if (u.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
-      if (u.estado === 'suspendido') return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
+
     }
     const codigo = await generarYEnviarCodigo(u.email, tipo);
     await emailCodigoVerificacion(u.nombre, u.email, codigo, tipo);
@@ -723,7 +727,7 @@ app.post('/api/verificar-codigo', async (req, res) => {
     const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
     if (!users.length) return res.status(404).json({ error: 'Usuario no encontrado.' });
     const user = users[0];
-    if (user.estado !== 'aprobado' || !user.email_verificado) return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
+    if (!['aprobado','baja','suspendido'].includes(user.estado) || !user.email_verificado) return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
     const { password_hash, ...safeUser } = user;
     const token = signToken(user);
     res.json({ ok: true, usuario: safeUser, token });
@@ -768,7 +772,8 @@ app.patch('/api/usuarios/:id', auth, async (req, res) => {
     if (req.usuario.id !== req.params.id && req.usuario.tipo !== 'admin') {
       return res.status(403).json({ error: 'No podés editar el perfil de otra persona.' });
     }
-    const permitidos = req.usuario.tipo === 'admin' ? ['nombre', 'telefono', 'estado'] : ['nombre', 'telefono'];
+    if(req.usuario.tipo==='admin' && ['suspendido','baja'].includes(req.body.estado))return res.json(await sb('rpc/chamba_account','POST',{p_actor:req.usuario.id,p_user:req.params.id,p_state:req.body.estado,p_reason:textValue(req.body.motivo)}));
+    const permitidos = req.usuario.tipo === 'admin' ? ['nombre', 'telefono', 'estado','motivo'] : ['nombre', 'telefono'];
     if (Object.keys(req.body).some(k => !permitidos.includes(k))) {
       return res.status(403).json({ error: 'Este campo no se puede modificar desde el perfil.' });
     }
@@ -778,12 +783,13 @@ app.patch('/api/usuarios/:id', auth, async (req, res) => {
     const prev = await sb(`usuarios?id=eq.${encodeURIComponent(req.params.id)}&select=*`);
     const u = prev[0];
 
-    let body = req.body;
+    if(req.usuario.tipo==='admin' && req.body.estado && ['suspendido','baja'].includes(u?.estado))return res.json(await sb('rpc/chamba_account','POST',{p_actor:req.usuario.id,p_user:req.params.id,p_state:req.body.estado,p_reason:textValue(req.body.motivo)}));
+    let body = pick(req.body,['nombre','telefono','estado']);
     // Si se rechaza a un Socio que en realidad venía de una conversión desde Cliente,
     // no lo dejamos "rechazado" (eso lo bloquearía para siempre) — vuelve a ser Cliente
     // con su cuenta activa, y puede volver a solicitar ser Socio cuando quiera.
     if (req.body.estado === 'rechazado' && u && u.tipo === 'socio' && u.conversion_desde_cliente) {
-      body = { ...req.body, tipo: 'cliente', estado: 'aprobado' };
+      body = { ...body, tipo: 'cliente', estado: 'aprobado' };
     }
 
     const data = await sb(`usuarios?id=eq.${req.params.id}`, 'PATCH', body);
@@ -799,8 +805,7 @@ app.patch('/api/usuarios/:id', auth, async (req, res) => {
 });
 
 app.delete('/api/usuarios/:id', auth, soloAdmin, async (req, res) => {
-  await sb(`usuarios?id=eq.${req.params.id}`,'DELETE');
-  res.json({ ok: true });
+  res.json(await sb('rpc/chamba_account','POST',{p_actor:req.usuario.id,p_user:req.params.id,p_state:'baja',p_reason:textValue(req.body.motivo)}));
 });
 
 // ── UBICACIONES ──
@@ -1007,7 +1012,7 @@ app.post('/api/ofertas',auth,async(req,res)=>{
 app.post('/api/ofertas/:id/contraoferta',auth,async(req,res)=>jobAction(req,res,'counter',req.params.id,{precio:req.body.nuevo_precio}));
 app.post('/api/ofertas/:id/acordar',auth,async(req,res)=>jobAction(req,res,'partner_agree'));
 
-app.post('/api/ofertas/:id/aceptar',auth,async(req,res)=>jobAction(req,res,'accept',req.params.id,{codigo:String(crypto.randomInt(1000,10000))}));
+app.post('/api/ofertas/:id/aceptar',auth,async(req,res)=>jobAction(req,res,'accept',req.params.id,{codigo:String(crypto.randomInt(1000,10000)),acepto_aviso:req.body.acepto_aviso===true,aviso_version:req.body.aviso_version}));
 
 app.post('/api/ofertas/:id/rechazar',auth,async(req,res)=>jobAction(req,res,'reject'));
 
@@ -1176,59 +1181,16 @@ app.get('/api/calificaciones/:socio_id', async (req, res) => res.json(await sb(`
 
 // ── FORO (con soporte para respuestas vía parent_id) ──
 // ── DISPUTAS ──
-app.post('/api/disputas', auth, async (req, res) => {
-  try {
-    const { pedido_id, motivo, descripcion } = req.body;
-    if (!pedido_id || !motivo || !descripcion) return res.status(400).json({ error: 'Faltan datos.' });
-    const pedidos = await sb(`pedidos?id=eq.${pedido_id}&select=usuario_id,profesional_id,servicio,estado`);
-    if (!pedidos.length) return res.status(404).json({ error: 'Pedido no encontrado.' });
-    const p = pedidos[0];
-    if (req.usuario.id !== p.usuario_id && req.usuario.id !== p.profesional_id) {
-      return res.status(403).json({ error: 'No sos parte de este trabajo.' });
-    }
-    if (!['en_proceso', 'completado'].includes(p.estado)) {
-      return res.status(400).json({ error: 'Solo se puede reportar un problema en trabajos en proceso o completados.' });
-    }
-    const data = await sb('disputas', 'POST', { pedido_id, creado_por: req.usuario.id, motivo, descripcion, estado: 'abierta' });
-    try {
-      const admins = await sb(`usuarios?tipo=eq.admin&select=nombre,email`);
-      for (const a of admins) await emailNuevaDisputa(a.nombre, a.email, p.servicio, motivo);
-    } catch (e) { console.error('❌ Error avisando nueva disputa:', e.message); }
-    res.json(data);
-  } catch (e) {
-    console.error('❌ Error en POST /disputas:', e.message, e.supabase?.code || '');
-    res.status(500).json({ error: 'No se pudo enviar el reporte.', detalle: e.message });
-  }
+// Legacy reports remain readable; new reports use the transactional claim workflow.
+app.get('/api/disputas',auth,async(req,res)=>{
+ if(req.usuario.tipo==='admin')return res.json(await sbAll('disputas?select=*&order=created_at.desc,id.asc'));
+ const jobs=await sbAll(`pedidos?or=(usuario_id.eq.${req.usuario.id},profesional_id.eq.${req.usuario.id})&select=id`);
+ const rows=[];for(let i=0;i<jobs.length;i+=100)rows.push(...await sbAll(`disputas?pedido_id=in.(${jobs.slice(i,i+100).map(j=>j.id).join(',')})&select=*&order=created_at.desc,id.asc`));res.json(rows);
 });
-
-app.get('/api/disputas', auth, async (req, res) => {
-  try {
-    if (req.usuario.tipo === 'admin') {
-      const estado = req.query.estado ? `&estado=eq.${encodeURIComponent(req.query.estado)}` : '';
-      return res.json(await sb(`disputas?select=*&order=created_at.desc${estado}`));
-    }
-    const misPedidos = await sb(`pedidos?or=(usuario_id.eq.${req.usuario.id},profesional_id.eq.${req.usuario.id})&select=id`);
-    if (!misPedidos.length) return res.json([]);
-    const ids = misPedidos.map(p => p.id).join(',');
-    res.json(await sb(`disputas?pedido_id=in.(${ids})&select=*&order=created_at.desc`));
-  } catch (e) {
-    console.error('❌ Error en GET /disputas:', e.message, e.supabase?.code || '');
-    res.status(500).json({ error: 'No se pudieron cargar las disputas.' });
-  }
-});
-
-app.patch('/api/disputas/:id', auth, soloAdmin, async (req, res) => {
-  try {
-    const { estado, resolucion } = req.body;
-    if(!['abierta','en_revision','resuelta'].includes(estado))return res.status(400).json({error:'Estado inválido.'});
-    const patch = { estado };
-    if (resolucion !== undefined) patch.resolucion = resolucion;
-    if (estado === 'resuelta') patch.resuelta_at = new Date().toISOString();
-    res.json(await sb(`disputas?id=eq.${req.params.id}`, 'PATCH', patch));
-  } catch (e) {
-    console.error('❌ Error en PATCH /disputas:', e.message, e.supabase?.code || '');
-    res.status(500).json({ error: 'No se pudo actualizar la disputa.' });
-  }
+app.post('/api/disputas',auth,async(req,res)=>res.status(409).json({error:'Abrí Reclamos y saldo para registrar el tipo de reclamo y sus adjuntos.'}));
+app.patch('/api/disputas/:id',auth,soloAdmin,async(req,res)=>{
+ const motivo=textValue(req.body.resolucion,6000);
+ res.json(await sb('rpc/chamba_legacy_report','POST',{p_actor:req.usuario.id,p_id:req.params.id,p_reason:motivo}));
 });
 
 // ── FAVORITOS / BLOQUEO DE SOCIOS (siempre desde el punto de vista del cliente) ──
@@ -1282,6 +1244,88 @@ app.post('/api/foro', auth, async (req, res) => {
 app.delete('/api/foro/:id', auth, soloAdmin, async (req, res) => {
   await sb(`foro?id=eq.${req.params.id}`,'DELETE');
   res.json({ ok: true });
+});
+
+// Custody / claims: the database performs financial authorization and atomic transitions.
+const escrowFields='id,nombre,nombre_usuario,dni,email,telefono,tipo,estado';
+async function claimAccess(id,user){
+ const [r]=await sb(`reclamos?id=eq.${id}&select=*`);
+ if(!r || (user.tipo!=='admin' && ![r.creado_por,r.contra_id].includes(user.id)))throw Object.assign(Error('Reclamo no disponible.'),{status:404});return r;
+}
+async function reauthenticate(req){
+ const [u]=await sb(`usuarios?id=eq.${req.usuario.id}&select=password_hash`);
+ if(typeof req.body.password!=='string'||req.body.password.length>200||!await require('bcryptjs').compare(req.body.password,u?.password_hash||''))throw Object.assign(Error('Ingresá tu contraseña para confirmar esta operación.'),{status:403});
+}
+app.use(['/api/saldo/retirar','/api/saldo/ajustar'],limited(6,15*60000));
+app.get('/api/custodia/config',auth,async(req,res)=>{
+ const [c]=await sb('chamba_config?select=*');res.json(c);
+});
+app.get('/api/custodia/me',auth,async(req,res)=>{
+ const [u]=await sb(`usuarios?id=eq.${req.usuario.id}&select=id,nombre,tipo,estado,baja_at,saldo_disponible,saldo_bloqueado`);res.json(u);
+});
+app.get('/api/custodia/trabajos',auth,async(req,res)=>{
+ const filter=req.usuario.tipo==='admin'?'':`&or=(usuario_id.eq.${req.usuario.id},profesional_id.eq.${req.usuario.id})`;
+ const jobs=await sbAll('pedidos?select=id,usuario_id,profesional_id,servicio,estado,estado_pago,precio_cliente,created_at'+filter+'&order=created_at.desc,id.asc');
+ const custody=await sbAll('custodias?select=*'+(req.usuario.tipo==='admin'?'':`&or=(cliente_id.eq.${req.usuario.id},socio_id.eq.${req.usuario.id})`));
+ const map=new Map(custody.map(x=>[x.pedido_id,x]));res.json(jobs.map(p=>({...p,custodia:map.get(p.id)||null})));
+});
+app.get('/api/reclamos',auth,async(req,res)=>{
+ const filter=req.usuario.tipo==='admin'?'':`&or=(creado_por.eq.${req.usuario.id},contra_id.eq.${req.usuario.id})`;
+ const rows=await sbAll('reclamos?select=*'+filter+'&order=created_at.asc,id.asc');
+ if(req.usuario.tipo==='admin'){
+ const ids=[...new Set(rows.flatMap(r=>[r.creado_por,r.contra_id]))];
+ const people=new Map();for(let i=0;i<ids.length;i+=100){for(const u of await sb(`usuarios?id=in.(${ids.slice(i,i+100).join(',')})&select=${escrowFields}`))people.set(u.id,u);}
+ rows.forEach(r=>{r.reportante=people.get(r.creado_por);r.contraparte=people.get(r.contra_id);});
+ }res.json(rows);
+});
+app.get('/api/reclamos/:id',auth,async(req,res)=>{
+ const r=await claimAccess(req.params.id,req.usuario);
+ const people=await sb(`usuarios?id=in.(${r.creado_por},${r.contra_id})&select=${req.usuario.tipo==='admin'?escrowFields:'id,nombre,nombre_usuario'}`);
+ const attachments=await sb(`reclamo_adjuntos?reclamo_id=eq.${r.id}&select=*`);
+ for(const f of attachments)f.url=await firmarUrl('identificaciones',f.path,600);
+ const [e]=await sb(`custodias?pedido_id=eq.${r.pedido_id}&select=*`);
+ const history=await sbAll(`auditoria?reclamo_id=eq.${r.id}&select=accion,created_at,datos&order=created_at.asc,id.asc`);
+ res.json({...r,personas:people,adjuntos:attachments,custodia:e||null,historial:history});
+});
+async function claimWrite(req,res,action){
+ if(action==='respond')await claimAccess(req.params.id,req.usuario);
+ req.body.descripcion=textValue(req.body.descripcion,6000);
+ const files=req.body.adjuntos||[];if(!Array.isArray(files)||files.length>5)throw Object.assign(Error('Podés adjuntar hasta 5 imágenes.'),{status:400});
+ for(const f of files){if(!f||!['image/jpeg','image/png','image/webp'].includes(f.mime)||typeof f.data!=='string')throw Object.assign(Error('Adjuntá imágenes JPG, PNG o WebP.'),{status:400});const v=validarArchivo(f.data,f.mime);if(!v.ok)throw Object.assign(Error(v.error),{status:400});}
+ if(action==='create' && !uuid(req.body.request_id))throw Object.assign(Error('Falta el identificador de la solicitud. Recargá la página.'),{status:400});
+ const uploads=[];let started=false;
+ const lookup=action==='create'?`reclamos?creado_por=eq.${req.usuario.id}&request_id=eq.${req.body.request_id}&select=*`:`reclamos?id=eq.${req.params.id}&descargo_at=not.is.null&select=*`;
+ try{
+ const existing=await sb(lookup);if(existing[0])return res.json(existing[0]);
+ const attachments=[];
+ for(const f of files){const path=`reclamos/${req.usuario.id}/${crypto.randomUUID()}`;uploads.push(path);await subirArchivo('identificaciones',path,f.data,f.mime);attachments.push({path,nombre:String(f.nombre||'Imagen').slice(0,200),mime:f.mime});}
+ started=true;
+ res.json(await sb('rpc/chamba_claim','POST',{p_actor:req.usuario.id,p_action:action,p_id:req.params.id||null,p_data:{...pick(req.body,['pedido_id','tipo','categoria','descripcion','request_id']),adjuntos:attachments}}));
+ }catch(e){const saved=await recuperarCarga(uploads,lookup,started,e);if(saved)return res.json(saved);throw e;}
+}
+app.post('/api/reclamos',auth,(req,res)=>claimWrite(req,res,'create'));
+app.post('/api/reclamos/:id/descargo',auth,(req,res)=>claimWrite(req,res,'respond'));
+for(const [route,action] of [['tomar','take'],['resolver','resolve'],['prorroga','extend']])app.post(`/api/reclamos/:id/${route}`,auth,soloAdmin,async(req,res)=>res.json(await sb('rpc/chamba_claim','POST',{p_actor:req.usuario.id,p_action:action,p_id:req.params.id,p_data:pick(req.body,['motivo','cliente_centavos','horas'])})));
+app.post('/api/cuentas/:id/estado',auth,soloAdmin,async(req,res)=>res.json(await sb('rpc/chamba_account','POST',{p_actor:req.usuario.id,p_user:req.params.id,p_state:req.body.estado,p_reason:textValue(req.body.motivo)})));
+app.get('/api/saldo',auth,async(req,res)=>{
+ const admin=req.usuario.tipo==='admin';
+ const rows=await sbAll('libro_contable?select=*'+(admin?'':`&titular_id=eq.${req.usuario.id}`)+'&order=created_at.desc,id.asc');
+ const lots=await sbAll('saldo_lotes?select=*'+(admin?'':`&titular_id=eq.${req.usuario.id}`)+'&order=disponible_at.desc,id.asc');
+ let people=[];if(admin){const ids=[...new Set(lots.map(l=>l.titular_id))];for(let i=0;i<ids.length;i+=100)people.push(...await sb(`usuarios?id=in.(${ids.slice(i,i+100).join(',')})&select=id,nombre,nombre_usuario`));}
+ res.json({simulado:true,movimientos:rows,lotes:lots,titulares:people,comisiones:admin?rows.reduce((s,r)=>s+(r.destino==='comisiones'?Number(r.centavos):0)-(r.origen==='comisiones'?Number(r.centavos):0),0):null,historico:admin?rows.filter(r=>r.destino==='comisiones').reduce((s,r)=>s+Number(r.centavos),0):null});
+});
+app.post('/api/saldo/retirar',auth,async(req,res)=>{await reauthenticate(req);if(!uuid(req.body.request_id))throw Object.assign(Error('Solicitud inválida.'),{status:400});res.json(await sb('rpc/chamba_withdraw','POST',{p_actor:req.usuario.id,p_data:pick(req.body,['centavos','destino','motivo','request_id'])}));});
+app.post('/api/saldo/ajustar',auth,soloAdmin,async(req,res)=>{await reauthenticate(req);if(!uuid(req.body.request_id))throw Object.assign(Error('Solicitud inválida.'),{status:400});res.json(await sb('rpc/chamba_adjust','POST',{p_actor:req.usuario.id,p_data:pick(req.body,['centavos','pedido_id','titular_id','motivo','request_id'])}));});
+app.get('/api/notificaciones',auth,async(req,res)=>res.json(await sb(`notificaciones?usuario_id=eq.${req.usuario.id}&select=id,titulo,mensaje,pedido_id,reclamo_id,created_at,leida_at&order=created_at.desc&limit=100`)));
+app.post('/api/notificaciones/:id/leida',auth,async(req,res)=>{await sb(`notificaciones?id=eq.${req.params.id}&usuario_id=eq.${req.usuario.id}`,'PATCH',{leida_at:new Date().toISOString()});res.json({ok:true});});
+// pg_cron invokes this worker through pg_net. Durable queue survives Render cold starts.
+app.post('/api/internal/notificaciones',async(req,res)=>{
+ const supplied=req.headers.authorization||'',expected='Bearer '+(process.env.CRON_SECRET||'');
+ if(!process.env.CRON_SECRET||Buffer.byteLength(supplied)!==Buffer.byteLength(expected)||!crypto.timingSafeEqual(Buffer.from(supplied),Buffer.from(expected)))return res.status(401).json({error:'No autorizado.'});
+ const notices=await sb('rpc/chamba_outbox_claim','POST',{});
+ for(const n of notices){let error=null;try{const [u]=await sb(`usuarios?id=eq.${n.usuario_id}&select=email`);if(!u?.email)throw Error('Destinatario no disponible');await require('./emailService').emailEvento(u.email,n.titulo,n.mensaje,n.id);}catch(e){error='No se pudo entregar el aviso. Se reintentará.';}
+ await sb('rpc/chamba_outbox_ack','POST',{p_id:n.id,p_lease:n.lease,p_error:error});}
+ res.json({procesados:notices.length});
 });
 
 // Sentry: se coloca después de TODAS las rutas, antes de arrancar el servidor
