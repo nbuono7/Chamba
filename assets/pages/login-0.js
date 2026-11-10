@@ -1,9 +1,11 @@
 
 const BACKEND = 'https://chamba-backend-vurx.onrender.com';
 let emailLogin = '';
+let adminChallenge = null;
 let timerReenvioLogin = null;
 
 function mostrarPaso(paso) {
+  if(paso!=='codigo')adminChallenge=null;
   document.getElementById('error-box').style.display = 'none';
   document.getElementById('paso-email').style.display = paso === 'email' ? 'block' : 'none';
   document.getElementById('paso-codigo').style.display = paso === 'codigo' ? 'block' : 'none';
@@ -83,6 +85,7 @@ function iniciarTimerReenvioLogin() {
 }
 
 async function reenviarCodigoLogin() {
+  if(adminChallenge){mostrarPaso('password');return showError('Volvé a ingresar tu contraseña para recibir un código nuevo.');}
   const btn = document.getElementById('btn-reenviar-codigo');
   btn.disabled = true;
   try {
@@ -104,11 +107,18 @@ async function confirmarCodigoLogin() {
   try {
     const r = await Chamba.response(`${BACKEND}/api/verificar-codigo`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailLogin, codigo, tipo: 'login' })
+      body: JSON.stringify({ email: emailLogin, codigo, tipo: 'login', challenge:adminChallenge })
     });
     const data = await r.json();
     if (!r.ok) return showError(data.error || 'Código incorrecto.');
     clearInterval(timerReenvioLogin);
+    if(data.requires_mfa){
+      adminChallenge=data.challenge;emailLogin=data.email;
+      document.getElementById('f-pass').value='';
+      document.getElementById('f-codigo').value='';
+      document.getElementById('codigo-email-destino').textContent=data.email;
+      mostrarPaso('codigo');iniciarTimerReenvioLogin();return;
+    }
     localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
     localStorage.setItem('chamba_token', data.token);
     const destino = ['baja','suspendido'].includes(data.usuario.estado) ? '/reclamos' : data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
@@ -132,6 +142,13 @@ async function doLogin() {
     });
     const data = await r.json();
     if (!r.ok) return showError(data.error || 'Error al ingresar.');
+    if(data.requires_mfa){
+      adminChallenge=data.challenge;emailLogin=data.email;
+      document.getElementById('f-pass').value='';
+      document.getElementById('f-codigo').value='';
+      document.getElementById('codigo-email-destino').textContent=data.email;
+      mostrarPaso('codigo');iniciarTimerReenvioLogin();return;
+    }
     localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
     localStorage.setItem('chamba_token', data.token);
     const destino = ['baja','suspendido'].includes(data.usuario.estado) ? '/reclamos' : data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';

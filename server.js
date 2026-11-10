@@ -11,6 +11,7 @@ const { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailPe
 
 const app = express();
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
 app.use(cors({ origin: (origin,cb) => cb(null,!origin || origin === 'https://chamba-vert.vercel.app' || (process.env.NODE_ENV !== 'production' && /^http:\/\/localhost(:\d+)?$/.test(origin))) }));
 app.use((req,res,next)=>{res.set('X-Content-Type-Options','nosniff');res.set('Cache-Control','no-store');next();});
 const limited=(limit,windowMs=60000)=>rateLimit({windowMs,limit,standardHeaders:'draft-8',legacyHeaders:false,message:{error:'Demasiados intentos. Esperá unos minutos y volvé a probar.'}});
@@ -91,11 +92,13 @@ async function auth(req, res, next) {
   if (!header) return res.status(401).json({ error: 'Necesitás iniciar sesión.' });
   try {
     const claims = jwt.verify(header.replace('Bearer ', ''), JWT_SECRET, {algorithms:['HS256']});
+    if(claims.scope==='admin_challenge')return res.status(401).json({error:'Completá la verificación administrativa.'});
     if(!uuid(claims.id)) return res.status(401).json({error:'Sesión inválida.'});
     const [current] = await sb(`usuarios?id=eq.${claims.id}&select=id,tipo,email,nombre,estado,email_verificado,session_version,especialidad`);
     if(!current || !['aprobado','baja','suspendido'].includes(current.estado) || !current.email_verificado || current.tipo!==claims.tipo || current.session_version!==(claims.sv||0)) return res.status(401).json({error:'Tu sesión cambió. Iniciá sesión nuevamente.'});
     const limitedState=current.estado!=='aprobado';
     if(limitedState && current.tipo==='admin')return res.status(403).json({error:'El acceso administrativo de esta cuenta está suspendido.'});
+    if(current.tipo==='admin' && claims.mfa!==true)return res.status(401).json({error:'Ingresá nuevamente con contraseña y código.'});
     if(limitedState && claims.scope!=='limited')return res.status(401).json({error:'Tu sesión cambió. Iniciá sesión nuevamente.'});
     if(limitedState && !/^\/api\/(custodia\/(me|config|trabajos)|reclamos(?:\/|$)|saldo(?:\/|$)|notificaciones(?:\/|$))/.test(req.path))return res.status(403).json({error:'Tu cuenta tiene acceso limitado a reclamos y retiro de saldo.'});
     req.usuario = current;
@@ -133,7 +136,7 @@ const sb = async (path, method='GET', body=null) => {
  }
 };
 
-function signToken(user) { return jwt.sign({id:user.id,tipo:user.tipo,email:user.email,nombre:user.nombre,sv:user.session_version||0,scope:['baja','suspendido'].includes(user.estado)?'limited':'full'},JWT_SECRET,{expiresIn:'7d',algorithm:'HS256'}); }
+function signToken(user,mfa=false) { return jwt.sign({id:user.id,tipo:user.tipo,email:user.email,nombre:user.nombre,sv:user.session_version||0,mfa:user.tipo==='admin' && mfa,scope:['baja','suspendido'].includes(user.estado)?'limited':'full'},JWT_SECRET,{expiresIn:user.tipo==='admin'?'1h':'7d',algorithm:'HS256'}); }
 const secretHash=value=>crypto.createHash('sha256').update(String(value)).digest('hex');
 const splitServices=value=>String(value||'').split(',').map(x=>x.trim()).filter(Boolean);
 function textValue(value,max=2000) { if(typeof value!=='string'||!value.trim()||value.length>max) {const e=new Error('Completá los campos con datos válidos.');e.status=400;throw e;}return value.trim(); }
@@ -621,6 +624,15 @@ app.post('/api/usuarios/login', async (req, res) => {
   if (user.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
   if (user.estado === 'rechazado') return res.status(403).json({ error: 'Tu solicitud fue rechazada.' });
   if (!['aprobado','baja','suspendido'].includes(user.estado) || !user.email_verificado) return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
+  if(user.tipo==='admin') {
+    if(user.estado!=='aprobado')return res.status(403).json({error:'El acceso administrativo está suspendido.'});
+    const nonce=crypto.randomBytes(32).toString('hex');
+    const codigo=String(crypto.randomInt(100000,1000000));
+    await sb('rpc/chamba_issue_code','POST',{p_email:user.email,p_tipo:'login',p_hash:secretHash(nonce+':'+codigo)});
+    await emailCodigoVerificacion(user.nombre,user.email,codigo,'login');
+    const challenge=jwt.sign({id:user.id,email:user.email,sv:user.session_version||0,scope:'admin_challenge',nonce},JWT_SECRET,{expiresIn:'10m',algorithm:'HS256'});
+    return res.json({ok:true,requires_mfa:true,email:user.email,challenge});
+  }
   const { password_hash, ...safeUser } = user;
   const token = signToken(user);
   res.json({ ok: true, usuario: safeUser, token });
@@ -701,6 +713,7 @@ app.post('/api/enviar-codigo', async (req, res) => {
       : await sb(`usuarios?${idNorm.includes('@')?'email':'nombre_usuario'}=eq.${encodeURIComponent(idNorm)}&select=id,nombre,email,estado,tipo,email_verificado`);
     if (!users.length) return res.status(404).json({ error: tipo === 'registro' ? 'No encontramos una cuenta con ese email.' : 'No encontramos una cuenta con ese usuario o email.' });
     const u = users[0];
+    if(u.tipo==='admin' && tipo==='login')return res.status(403).json({error:'Para administrar, ingresá primero con tu contraseña.'});
     if (tipo === 'login') {
       if (!u.email_verificado) return res.status(403).json({ error: 'Todavía no confirmaste tu email. Revisá tu bandeja de entrada.' });
       if (u.tipo === 'socio' && u.estado === 'pendiente') return res.status(403).json({ error: 'Tu solicitud está pendiente de aprobación.' });
@@ -721,16 +734,26 @@ app.post('/api/verificar-codigo', async (req, res) => {
     const { email, codigo, tipo } = req.body;
     if (!email || !codigo || !['login', 'registro'].includes(tipo)) return res.status(400).json({ error: 'Datos inválidos.' });
     if(typeof codigo!=='string'||!/^\d{6}$/.test(codigo)||typeof email!=='string')return res.status(400).json({error:'Código incorrecto.'});
-    const verified=await sb('rpc/chamba_consume_code','POST',{p_email:email,p_tipo:tipo,p_hash:secretHash(codigo)});
+    let adminUser=null, hash=secretHash(codigo);
+    if(tipo==='login') {
+      const [u]=await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
+      if(u?.tipo==='admin') {
+        let challenge;
+        try {challenge=jwt.verify(req.body.challenge,JWT_SECRET,{algorithms:['HS256']});}catch{return res.status(401).json({error:'Ingresá primero con tu contraseña.'});}
+        if(challenge.scope!=='admin_challenge'||challenge.id!==u.id||challenge.email!==u.email||challenge.sv!==(u.session_version||0)||typeof challenge.nonce!=='string'||u.estado!=='aprobado'||!u.email_verificado)return res.status(401).json({error:'Reiniciá el ingreso administrativo.'});
+        adminUser=u;hash=secretHash(challenge.nonce+':'+codigo);
+      } else if(req.body.challenge) return res.status(401).json({error:'Reiniciá el ingreso.'});
+    }
+    const verified=await sb('rpc/chamba_consume_code','POST',{p_email:email,p_tipo:tipo,p_hash:hash});
     if(!verified.ok)return res.status(400).json({error:'Código incorrecto, vencido o con demasiados intentos.'});
     if(tipo==='registro')return res.json({ok:true});
     // tipo === 'login': generar la sesión, igual que el login tradicional
-    const users = await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
+    const users = adminUser?[adminUser]:await sb(`usuarios?email=eq.${encodeURIComponent(email)}&select=*`);
     if (!users.length) return res.status(404).json({ error: 'Usuario no encontrado.' });
     const user = users[0];
     if (!['aprobado','baja','suspendido'].includes(user.estado) || !user.email_verificado) return res.status(403).json({ error: 'Tu cuenta fue suspendida. Contactanos si creés que es un error.' });
     const { password_hash, ...safeUser } = user;
-    const token = signToken(user);
+    const token = signToken(user,!!adminUser);
     res.json({ ok: true, usuario: safeUser, token });
   } catch (e) {
     console.error('❌ Error en /verificar-codigo:', e.message, e.supabase?.code || '');

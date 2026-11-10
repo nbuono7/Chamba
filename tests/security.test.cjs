@@ -13,7 +13,7 @@ function harness(responses=[],current){
  mockSb:async(...args)=>{if(args[0].includes('&select=id,tipo,email,nombre,estado,email_verificado,session_version,especialidad'))return current instanceof Error?Promise.reject(current):[current||{...activeUser,estado:'aprobado',email_verificado:true,session_version:0}];calls.push(args);const out=responses.shift();if(out instanceof Error)throw out;return out||[];}};
  const a=source.indexOf('const sb = async'),b=source.indexOf('function signToken',a);
  vm.runInNewContext(source.slice(0,a)+'const sb=mockSb;\n'+source.slice(b),sandbox);
- return {calls,async request(verb,path,user,body){activeUser=user;let r=request(sandbox.module.exports)[verb](path);if(user)r=r.set('Authorization','Bearer '+jwt.sign({...user,sv:0},'test-secret'));if(body)r=r.send(body);return r;}};
+ return {calls,async request(verb,path,user,body){activeUser=user;let r=request(sandbox.module.exports)[verb](path);if(user)r=r.set('Authorization','Bearer '+jwt.sign({mfa:user.tipo==='admin',...user,sv:0},'test-secret'));if(body)r=r.send(body);return r;}};
 }
 const chat={usuario_id:client.id,profesional_id:partner.id,chat_habilitado:true,revision:2};
 test('chat denies anonymous and unrelated users without reading messages',async()=>{
@@ -101,3 +101,25 @@ test('deleting an account now calls logical deactivation and requires a reason',
  h=harness([{ok:true}]);r=await h.request('delete','/api/usuarios/'+client.id,admin,{motivo:'Conducta comprobada'});assert.equal(r.status,200);assert.equal(h.calls[0][0],'rpc/chamba_account');assert.equal(h.calls[0][2].p_state,'baja');
 });
 test('notification worker is inaccessible without its server secret',async()=>{const h=harness();const r=await h.request('post','/api/internal/notificaciones',client,{});assert.equal(r.status,401);assert.equal(h.calls.length,0);});
+
+test('admin sessions without second factor and challenge tokens cannot access APIs',async()=>{
+ for(const user of [{...stranger,tipo:'admin',mfa:false},{...stranger,tipo:'admin',scope:'admin_challenge'}]){
+  const h=harness();const r=await h.request('get','/api/usuarios',user);assert.equal(r.status,401);assert.equal(h.calls.length,0);
+ }
+});
+test('admin passwordless code issuance and verification cannot bypass second factor',async()=>{
+ const admin={...stranger,tipo:'admin',email:'admin@example.invalid',estado:'aprobado',email_verificado:true};
+ let h=harness([[admin]]);let r=await h.request('post','/api/enviar-codigo',null,{identificador:admin.email,tipo:'login'});assert.equal(r.status,403);assert.equal(h.calls.length,1);
+ for(const challenge of [undefined,'forged',jwt.sign({id:admin.id,email:admin.email,sv:0,scope:'full'},'test-secret')]){
+  h=harness([[admin]]);r=await h.request('post','/api/verificar-codigo',null,{email:admin.email,codigo:'123456',tipo:'login',challenge});assert.equal(r.status,401);assert.equal(h.calls.length,1);
+ }
+});
+test('admin password and challenge-bound email code produce a short-lived verified session',async()=>{
+ const admin={...stranger,tipo:'admin',email:'admin@example.invalid',estado:'aprobado',email_verificado:true,password_hash:await require('bcryptjs').hash('Example123!',4)};
+ const h=harness([[admin],{ok:true}]);const r=await h.request('post','/api/usuarios/login',null,{identificador:admin.email,password:'Example123!'});
+ assert.equal(r.status,200);assert.equal(r.body.requires_mfa,true);assert.equal(r.body.token,undefined);assert.equal(r.body.usuario,undefined);
+ const challenge=jwt.verify(r.body.challenge,'test-secret');assert.equal(challenge.scope,'admin_challenge');assert.equal(challenge.exp-challenge.iat,600);
+ const v=harness([[admin],{ok:true}]);const result=await v.request('post','/api/verificar-codigo',null,{email:admin.email,codigo:'123456',tipo:'login',challenge:r.body.challenge});
+ assert.equal(result.status,200);const session=jwt.verify(result.body.token,'test-secret');assert.equal(session.mfa,true);assert.equal(session.exp-session.iat,3600);assert.equal(result.body.usuario.password_hash,undefined);
+ assert.equal(v.calls[1][2].p_hash,require('node:crypto').createHash('sha256').update(challenge.nonce+':123456').digest('hex'));
+});
