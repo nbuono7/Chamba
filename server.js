@@ -95,6 +95,7 @@ async function auth(req, res, next) {
     const [current] = await sb(`usuarios?id=eq.${claims.id}&select=id,tipo,email,nombre,estado,email_verificado,session_version,especialidad`);
     if(!current || !['aprobado','baja','suspendido'].includes(current.estado) || !current.email_verificado || current.tipo!==claims.tipo || current.session_version!==(claims.sv||0)) return res.status(401).json({error:'Tu sesión cambió. Iniciá sesión nuevamente.'});
     const limitedState=current.estado!=='aprobado';
+    if(limitedState && current.tipo==='admin')return res.status(403).json({error:'El acceso administrativo de esta cuenta está suspendido.'});
     if(limitedState && claims.scope!=='limited')return res.status(401).json({error:'Tu sesión cambió. Iniciá sesión nuevamente.'});
     if(limitedState && !/^\/api\/(custodia\/(me|config|trabajos)|reclamos(?:\/|$)|saldo(?:\/|$)|notificaciones(?:\/|$))/.test(req.path))return res.status(403).json({error:'Tu cuenta tiene acceso limitado a reclamos y retiro de saldo.'});
     req.usuario = current;

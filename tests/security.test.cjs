@@ -79,6 +79,14 @@ test('limited sessions can consult their wallet but cannot operate normal market
 test('claim detail denies strangers before reading private attachments or identity',async()=>{
  const h=harness([[{id:job,creado_por:client.id,contra_id:partner.id,pedido_id:job}]]);const r=await h.request('get','/api/reclamos/'+job,stranger);assert.equal(r.status,404);assert.equal(h.calls.length,1);
 });
+test('inactive administrators cannot use limited sessions to read all claims or platform balances',async()=>{
+ for(const estado of ['suspendido','baja'])for(const path of ['/api/reclamos','/api/reclamos/'+job,'/api/saldo','/api/custodia/trabajos']){
+  const admin={...stranger,tipo:'admin',scope:'limited'};
+  const h=harness([],{...admin,estado,email_verificado:true,session_version:0});
+  const r=await h.request('get',path,admin);
+  assert.equal(r.status,403);assert.equal(h.calls.length,0);
+ }
+});
 test('claim upload rejects PDFs and invalid MIME before storage or writes',async()=>{
  const h=harness();const r=await h.request('post','/api/reclamos',client,{pedido_id:job,tipo:'dinero',descripcion:'Prueba',request_id:job,adjuntos:[{mime:'application/pdf',data:'JVBERi0='}]});assert.equal(r.status,400);assert.equal(h.calls.length,0);
 });
