@@ -20,6 +20,7 @@
   function icon(file) { const img=node('img');img.src=assets+(file?'icono-'+file+'-color.svg':'reduccion-negro.svg');img.alt='';img.width=335;img.height=295;return img; }
   function render(rows) {
     const active=rows.filter(r=>r.activa === true && typeof r.nombre==='string');
+    const count=document.getElementById('catalog-count');if(count)count.textContent=String(active.length);
     const next=JSON.stringify(active.map(r=>r.nombre));
     window.hubCatalog=new Set(active.map(r=>r.nombre));
     if(typeof selectedService!=='undefined' && selectedService && !window.hubCatalog.has(selectedService)) selectedService='';
@@ -42,7 +43,7 @@
     if(loading || document.hidden)return;loading=true;
     const list=document.getElementById('hub-service-list');
     try {
-      const response=await fetch(BACKEND_URL+'/api/especialidades',{cache:'no-store',signal:AbortSignal.timeout(20000)});
+      const response=await fetch(BACKEND_URL+'/api/especialidades',{cache:'no-store',signal:AbortSignal.timeout(85000)});
       if(!response.ok)throw Error('catalog');const data=await response.json();
       if(!Array.isArray(data))throw Error('catalog');render(data);
     } catch(e) {

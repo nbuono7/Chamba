@@ -1,0 +1,10 @@
+document.querySelectorAll('[data-event-0]').forEach(el=>el.addEventListener("mouseover",function(event){Chamba.run(function(event){this.style.borderColor='#E2662D'},this,event);}));
+document.querySelectorAll('[data-event-1]').forEach(el=>el.addEventListener("mouseout",function(event){Chamba.run(function(event){this.style.borderColor='rgba(0,0,0,0.2)'},this,event);}));
+document.querySelectorAll('[data-event-2]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){document.getElementById('photo-input-camera').click()},this,event);}));
+document.querySelectorAll('[data-event-3]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){document.getElementById('photo-input-gallery').click()},this,event);}));
+document.querySelectorAll('[data-event-4]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){document.getElementById('photo-input-file').click()},this,event);}));
+document.querySelectorAll('[data-event-5]').forEach(el=>el.addEventListener("change",function(event){Chamba.run(function(event){handlePhotos(event)},this,event);}));
+document.querySelectorAll('[data-event-6]').forEach(el=>el.addEventListener("change",function(event){Chamba.run(function(event){handlePhotos(event)},this,event);}));
+document.querySelectorAll('[data-event-7]').forEach(el=>el.addEventListener("change",function(event){Chamba.run(function(event){handlePhotos(event)},this,event);}));
+document.querySelectorAll('[data-event-8]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){analyzeWithAI()},this,event);}));
+document.querySelectorAll('[data-event-9]').forEach(el=>el.addEventListener("click",function(event){if(this.tagName==='A'&&this.getAttribute('href')==='#')event.preventDefault();Chamba.run(function(event){goHome()},this,event);}));

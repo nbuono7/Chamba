@@ -1,13 +1,74 @@
 {
   "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/registro", "destination": "/registro.html" },
-    { "source": "/login", "destination": "/login.html" },
-    { "source": "/panel-cliente", "destination": "/panel-cliente.html" },
-    { "source": "/panel-socio", "destination": "/panel-socio.html" },
-    { "source": "/solicitar-socio", "destination": "/solicitar-socio.html" },
-    { "source": "/solicitar-matricula", "destination": "/solicitar-matricula.html" },
-    { "source": "/restablecer-password", "destination": "/restablecer-password.html" },
-    { "source": "/", "destination": "/index.html" }
+    {
+      "source": "/reclamos",
+      "destination": "/reclamos.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/registro",
+      "destination": "/registro.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html"
+    },
+    {
+      "source": "/panel-cliente",
+      "destination": "/panel-cliente.html"
+    },
+    {
+      "source": "/panel-socio",
+      "destination": "/panel-socio.html"
+    },
+    {
+      "source": "/solicitar-socio",
+      "destination": "/solicitar-socio.html"
+    },
+    {
+      "source": "/solicitar-matricula",
+      "destination": "/solicitar-matricula.html"
+    },
+    {
+      "source": "/restablecer-password",
+      "destination": "/restablecer-password.html"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "public-dist",
+  "installCommand": "npm ci",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self)"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://unpkg.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://rjduwxmyetutrcpftscu.supabase.co https://*.tile.openstreetmap.org https://www.google-analytics.com; connect-src 'self' https://chamba-backend-vurx.onrender.com https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+        }
+      ]
+    }
   ]
 }

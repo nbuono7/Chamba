@@ -5,18 +5,19 @@ const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...ar
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@chamba.app';
 
-async function sendEmail(to, subject, html) {
+async function sendEmail(to, subject, html, idempotencyKey) {
   if (!RESEND_API_KEY) {
-    console.log(`[EMAIL SIMULADO] Para: ${to} | Asunto: ${subject}`);
-    return;
+    throw new Error('El servicio de email no está configurado.');
   }
   try {
-    await fetch('https://api.resend.com/emails', {
+    const response=await fetch('https://api.resend.com/emails', {
+      signal:AbortSignal.timeout(15000),
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}`, ...(idempotencyKey?{'Idempotency-Key':idempotencyKey}:{}) },
       body: JSON.stringify({ from: `ChamBA <${FROM_EMAIL}>`, to, subject, html })
     });
-  } catch(e) { console.error('Error enviando email:', e.message); }
+    if(!response.ok)throw new Error('El proveedor rechazó el email ('+response.status+').');
+  } catch(e) { console.error('Error enviando email:', e.message);throw e; }
 }
 
 // Email: bienvenida al cliente
@@ -112,7 +113,7 @@ async function emailNuevaOferta(nombre, email, servicio, precio, esContraoferta 
 }
 
 // Email: nuevo mensaje en el chat de un trabajo
-async function emailNuevoMensaje(nombre, email, servicio) {
+async function emailNuevoMensaje(nombre, email, servicio, idempotencyKey) {
   await sendEmail(email, `Tenés un mensaje esperando — ${servicio}`, `
     <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
       <h2 style="color:#E2662D">💬 Tenés un mensaje</h2>
@@ -120,7 +121,7 @@ async function emailNuevoMensaje(nombre, email, servicio) {
       <a href="https://chamba-vert.vercel.app/login" style="display:inline-block;background:#E2662D;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;margin-top:8px">Ver mensaje →</a>
       <p style="color:#888;font-size:13px;margin-top:20px">Este es el último aviso que vas a recibir de este trabajo hasta que cambie de estado (por ejemplo, de "en proceso" a "completado") — estate atento a novedades en ChamBA.</p>
       <p style="color:#888;font-size:12px;margin-top:16px">ChamBA — Profesionales del hogar</p>
-    </div>`);
+    </div>`,idempotencyKey);
 }
 
 // Email: recordatorio de que el código está por vencer
@@ -160,3 +161,10 @@ async function emailNuevaDisputa(nombreAdmin, emailAdmin, servicio, motivo) {
 }
 
 module.exports = { emailBienvenidaCliente, emailSocioAprobado, emailSocioRechazado, emailNuevaTarea, emailPedidoRecibido, emailCodigoVerificacion, emailNuevaOferta, emailNuevoMensaje, emailCodigoPorVencer, emailNuevaDisputa, emailRestablecerPassword };
+
+
+const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+for(const [name,fn] of Object.entries(module.exports))module.exports[name]=(...args)=>fn(...args.map((value,index)=>index!==1 && typeof value==='string'?escapeHTML(value):value));
+
+// Event content is escaped here; the durable outbox supplies a stable provider key.
+module.exports.emailEvento=(email,title,message,id)=>sendEmail(email,title,`<h2>${escapeHTML(title)}</h2><p>${escapeHTML(message)}</p><p><a href="https://chamba-vert.vercel.app/reclamos">Abrir Reclamos y saldo</a></p>`, 'chamba-event-'+id);

@@ -46,6 +46,9 @@
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-negro.svg">
   <link rel="icon" type="image/svg+xml" href="/assets/brand/reduccion-blanco.svg" media="(prefers-color-scheme: dark)">
   <link rel="stylesheet" href="/assets/brand/brand.css">
+<script src="/assets/shared/purify.min.js"></script>
+<script src="/assets/shared/chamba.js"></script>
+<link rel="stylesheet" href="/assets/shared/chamba.css">
 </head>
 <body>
 <nav>
@@ -84,217 +87,72 @@
   <div class="login-card">
     <div class="login-title">Bienvenido de vuelta</div>
     <div class="login-sub" id="login-sub">Ingresá con tu cuenta de ChamBA</div>
-    <div class="error-box" id="error-box"></div>
+    <div class="error-box" role="alert" id="error-box"></div>
 
     <!-- PASO 1: IDENTIFICADOR -->
     <div id="paso-email">
       <div class="form-group">
-        <label>Usuario o email</label>
-        <input type="text" id="f-email" placeholder="tu_usuario o juan@gmail.com" onkeydown="if(event.key==='Enter')pedirCodigo()"/>
+        <label for="f-email">Usuario o email</label>
+        <input type="text" id="f-email" placeholder="tu_usuario o juan@gmail.com" data-event-0=""/>
       </div>
-      <button class="btn-submit" id="btn-siguiente" onclick="pedirCodigo()">Siguiente</button>
-      <div class="link-reg"><a href="#" onclick="mostrarPaso('password');return false">Iniciar sesión con contraseña</a></div>
+      <button class="btn-submit" id="btn-siguiente" data-event-1="">Siguiente</button>
+      <div class="link-reg"><a href="#" data-event-2="">Iniciar sesión con contraseña</a></div>
     </div>
 
     <!-- PASO 2: CÓDIGO POR EMAIL -->
     <div id="paso-codigo" style="display:none">
       <div class="form-group">
-        <label>Código enviado a <strong id="codigo-email-destino"></strong></label>
-        <input type="text" id="f-codigo" placeholder="Código de 6 dígitos" maxlength="6" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarCodigoLogin()"/>
+        <label for="f-codigo">Código enviado a <strong id="codigo-email-destino"></strong></label>
+        <input type="text" id="f-codigo" placeholder="Código de 6 dígitos" maxlength="6" inputmode="numeric" data-event-3=""/>
       </div>
-      <button class="btn-submit" id="btn-confirmar-codigo" onclick="confirmarCodigoLogin()">Ingresar</button>
+      <button class="btn-submit" id="btn-confirmar-codigo" data-event-4="">Ingresar</button>
       <div style="text-align:center;margin-top:14px;font-size:13px">
         <span id="codigo-reenviar-timer" style="color:var(--text-soft)"></span>
-        <button type="button" id="btn-reenviar-codigo" onclick="reenviarCodigoLogin()" style="display:none;background:none;border:none;color:var(--teal);font-weight:500;cursor:pointer;font-size:13px">Reenviar código</button>
+        <button type="button" id="btn-reenviar-codigo" data-event-5="" style="display:none;background:none;border:none;color:var(--teal);font-weight:500;cursor:pointer;font-size:13px">Reenviar código</button>
       </div>
-      <div class="link-reg"><a href="#" onclick="mostrarPaso('email');return false">← Volver</a></div>
+      <div class="link-reg"><a href="#" data-event-6="">← Volver</a></div>
     </div>
 
     <!-- ALTERNATIVA: CONTRASEÑA -->
     <div id="paso-password" style="display:none">
       <div class="form-group">
-        <label>Usuario o email</label>
+        <label for="f-email-pass">Usuario o email</label>
         <input type="text" id="f-email-pass" placeholder="tu_usuario o juan@gmail.com"/>
       </div>
       <div class="form-group">
-        <label>Contraseña</label>
+        <label for="f-email-olvide">Contraseña</label>
         <div class="pass-wrap">
-          <input type="password" id="f-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
-          <button type="button" class="pass-toggle" onclick="togglePass()" id="pass-toggle-btn" aria-label="Mostrar contraseña">👁️</button>
+          <input type="password" id="f-pass" placeholder="••••••••" data-event-7=""/>
+          <button type="button" class="pass-toggle" data-event-8="" id="pass-toggle-btn" aria-label="Mostrar contraseña">👁️</button>
         </div>
       </div>
-      <button class="btn-submit" id="btn-login" onclick="doLogin()">Ingresar</button>
-      <div class="link-reg" style="margin-top:10px"><a href="#" onclick="mostrarPaso('olvide');return false">¿Olvidaste tu contraseña?</a></div>
-      <div class="link-reg"><a href="#" onclick="mostrarPaso('email');return false">← Usar código por email en su lugar</a></div>
+      <button class="btn-submit" id="btn-login" data-event-9="">Ingresar</button>
+      <div class="link-reg" style="margin-top:10px"><a href="#" data-event-10="">¿Olvidaste tu contraseña?</a></div>
+      <div class="link-reg"><a href="#" data-event-11="">← Usar código por email en su lugar</a></div>
     </div>
 
     <!-- OLVIDÉ MI CONTRASEÑA -->
     <div id="paso-olvide" style="display:none">
       <div class="form-group">
         <label>Usuario o email</label>
-        <input type="text" id="f-email-olvide" placeholder="tu_usuario o juan@gmail.com" onkeydown="if(event.key==='Enter')pedirResetPassword()"/>
+        <input type="text" id="f-email-olvide" placeholder="tu_usuario o juan@gmail.com" data-event-12=""/>
       </div>
-      <button class="btn-submit" id="btn-pedir-reset" onclick="pedirResetPassword()">Enviar link de recuperación</button>
-      <div class="link-reg"><a href="#" onclick="mostrarPaso('password');return false">← Volver</a></div>
+      <button class="btn-submit" id="btn-pedir-reset" data-event-13="">Enviar link de recuperación</button>
+      <div class="link-reg"><a href="#" data-event-14="">← Volver</a></div>
     </div>
 
     <!-- CONFIRMACIÓN DE ENVÍO -->
     <div id="paso-olvide-enviado" style="display:none;text-align:center">
       <div style="font-size:40px;margin-bottom:12px">📩</div>
       <div style="font-size:15px;color:var(--text);line-height:1.6;margin-bottom:16px">Si ese email tiene una cuenta en ChamBA, te mandamos un link para cambiar tu contraseña. Revisá tu bandeja de entrada (y spam, por las dudas).</div>
-      <div class="link-reg"><a href="#" onclick="mostrarPaso('password');return false">← Volver a ingresar</a></div>
+      <div class="link-reg"><a href="#" data-event-15="">← Volver a ingresar</a></div>
     </div>
 
     <div class="link-reg">¿No tenés cuenta? <a href="/registro">Registrate acá</a></div>
   </div>
 </div>
-<script>
-const BACKEND = 'https://chamba-backend-vurx.onrender.com';
-let emailLogin = '';
-let timerReenvioLogin = null;
-
-function mostrarPaso(paso) {
-  document.getElementById('error-box').style.display = 'none';
-  document.getElementById('paso-email').style.display = paso === 'email' ? 'block' : 'none';
-  document.getElementById('paso-codigo').style.display = paso === 'codigo' ? 'block' : 'none';
-  document.getElementById('paso-password').style.display = paso === 'password' ? 'block' : 'none';
-  document.getElementById('paso-olvide').style.display = paso === 'olvide' ? 'block' : 'none';
-  document.getElementById('paso-olvide-enviado').style.display = paso === 'olvide-enviado' ? 'block' : 'none';
-  clearInterval(timerReenvioLogin);
-  if (paso === 'password') document.getElementById('f-email-pass').value = document.getElementById('f-email').value.trim();
-  if (paso === 'olvide') document.getElementById('f-email-olvide').value = document.getElementById('f-email-pass').value.trim();
-}
-
-async function pedirResetPassword() {
-  const btn = document.getElementById('btn-pedir-reset');
-  const errorBox = document.getElementById('error-box');
-  errorBox.style.display = 'none';
-  const identificador = document.getElementById('f-email-olvide').value.trim();
-  if (!identificador) return showError('Ingresá tu usuario o email.');
-  btn.disabled = true; btn.textContent = 'Enviando...';
-  try {
-    const r = await fetch(`${BACKEND}/api/usuarios/olvide-password`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identificador })
-    });
-    if (!r.ok) { const data = await r.json().catch(() => ({})); return showError(data.error || 'No se pudo enviar el link.'); }
-    mostrarPaso('olvide-enviado');
-  } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
-  finally { btn.disabled = false; btn.textContent = 'Enviar link de recuperación'; }
-}
-
-function togglePass() {
-  const input = document.getElementById('f-pass');
-  const btn = document.getElementById('pass-toggle-btn');
-  const visible = input.type === 'text';
-  input.type = visible ? 'password' : 'text';
-  btn.textContent = visible ? '👁️' : '🙈';
-}
-
-async function pedirCodigo() {
-  const btn = document.getElementById('btn-siguiente');
-  const errorBox = document.getElementById('error-box');
-  errorBox.style.display = 'none';
-  const identificador = document.getElementById('f-email').value.trim();
-  if (!identificador) return showError('Ingresá tu usuario o email.');
-  btn.disabled = true; btn.textContent = 'Enviando...';
-  try {
-    const r = await fetch(`${BACKEND}/api/enviar-codigo`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identificador, tipo: 'login' })
-    });
-    const data = await r.json();
-    if (!r.ok) return showError(data.error || 'No se pudo enviar el código.');
-    emailLogin = data.email; // el backend devuelve el email real, aunque hayas puesto tu nombre de usuario
-    document.getElementById('codigo-email-destino').textContent = data.email;
-    mostrarPaso('codigo');
-    iniciarTimerReenvioLogin();
-  } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
-  finally { btn.disabled = false; btn.textContent = 'Siguiente'; }
-}
-
-function iniciarTimerReenvioLogin() {
-  clearInterval(timerReenvioLogin);
-  let restante = 60;
-  const timerEl = document.getElementById('codigo-reenviar-timer');
-  const btn = document.getElementById('btn-reenviar-codigo');
-  btn.style.display = 'none';
-  timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
-  timerReenvioLogin = setInterval(() => {
-    restante--;
-    if (restante <= 0) {
-      clearInterval(timerReenvioLogin);
-      timerEl.textContent = '';
-      btn.style.display = 'inline';
-    } else {
-      timerEl.textContent = `Podés pedir un código nuevo en ${restante}s`;
-    }
-  }, 1000);
-}
-
-async function reenviarCodigoLogin() {
-  const btn = document.getElementById('btn-reenviar-codigo');
-  btn.disabled = true;
-  try {
-    await fetch(`${BACKEND}/api/enviar-codigo`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identificador: emailLogin, tipo: 'login' })
-    });
-    iniciarTimerReenvioLogin();
-  } finally { btn.disabled = false; }
-}
-
-async function confirmarCodigoLogin() {
-  const btn = document.getElementById('btn-confirmar-codigo');
-  const errorBox = document.getElementById('error-box');
-  errorBox.style.display = 'none';
-  const codigo = document.getElementById('f-codigo').value.trim();
-  if (!codigo) return showError('Ingresá el código que te mandamos.');
-  btn.disabled = true; btn.textContent = 'Verificando...';
-  try {
-    const r = await fetch(`${BACKEND}/api/verificar-codigo`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailLogin, codigo, tipo: 'login' })
-    });
-    const data = await r.json();
-    if (!r.ok) return showError(data.error || 'Código incorrecto.');
-    clearInterval(timerReenvioLogin);
-    localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
-    localStorage.setItem('chamba_token', data.token);
-    const destino = data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
-    window.location.href = destino;
-  } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
-  finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
-}
-
-async function doLogin() {
-  const btn = document.getElementById('btn-login');
-  const errorBox = document.getElementById('error-box');
-  errorBox.style.display = 'none';
-  const identificador = document.getElementById('f-email-pass').value.trim();
-  const password = document.getElementById('f-pass').value;
-  if (!identificador || !password) return showError('Completá todos los campos.');
-  btn.disabled = true; btn.textContent = 'Ingresando...';
-  try {
-    const r = await fetch(`${BACKEND}/api/usuarios/login`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identificador, password })
-    });
-    const data = await r.json();
-    if (!r.ok) return showError(data.error || 'Error al ingresar.');
-    localStorage.setItem('chamba_user', JSON.stringify(data.usuario));
-    localStorage.setItem('chamba_token', data.token);
-    const destino = data.usuario.tipo === 'socio' ? '/panel-socio' : data.usuario.tipo === 'admin' ? '/admin' : '/panel-cliente';
-    window.location.href = destino;
-  } catch(e) { showError('No se pudo conectar. Intentá de nuevo.'); }
-  finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
-}
-
-function showError(msg) {
-  const box = document.getElementById('error-box');
-  box.textContent = msg; box.style.display = 'block';
-}
-</script>
+<script src="/assets/pages/login-0.js" defer></script>
+<script src="/assets/pages/login-events.js" defer></script>
 </body>
 </html>
 
